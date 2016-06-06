@@ -4,8 +4,8 @@ class DBConnection(object):
     def __init__(self):
         self.conn = sqlite3.connect("data.db", detect_types=sqlite3.PARSE_DECLTYPES)
         c = self.conn.cursor()
-        c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT PRIMARY KEY, user_id INT) WITHOUT ROWID")
-        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT PRIMARY KEY, user_id INT, nl TEXT, cmd TEXT) WITHOUT ROWID")
+        c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
         self.conn.commit()
 
     def __enter__(self, *args, **kwargs):
