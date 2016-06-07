@@ -6,8 +6,8 @@ First, install the Python packages we need:
 
     $ sudo pip install -r requirements.txt
 
-If you don't have write permission to the global Python package repo, you might
-want to instead:
+If you don't have write permission to your system's Python package folder, you
+might want to instead:
 
     $ pip install --user -r requirements.txt
 
