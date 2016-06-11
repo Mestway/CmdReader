@@ -67,7 +67,7 @@ class DBConnection(object):
         global url_leases
         now = datetime.datetime.now()
         with url_lease_lock:
-            url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases if deadline > now ]
+            url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases if deadline > now and user != user_id ]
             for url, count in self._find_urls_with_less_responses_than(MAX_RESPONSES):
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
