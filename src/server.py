@@ -9,7 +9,12 @@ from db import DBConnection
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-os.makedirs(os.path.join(ROOT, "sessions"), exist_ok=True)
+
+# Create sessions folder if it is missing
+try:
+    os.makedirs(os.path.join(ROOT, "sessions"))
+except FileExistsError as e:
+    pass # no problem!
 
 config = {
     "/": {
