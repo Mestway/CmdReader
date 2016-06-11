@@ -5,6 +5,7 @@ $(document).ready(function () {
       console.log(url);
       if (url === null) {
         alert("no URLs available!");
+        //window.location.replace("./collect_page.html?url=http://www.uwplse.org");
       } else {
         // similar behavior as an HTTP redirect
         window.location.replace("./collect_page?url=" + url);

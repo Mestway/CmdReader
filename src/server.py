@@ -9,7 +9,7 @@ from db import DBConnection
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-os.makedirs(os.path.join(ROOT, "sessions"), exist_ok=True)
+# os.makedirs(os.path.join(ROOT, "sessions"), exist_ok=True)
 
 config = {
     "/": {
@@ -82,7 +82,7 @@ def user_id_required(f):
         # TODO: uncomment this once we implement sign-in
         # if user_id is None:
         #     raise Exception("no user id!")
-        return f(*args, **kwargs, user_id=user_id)
+        return f(*args, user_id=user_id, **kwargs)
     return g
 
 def is_admin(username, password):
