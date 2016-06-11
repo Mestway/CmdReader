@@ -55,11 +55,6 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def service(self):
-        return {"hi": "bye"}
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
     def pick_url(self, search_phrase=None):
         with DBConnection() as db:
             if search_phrase and not db.already_searched(search_phrase):
