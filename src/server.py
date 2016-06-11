@@ -9,7 +9,11 @@ from db import DBConnection
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-# os.makedirs(os.path.join(ROOT, "sessions"), exist_ok=True)
+# Create sessions folder if it is missing
+try:
+    os.makedirs(os.path.join(ROOT, "sessions"))
+except FileExistsError as e:
+    pass # no problem!
 
 config = {
     "/": {
@@ -17,6 +21,12 @@ config = {
         "tools.sessions.storage_type": "file",
         "tools.sessions.storage_path": os.path.join(ROOT, "sessions"),
         "tools.sessions.timeout": 60 }, # in minutes
+    "/collect_page.html": {
+        "tools.staticfile.on": True,
+        "tools.staticfile.filename": os.path.join(ROOT, "collect_page.html") },
+    "/cmd.ico": {
+        "tools.staticfile.on": True,
+        "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
     "/js": {
         "tools.staticdir.on": True,
         "tools.staticdir.dir": os.path.join(ROOT, "js") },
