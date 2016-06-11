@@ -68,6 +68,28 @@ def user_id_required(f):
         return f(*args, **kwargs, user_id=user_id)
     return g
 
+def is_admin(username, password):
+    # TODO: real auth
+    return username == "admin" and password == "admin"
+
+def parse_auth(value):
+    parsed = cherrypy.lib.httpauth.parseAuthorization(value)
+    return parsed.get("username"), parsed.get("password")
+
+def admin_only(f):
+    @functools.wraps(f)
+    def g(*args, **kwargs):
+        admin = cherrypy.session.get("admin")
+        if not admin:
+            if "authorization" in cherrypy.request.headers and is_admin(*parse_auth(cherrypy.request.headers["authorization"])):
+                cherrypy.session["admin"] = True
+            else:
+                cherrypy.response.headers["WWW-Authenticate"] = 'Basic realm="User Visible Realm"'
+                raise cherrypy.HTTPError(401,
+                    "You are not authorized to access that resource")
+        return f(*args, **kwargs)
+    return g
+
 class App(object):
 
     @cherrypy.expose
@@ -96,6 +118,35 @@ class App(object):
         with DBConnection() as db:
             db.mark_has_no_pairs(user_id=user_id, url=url)
             return True
+
+    @cherrypy.expose
+    @admin_only
+    def status(self):
+        import db
+        res = "<html>"
+
+        res += "<h3>Active URL leases</h3>"
+        if db.url_leases:
+            res += "<table><thead><tr><th>user</th><th>url</th><th>expires</th></tr></thead><tbody>"
+            for url, user, expires in db.url_leases:
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, expires)
+            res += "</tbody></table>"
+        else:
+            res += "N/A"
+
+        with DBConnection() as db:
+            res += "<h3>URLs in queue</h3>"
+            for url, _ in db.find_urls_with_less_responses_than():
+                res += url + "<br>"
+
+            res += "<h3>Pairs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
+            for url, user, nl, cmd in db.pairs():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, nl, cmd)
+            res += "</tbody></table>"
+
+        res += "</html>"
+        return res
 
     @cherrypy.expose
     def index(self):
