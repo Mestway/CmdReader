@@ -33,7 +33,7 @@ def print_result(res, result_id):
         print("%s\n\n" % result['snippet'].encode('utf-8'))
         result_id += 1
 
-def main():
+def main(num):
   # Build a service object for interacting with the API. Visit
   # the Google APIs Console <http://code.google.com/apis/console>
   # to get an API key for your own application.
@@ -44,7 +44,7 @@ def main():
   query = sys.argv[1]
 
   print "Searching \"%s\"..." % query
-  for i in xrange(5):
+  for i in xrange(num / 10):
       res = service.cse().list(
           q=query.decode('utf-8'),
           cx=Search_Engine_ID,
@@ -53,4 +53,4 @@ def main():
       print_result(res, i*10+1)
 
 if __name__ == "__main__":
-    main()
+    main(500)
