@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import functools
 import json
 import os
 import cherrypy
@@ -7,8 +8,14 @@ from db import DBConnection
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+os.makedirs(os.path.join(ROOT, "sessions"), exist_ok=True)
 
 config = {
+    "/": {
+        "tools.sessions.on": True,
+        "tools.sessions.storage_type": "file",
+        "tools.sessions.storage_path": os.path.join(ROOT, "sessions"),
+        "tools.sessions.timeout": 60 }, # in minutes
     "/js": {
         "tools.staticdir.on": True,
         "tools.staticdir.dir": os.path.join(ROOT, "js") },
@@ -51,30 +58,43 @@ def check_type(value, ty, value_name="value"):
     else:
         raise Exception("unknown type spec {}".format(repr(ty)))
 
+def user_id_required(f):
+    @functools.wraps(f)
+    def g(*args, **kwargs):
+        user_id = cherrypy.session.get("user_id")
+        # TODO: uncomment this once we implement sign-in
+        # if user_id is None:
+        #     raise Exception("no user id!")
+        return f(*args, **kwargs, user_id=user_id)
+    return g
+
 class App(object):
 
     @cherrypy.expose
+    @user_id_required
     @cherrypy.tools.json_out()
-    def pick_url(self, search_phrase=None):
+    def pick_url(self, user_id, search_phrase=None):
         with DBConnection() as db:
             if search_phrase and not db.already_searched(search_phrase):
                 db.add_urls(search_phrase, search(search_phrase))
-            return db.lease_url(user_id=1)
+            return db.lease_url(user_id=user_id)
 
     @cherrypy.expose
+    @user_id_required
     @cherrypy.tools.json_out()
-    def add_pairs(self, pairs):
+    def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
         check_type(pairs, [{"url":str, "nl":str, "cmd":str}], value_name="pairs")
         with DBConnection() as db:
-            db.add_pairs(user_id=1, pairs=pairs)
+            db.add_pairs(user_id=user_id, pairs=pairs)
             return True
 
     @cherrypy.expose
+    @user_id_required
     @cherrypy.tools.json_out()
-    def no_pairs(self, url):
+    def no_pairs(self, user_id, url):
         with DBConnection() as db:
-            db.mark_has_no_pairs(user_id=1, url=url)
+            db.mark_has_no_pairs(user_id=user_id, url=url)
             return True
 
     @cherrypy.expose
