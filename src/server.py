@@ -4,6 +4,7 @@ import functools
 import json
 import os
 import cherrypy
+from apiclient.discovery import build
 from db import DBConnection
 
 # Root location where we can find resource files.
@@ -28,8 +29,24 @@ config = {
 }
 
 def search(phrase):
-    for i in range(1,4):
-        yield "url {} for phrase {}".format(i, phrase)
+    service = build("customsearch", "v1",
+                    developerKey="AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M")
+    Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
+
+    numResults = 50        # TODO: decide this number later based on user experience
+    limit = 10              # maximum number of search results returned per query
+
+    urls = []
+    for i in xrange(numResults / limit):
+        res = service.cse().list(
+            q=phrase.decode('utf-8'),
+            cx=Search_Engine_ID,
+            start=str(i*limit+1)
+        ).execute()
+        for result in res[u'items']:
+            urls.append(result['link'])
+    
+    return urls
 
 def check_type(value, ty, value_name="value"):
     """
