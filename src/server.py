@@ -63,7 +63,7 @@ class App(object):
     def pick_url(self, search_phrase=None):
         with DBConnection() as db:
             if search_phrase and not db.already_searched(search_phrase):
-                db.add_urls(search_phrase, list(search(search_phrase)))
+                db.add_urls(search_phrase, search(search_phrase))
             return db.lease_url(user_id=1)
 
     @cherrypy.expose
