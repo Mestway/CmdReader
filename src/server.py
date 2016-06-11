@@ -93,7 +93,7 @@ def user_id_required(f):
         # TODO: uncomment this once we implement sign-in
         # if user_id is None:
         #     raise Exception("no user id!")
-        return f(*args, **kwargs, user_id=user_id)
+        return f(*args, user_id=user_id, **kwargs)
     return g
 
 def is_admin(username, password):
