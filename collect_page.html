@@ -31,15 +31,47 @@
   </head>
 
   <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">CMD Collector</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav> 
 
-        <!-- manually attach allowOverflow method to pane -->
+    <div class="ui-layout-west" id="nl2cmd-web-working-panel">
 
-    <div class="ui-layout-west" id="nl2cmd-web-working-panel">West
-      working panel!!
+      <p class="lead"> Put Cmd/Text pairs in the following table: </p>
+
+      <table class="table" id="nl2cmd-pair-collect-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Cmd/Text Pairs</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <!-- Indicates a successful or positive action -->
+      <button id="nl2cmd-report-nopair" type="button" class="btn btn-warning pull-left">No pair on this page</button>
+      <button id="nl2cmd-submit" type="button" class="btn btn-success pull-right">Submit!</button>
+
     </div>
 
-    <div class="ui-layout-center" id="nl2cmd-web-content-panel">
-      Web content!!
-    </div>
+    <div class="ui-layout-center" id="nl2cmd-web-content-panel"> </div>
   </body>
 </html>

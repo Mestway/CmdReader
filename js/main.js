@@ -6,7 +6,8 @@ $(document).ready(function () {
       if (url === null) {
         alert("no URLs available!");
       } else {
-        alert("TODO: you should be redirected to page 2");
+        // similar behavior as an HTTP redirect
+        window.location.replace("./collect_page?url=" + url);
       }
     });
   }

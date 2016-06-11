@@ -5,3 +5,11 @@ body {
   padding: 40px 15px;
   text-align: center;
 }
+
+.nl2cmd-box {
+	width: 288pt
+}
+
+.nl2cmd-span{
+	font-family:  monospace;
+}
