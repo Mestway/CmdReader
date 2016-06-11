@@ -26,11 +26,7 @@ class App(object):
 
     @cherrypy.expose
     def index(self):
-        with DBConnection() as db:
-            out = "Hello!<br>"
-            for nl, cmd in db.pairs():
-                out += "Pair: {}, {}<br>".format(nl, cmd)
-            return out
+        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "index.html"))
 
 if __name__ == "__main__":
     cherrypy.quickstart(App(), config=config)
