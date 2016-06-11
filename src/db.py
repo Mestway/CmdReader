@@ -47,9 +47,10 @@ class DBConnection(object):
             c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase, url))
         self.conn.commit()
 
-    def add_pair(self, url, user_id, nl_text, cmd_text):
+    def add_pairs(self, user_id, pairs):
         c = self.conn.cursor()
-        c.execute("INSERT INTO Pairs (url, user_id, nl, cmd) VALUES (?, ?, ?, ?)", (url, user_id, nl_text, cmd_text))
+        for p in pairs:
+            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)", (user_id, p["url"], p["nl"], p["cmd"]))
         self.conn.commit()
 
     def pairs(self):
