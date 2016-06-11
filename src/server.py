@@ -122,7 +122,31 @@ class App(object):
     @cherrypy.expose
     @admin_only
     def status(self):
-        return "auth ok"
+        import db
+        res = "<html>"
+
+        res += "<h3>Active URL leases</h3>"
+        if db.url_leases:
+            res += "<table><thead><tr><th>user</th><th>url</th><th>expires</th></tr></thead><tbody>"
+            for url, user, expires in db.url_leases:
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, expires)
+            res += "</tbody></table>"
+        else:
+            res += "N/A"
+
+        with DBConnection() as db:
+            res += "<h3>URLs in queue</h3>"
+            for url, _ in db.find_urls_with_less_responses_than():
+                res += url + "<br>"
+
+            res += "<h3>Pairs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
+            for url, user, nl, cmd in db.pairs():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, nl, cmd)
+            res += "</tbody></table>"
+
+        res += "</html>"
+        return res
 
     @cherrypy.expose
     def index(self):

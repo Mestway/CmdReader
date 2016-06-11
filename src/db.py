@@ -55,10 +55,10 @@ class DBConnection(object):
 
     def pairs(self):
         c = self.conn.cursor()
-        for nl, cmd in c.execute("SELECT nl, cmd FROM Pairs"):
-            yield (nl, cmd)
+        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
+            yield (user, url, nl, cmd)
 
-    def _find_urls_with_less_responses_than(self, n):
+    def find_urls_with_less_responses_than(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT Urls.url, count(InUse.url) as n FROM Urls LEFT JOIN (SELECT url FROM NoPairs UNION ALL SELECT url FROM Pairs) AS InUse ON Urls.url = InUse.url GROUP BY Urls.url HAVING n < ?", (n,)):
             yield (url, count)
@@ -68,7 +68,7 @@ class DBConnection(object):
         now = datetime.datetime.now()
         with url_lease_lock:
             url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases if deadline > now and user != user_id ]
-            for url, count in self._find_urls_with_less_responses_than(MAX_RESPONSES):
+            for url, count in self.find_urls_with_less_responses_than():
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))
