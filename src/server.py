@@ -13,7 +13,7 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Create sessions folder if it is missing
 try:
     os.makedirs(os.path.join(ROOT, "sessions"))
-except FileExistsError as e:
+except Exception as e:
     pass # no problem!
 
 config = {
