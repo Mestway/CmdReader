@@ -16,10 +16,6 @@ In either case, you might prefer to run the server from a virtual environment:
     $ virtualenv envdir
     $ . envdir/bin/activate
     $ pip install -r requirements.txt
-    
-### Install Google Search API
-
-    $ pip install [--user] google-api-python-client
 
 ### Run
 
