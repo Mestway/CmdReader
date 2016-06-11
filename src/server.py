@@ -18,6 +18,12 @@ config = {
 }
 
 class App(object):
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def service(self):
+        return {"hi": "bye"}
+
     @cherrypy.expose
     def index(self):
         with DBConnection() as db:
