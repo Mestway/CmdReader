@@ -22,3 +22,8 @@ In either case, you might prefer to run the server from a virtual environment:
     $ python src/server.py
 
 Stop the server with Ctrl+C.
+
+Important pages:
+
+ - `/`: main entry point for users to start collecting data pairs
+ - `/status`: server and data collection status info
