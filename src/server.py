@@ -33,7 +33,7 @@ def search(phrase):
                     developerKey="AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M")
     Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
 
-    numResults = 50        # TODO: decide this number later based on user experience
+    numResults = 50         # TODO: decide this number later based on user experience
     limit = 10              # maximum number of search results returned per query
 
     urls = []
