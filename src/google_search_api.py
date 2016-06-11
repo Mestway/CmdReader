@@ -26,14 +26,13 @@ __author__ = 'jcgregorio@google.com (Joe Gregorio)'
 import os, sys
 from apiclient.discovery import build
 
-def print_result(res):
-    result_id = 1
+def print_result(res, result_id):
     for result in res[u'items']:
         print("%d.%s\n" % (result_id, result['title'].encode('utf-8')))
         print("%s\n" % result['link'])
         print("%s\n\n" % result['snippet'].encode('utf-8'))
         result_id += 1
-        
+
 def main():
   # Build a service object for interacting with the API. Visit
   # the Google APIs Console <http://code.google.com/apis/console>
@@ -45,12 +44,13 @@ def main():
   query = sys.argv[1]
 
   print "Searching \"%s\"..." % query
-  res = service.cse().list(
-      q=query.decode('utf-8'),
-      cx=Search_Engine_ID
-  ).execute()
-
-  print_result(res)
+  for i in xrange(5):
+      res = service.cse().list(
+          q=query.decode('utf-8'),
+          cx=Search_Engine_ID,
+          start=str(i*10+1)
+      ).execute()
+      print_result(res, i*10+1)
 
 if __name__ == "__main__":
     main()
