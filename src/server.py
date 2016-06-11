@@ -22,6 +22,12 @@ config = {
         "tools.sessions.storage_type": "file",
         "tools.sessions.storage_path": os.path.join(ROOT, "sessions"),
         "tools.sessions.timeout": 60 }, # in minutes
+    "/collect_page.html": {
+        "tools.staticfile.on": True,
+        "tools.staticfile.filename": os.path.join(ROOT, "collect_page.html") },
+    "/cmd.ico": {
+        "tools.staticfile.on": True,
+        "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
     "/js": {
         "tools.staticdir.on": True,
         "tools.staticdir.dir": os.path.join(ROOT, "js") },
