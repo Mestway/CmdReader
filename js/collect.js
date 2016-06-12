@@ -52,15 +52,16 @@ $(document).ready(function(){
   		var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
   		var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
   		console.log
-  		var data_entry = {"cmd":cmd, "text":text, url:"uwplse.org"};
+  		var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
   		collected_pairs.push(data_entry);
   	}
   	
   	console.log(collected_pairs);
 
+  	// TODO: deal with the communication to the server
   	$.ajax({
 		  url: "/add-pairs",
-		  data: {"paris": collected_pairs},
+		  data: {"pairs": JSON.stringify(collected_pairs)},
 		   success:  function(data, status) {
 		  	console.log("yoo!" + data);
 		  }
