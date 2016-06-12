@@ -53,9 +53,9 @@ def search(phrase):
 
     urls = []
     try:
-        for i in xrange(numResults / limit):
+        for i in range(numResults / limit):
             res = service.cse().list(
-                q=phrase.decode('utf-8'),
+                q=phrase.decode('utf-8') if type(phrase) is bytes else phrase,
                 cx=Search_Engine_ID,
                 start=str(i*limit+1)
             ).execute()
