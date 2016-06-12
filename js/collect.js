@@ -56,9 +56,11 @@ $(document).ready(function(){
   		collected_pairs.push(data_entry);
   	}
   	
+  	console.log(collected_pairs);
+
   	$.ajax({
 		  url: "/add-pairs",
-		  data: page_url,
+		  data: {"paris": collected_pairs},
 		   success:  function(data, status) {
 		  	console.log("yoo!" + data);
 		  }
@@ -71,7 +73,7 @@ $(document).ready(function(){
 		
 		$.ajax({
 		  url: "/no_pairs",
-		  data: page_url,
+		  data: {"url": page_url},
 		  success:  function(data, status) {
 		  	console.log("Yea!" + data);
 		  }
