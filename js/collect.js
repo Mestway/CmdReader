@@ -28,10 +28,13 @@ $(document).ready(function(){
 
 	// this tries to load the page
   $("#nl2cmd-web-content-panel")
-    .html('<object id="web-content-data" height="100%" data="' + page_url + '"/>');
+    .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
+    		+'<div id="web-content-data" class="error_report" height="100%">' 
+        + '<p class="lead" id="error_info">If the page cannot be correctly displayed, open the following link and work on it on another tab. <a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
+      	+ '</div>');
   
   // tries to set the page to  
-  if (false) {
+  if (true) {
 		$("#web-content-data").width($("#nl2cmd-web-content-panel").width());
   } else {
 	   $("#nl2cmd-web-content-panel")

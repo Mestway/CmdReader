@@ -17,4 +17,9 @@ body {
 .error_report {
   padding: 40px 15px;
   text-align: center;
+  font-size: 12pt;
+}
+
+#error_info {
+  font-size: 12pt;
 }
