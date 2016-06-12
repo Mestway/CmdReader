@@ -15,11 +15,10 @@ $(document).ready(function(){
 	page_url = $.urlParam('url'); // name
 	console.log(page_url);
 
-	
 	myLayout = $('body').layout({
-		west__minSize: 200,
-		west__size:	"40%",
-		west__onresize_end: function () {
+		east__minSize: 200,
+		east__size:	"60%",
+		east__onresize_end: function () {
     	$("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width())
     },
 	});
@@ -56,12 +55,29 @@ $(document).ready(function(){
   		var data_entry = {"cmd":cmd, "text":text, url:"uwplse.org"};
   		collected_pairs.push(data_entry);
   	}
-  	console.log(collected_pairs);
+  	
+  	$.ajax({
+		  url: "/add-pairs",
+		  data: page_url,
+		   success:  function(data, status) {
+		  	console.log("yoo!" + data);
+		  }
+		});
 	});
 
 	$("#nl2cmd-report-nopair").click(function() {
 		console.log("nopair!");
 		console.log(page_url);
+		
+		$.ajax({
+		  url: "/no_pairs",
+		  data: page_url,
+		  success:  function(data, status) {
+		  	console.log("Yea!" + data);
+		  }
+
+		});
+
 	});
 });
 
@@ -78,7 +94,7 @@ function insert_pair_collecting_row() {
   			+ '<br/>'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span basic-addon1">txt</span>'
-  			+ 	 '<input type="text" class="nl2cmd-box nl2cmd-text form-control" placeholder="Description" />'
+  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" placeholder="Description" />'
   			+ '</div>'
   			+ '</td></tr>');
 }
