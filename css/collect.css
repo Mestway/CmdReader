@@ -13,3 +13,8 @@ body {
 .nl2cmd-span{
 	font-family:  monospace;
 }
+
+.error_report {
+  padding: 40px 15px;
+  text-align: center;
+}
