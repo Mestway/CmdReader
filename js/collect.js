@@ -37,7 +37,7 @@ $(document).ready(function(){
 	   $("#nl2cmd-web-content-panel")
       .html('<div id="web-content-data" class="error_report" height="100%">' 
       	+ '<h1>We are sorry!!</h1>'
-        + '<p class="lead">We are unable to inline the page in this working panel, please open the following link on another browser tab to collect data.' 
+        + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link on another browser tab to collect data.' 
         + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
       	+ '</div>');
 	}
