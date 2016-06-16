@@ -30,7 +30,7 @@ $(document).ready(function(){
   $("#nl2cmd-web-content-panel")
     .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
     		+'<div id="web-content-data" class="error_report" height="100%">' 
-        + '<p class="lead" id="error_info">If the page cannot be correctly displayed, open the following link and work on it on another tab. <a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
+        + '<p class="lead" id="error_info">If the page is not successfully loaded, open the following link and view it in another tab. <a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
       	+ '</div>');
   
   // tries to set the page to  
@@ -40,7 +40,7 @@ $(document).ready(function(){
 	   $("#nl2cmd-web-content-panel")
       .html('<div id="web-content-data" class="error_report" height="100%">' 
       	+ '<h1>We are sorry!!</h1>'
-        + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link on another browser tab to collect data.' 
+        + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link in another browser tab to collect data.'
         + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
       	+ '</div>');
 	}
