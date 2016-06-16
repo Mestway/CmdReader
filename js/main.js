@@ -22,4 +22,5 @@ $(document).ready(function () {
 	$('#nl2cmd-auto-redirect').click(function () {
     start("");
 	});
+
 });
