@@ -69,41 +69,39 @@ $(document).ready(function(){
 	$("#nl2cmd-submit").click(function() {
 		var collected_pairs = [];
 		for (var i = 1; i <= row_count; i ++) {
-  		var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
-  		var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
-  		console.log
-  		var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
-  		collected_pairs.push(data_entry);
+            var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
+            var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
+            console.log
+            var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
+            collected_pairs.push(data_entry);
 
-  		BootstrapDialog.show({
-          message: "Are you sure to submit these pairs and move on to a new page?",
-          buttons: [
-          {
-              label: 'Yes',
-              cssClass: 'btn-primary',
-              action: function(){
+            BootstrapDialog.show({
+              message: "Are you sure to submit these pairs and move on to a new page?",
+              buttons: [
+              {
+                  label: 'Yes',
+                  cssClass: 'btn-primary',
+                  action: function(){
 
-                // TODO: deal with the communication to the server
-                        $.ajax({
-                              url: "/add-pairs",
-                              data: {"pairs": JSON.stringify(collected_pairs)},
-                                success:  function(data, status) {
-                                console.log("yoo!" + data);
-                              }
-                            });
-                            window.location.replace("index");
+                    // TODO: deal with the communication to the server
+                            $.ajax({
+                                  url: "/add-pairs",
+                                  data: {"pairs": JSON.stringify(collected_pairs)},
+                                    success:  function(data, status) {
+                                    console.log("yoo!" + data);
+                                  }
+                                });
+                                window.location.replace("search");
 
-              }
-          }, {
-              label: 'Close',
-              action: function(dialogItself){
-                  dialogItself.close();
-              }
-          }]
-          });
-
-            //window.location.replace("./index.html");
-        });
+                  }
+              }, {
+                  label: 'Close',
+                  action: function(dialogItself){
+                      dialogItself.close();
+                  }
+              }]
+            });
+        }
   	});
 
 	$("#nl2cmd-report-nopair").click(function() {
@@ -125,7 +123,7 @@ $(document).ready(function(){
                                 console.log("Yea!" + data);
                               }
                             });
-                            window.location.replace("index");
+                            window.location.replace("search");
               }
           }, {
               label: 'Close',
