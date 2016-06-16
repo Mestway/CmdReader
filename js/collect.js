@@ -77,7 +77,7 @@ $(document).ready(function(){
   	}
 
    BootstrapDialog.show({
-      message: "Are you sure to submit these pair and go to work on another page?",
+      message: "Are you sure to submit these pairs and move on to a new page?",
       buttons: [
       {
           label: 'Yes',
@@ -92,7 +92,7 @@ $(document).ready(function(){
 						  	console.log("yoo!" + data);
 						  }
 						});
-						window.location.replace("./index.html");
+						window.location.replace("index");
 
           }
       }, {
@@ -111,7 +111,7 @@ $(document).ready(function(){
 		console.log(page_url);
 	
 		BootstrapDialog.show({
-      message: "Are you sure there is no pair on this page and want to continue working on another page?",
+      message: "Are you sure there is no pair on this page and want to work on a new page?",
       buttons: [
       {
           label: 'Yes',
@@ -125,7 +125,7 @@ $(document).ready(function(){
 						  	console.log("Yea!" + data);
 						  }
 						});
-						window.location.replace("./index.html");
+						window.location.replace("index");
           }
       }, {
           label: 'Close',

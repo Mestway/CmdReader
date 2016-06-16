@@ -1,7 +1,7 @@
 $(document).ready(function () {
 
   function start(query) {
-    $.getJSON("/pick_url", {search_phrase: query}, function(url) {
+    $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
         alert("no URLs available!");
