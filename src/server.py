@@ -125,6 +125,18 @@ def admin_only(f):
     return g
 
 class App(object):
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def count_current_users(self):
+        with DBConnection() as db:
+            return db.num_users
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def register_user(self, user_id):
+        with DBConnection() as db:
+            db.register_user(user_id=user_id)
 
     @cherrypy.expose
     @user_id_required
@@ -185,7 +197,7 @@ class App(object):
 
     @cherrypy.expose
     def index(self):
-        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "index.html"))
+        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "login.html"))
 
 if __name__ == "__main__":
     cherrypy.quickstart(App(), config=config)

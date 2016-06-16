@@ -1,0 +1,6 @@
+#!/Users/xilin/Documents/PhD/Projects/CmdReader/envdir/bin/python
+
+import cherrypy.daemon
+
+if __name__ == '__main__':
+    cherrypy.daemon.run()

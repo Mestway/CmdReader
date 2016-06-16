@@ -48,7 +48,7 @@ $(document).ready(function(){
   for (var i = 0; i < 5; i ++)
   	insert_pair_collecting_row();
 
-  //when the columns are almost full, add content into the table.
+  // when the columns are almost full, add content into the table.
   // this method checks every 500ms to to increase the table size
 	setInterval(function() {
   	var all_rows = $(".nl2cmd-pair-row");
@@ -74,66 +74,66 @@ $(document).ready(function(){
   		console.log
   		var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
   		collected_pairs.push(data_entry);
-  	}
 
-   BootstrapDialog.show({
-      message: "Are you sure to submit these pairs and move on to a new page?",
-      buttons: [
-      {
-          label: 'Yes',
-          cssClass: 'btn-primary',
-          action: function(){
-             
-            // TODO: deal with the communication to the server
-				  	$.ajax({
-						  url: "/add-pairs",
-						  data: {"pairs": JSON.stringify(collected_pairs)},
-						   success:  function(data, status) {
-						  	console.log("yoo!" + data);
-						  }
-						});
-						window.location.replace("index");
+  		BootstrapDialog.show({
+          message: "Are you sure to submit these pairs and move on to a new page?",
+          buttons: [
+          {
+              label: 'Yes',
+              cssClass: 'btn-primary',
+              action: function(){
 
-          }
-      }, {
-          label: 'Close',
-          action: function(dialogItself){
-              dialogItself.close();
-          }
-      }]
-	  });
-       
-		//window.location.replace("./index.html");
-	});
+                // TODO: deal with the communication to the server
+                        $.ajax({
+                              url: "/add-pairs",
+                              data: {"pairs": JSON.stringify(collected_pairs)},
+                               success:  function(data, status) {
+                                console.log("yoo!" + data);
+                              }
+                            });
+                            window.location.replace("index");
+
+              }
+          }, {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+              }
+          }]
+          });
+
+            //window.location.replace("./index.html");
+        });
+  	});
 
 	$("#nl2cmd-report-nopair").click(function() {
 		console.log("nopair!");
 		console.log(page_url);
 	
 		BootstrapDialog.show({
-      message: "Are you sure there is no pair on this page and want to work on a new page?",
-      buttons: [
-      {
-          label: 'Yes',
-          cssClass: 'btn-primary',
-          action: function(){
-            // TODO: deal with the communication to the server
-				  	$.ajax({
-						  url: "/no_pairs",
-						  data: {"url": page_url},
-						  success:  function(data, status) {
-						  	console.log("Yea!" + data);
-						  }
-						});
-						window.location.replace("index");
-          }
-      }, {
-          label: 'Close',
-          action: function(dialogItself){
-              dialogItself.close();
-          }
-      }]
-	  });
+          message: "Are you sure there is no pair on this page and want to work on a new page?",
+          buttons: [
+          {
+              label: 'Yes',
+              cssClass: 'btn-primary',
+              action: function(){
+                // TODO: deal with the communication to the server
+                        $.ajax({
+                              url: "/no_pairs",
+                              data: {"url": page_url},
+                              success:  function(data, status) {
+                                console.log("Yea!" + data);
+                              }
+                            });
+                            window.location.replace("index");
+              }
+          }, {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+              }
+          }]
+	    });
 	});
 });
 

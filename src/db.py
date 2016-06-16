@@ -22,6 +22,8 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
 
+        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT)")
+
         self.conn.commit()
 
     def __enter__(self, *args, **kwargs):
@@ -31,6 +33,7 @@ class DBConnection(object):
         self.conn.commit()
         self.conn.close()
 
+    # --- URL management ---
     def mark_has_no_pairs(self, url, user_id):
         c = self.conn.cursor()
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
@@ -82,3 +85,14 @@ class DBConnection(object):
                     url_leases.append((url, user_id, now + lease_duration))
                     return url
         return None
+
+    # --- User administration ---
+    @property
+    def num_users(self):
+        c = self.conn.cursor()
+        num_users = c.execute("SELECT * FROM Users").rowcount
+        assert isinstance(num_users, int)
+        return (num_users+1) if num_users >= 0 else 1
+
+    def register_user(self, user_id):
+        return
