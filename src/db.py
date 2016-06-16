@@ -97,3 +97,9 @@ class DBConnection(object):
         c = self.conn.cursor()
         c.execute('INSERT INTO Users (user_id) VALUES (?)', (user_id,))
         self.conn.commit()
+
+    def user_exist(self, user_id):
+        c = self.conn.cursor()
+        for _ in c.execute("SELECT 1 FROM Users WHERE user_id = ? LIMIT 1", (user_id,)):
+            return True
+        return False

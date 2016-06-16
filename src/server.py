@@ -96,9 +96,8 @@ def user_id_required(f):
     @functools.wraps(f)
     def g(*args, **kwargs):
         user_id = cherrypy.session.get("user_id")
-        # TODO: uncomment this once we implement sign-in
-        # if user_id is None:
-        #     raise Exception("no user id!")
+        if user_id is None:
+            raise Exception("no user id!")
         return f(*args, user_id=user_id, **kwargs)
     return g
 
@@ -137,6 +136,18 @@ class App(object):
         with DBConnection() as db:
             db.register_user(user_id=user_id)
             return True
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def user_login(self, username):
+        # Username format: nl2cmdXX
+        user_id = int(username[6:])
+        with DBConnection() as db:
+            if db.user_exist(user_id):
+                cherrypy.session["user_id"] = user_id
+                return True
+            else:
+                return False
 
     @cherrypy.expose
     @user_id_required

@@ -3,7 +3,6 @@ $(document).ready(function () {
     var user_id = -1;
 
     $('#create-new-user').click(function() {
-        // get current number of users in DB
         $.getJSON("count_current_users", function(num_users) {
             user_id = num_users;
             $.ajax({url: "register_user",
@@ -26,4 +25,23 @@ $(document).ready(function () {
         });
     });
 
+    $('#user-log-in').click(function() {
+        var username = $('#username').val();
+        $.getJSON("user_login", {username: username}, function(login_success) {
+            if (login_success) {
+                window.location.replace("index.html");
+            } else {
+                BootstrapDialog.show({
+                message: "User " + username + " does not exist. Please make sure the username is correct.",
+                buttons: [{
+                    label: "Got it",
+                    cssClass: "btn-primary",
+                    action: function(dialogItself) {
+                        dialogItself.close();
+                    }
+                }]
+            });
+            }
+        });
+    });
 });
