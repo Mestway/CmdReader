@@ -87,7 +87,7 @@ $(document).ready(function(){
                         $.ajax({
                               url: "/add-pairs",
                               data: {"pairs": JSON.stringify(collected_pairs)},
-                               success:  function(data, status) {
+                                success:  function(data, status) {
                                 console.log("yoo!" + data);
                               }
                             });

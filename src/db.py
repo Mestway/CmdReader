@@ -81,18 +81,19 @@ class DBConnection(object):
                             in url_leases if deadline > now and user != user_id ]
             for url, count in self.find_urls_with_less_responses_than():
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
+                lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))
                     return url
         return None
 
     # --- User administration ---
-    @property
     def num_users(self):
         c = self.conn.cursor()
-        num_users = c.execute("SELECT * FROM Users").rowcount
-        assert isinstance(num_users, int)
-        return (num_users+1) if num_users >= 0 else 1
+        num_users = len(c.execute("SELECT * FROM Users").fetchall())
+        return (num_users + 1)
 
     def register_user(self, user_id):
-        return
+        c = self.conn.cursor()
+        c.execute('INSERT INTO Users (user_id) VALUES (?)', (user_id,))
+        self.conn.commit()
