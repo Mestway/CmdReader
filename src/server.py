@@ -5,6 +5,7 @@ import json
 import os
 import cherrypy
 from apiclient.discovery import build
+import apiclient.errors as errors
 from db import DBConnection
 
 # Root location where we can find resource files.
@@ -43,19 +44,25 @@ def search(phrase):
                     developerKey="AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M")
     Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
 
-    numResults = 50         # TODO: decide this number later based on user experience
+    numResults = 10         # TODO: decide this number later based on user experience
     limit = 10              # maximum number of search results returned per query
 
     urls = []
-    for i in xrange(numResults / limit):
-        res = service.cse().list(
-            q=phrase.decode('utf-8'),
-            cx=Search_Engine_ID,
-            start=str(i*limit+1)
-        ).execute()
-        for result in res[u'items']:
-            urls.append(result['link'])
-    
+    try:
+        for i in xrange(numResults / limit):
+            res = service.cse().list(
+                q=phrase.decode('utf-8'),
+                cx=Search_Engine_ID,
+                start=str(i*limit+1)
+            ).execute()
+            for result in res[u'items']:
+                urls.append(result['link'])
+    except errors.HttpError as err:
+        print("HttpError in search(phrase): {0}".format(err))
+    except:
+        print("Unexpected error in search(phrase):", sys.exc_info()[0])
+        raise
+
     return urls
 
 def check_type(value, ty, value_name="value"):
@@ -124,6 +131,7 @@ class App(object):
     @cherrypy.tools.json_out()
     def pick_url(self, user_id, search_phrase=None):
         with DBConnection() as db:
+            # save search results
             if search_phrase and not db.already_searched(search_phrase):
                 db.add_urls(search_phrase, search(search_phrase))
             return db.lease_url(user_id=user_id)
@@ -181,3 +189,4 @@ class App(object):
 
 if __name__ == "__main__":
     cherrypy.quickstart(App(), config=config)
+    # search("find bash command")

@@ -42,15 +42,16 @@ def main(num):
   Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
 
   query = sys.argv[1]
+  limit = 10
 
   print "Searching \"%s\"..." % query
-  for i in xrange(num / 10):
+  for i in xrange(num / limit):
       res = service.cse().list(
           q=query.decode('utf-8'),
           cx=Search_Engine_ID,
-          start=str(i*10+1)
+          start=str(i*limit+1)
       ).execute()
-      print_result(res, i*10+1)
+      print_result(res, i*limit+1)
 
 if __name__ == "__main__":
-    main(500)
+    main(50)
