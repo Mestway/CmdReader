@@ -13,6 +13,12 @@ $(document).ready(function () {
     });
   }
 
+  // trigger search on "Enter"
+  $("#nl2cmd-keyword-search-box").keyup(function(event){
+    if(event.keyCode == 13){
+        $("#nl2cmd-keyword-search-button").click();
+    }
+  });
 
   $('#nl2cmd-keyword-search-button').click(function () {
     var search_query = $('#nl2cmd-keyword-search-box').val();
