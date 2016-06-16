@@ -29,7 +29,7 @@ $(document).ready(function () {
         var username = $('#username').val();
         $.getJSON("user_login", {username: username}, function(login_success) {
             if (login_success) {
-                window.location.replace("search");
+                window.location.replace("/search.html");
             } else {
                 BootstrapDialog.show({
                 message: "User " + username + " does not exist. Please make sure the username is correct.",

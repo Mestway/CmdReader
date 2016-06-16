@@ -91,7 +91,7 @@ $(document).ready(function(){
                                     console.log("yoo!" + data);
                                   }
                                 });
-                                window.location.replace("search");
+                                window.location.replace("/search.html");
 
                   }
               }, {
@@ -123,7 +123,7 @@ $(document).ready(function(){
                                 console.log("Yea!" + data);
                               }
                             });
-                            window.location.replace("search");
+                            window.location.replace("/search.html");
               }
           }, {
               label: 'Close',
