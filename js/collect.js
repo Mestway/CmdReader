@@ -38,7 +38,7 @@ $(document).ready(function(){
       	    + '</div>');
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 
-    $("#nl2cmd-web-content-panel").click(function() {
+    $("#nl2cmd-new-tab-link").click(function() {
         $("#nl2cmd-web-content-panel").hide()
     });
 
@@ -180,12 +180,12 @@ function insert_pair_collecting_row() {
   			+ '</th><td id="' + "nl2cmd-row-no-" + row_count + '" class="nl2cmd-pair-td">'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span" id="basic-addon1">cmd</span>'
-  			+ 	 '<input type="text" class="nl2cmd-box nl2cmd-cmd form-control" placeholder="Command" />'
+  			+ 	 '<input type="text" class="nl2cmd-box nl2cmd-cmd form-control" spellcheck="false" placeholder="Command" />'
   			+ '</div>'
   			+ '<br/>'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span basic-addon1">txt</span>'
-  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" spellcheck="true" placeholder="Description" />'
+  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" placeholder="Description" />'
   			+ '</div>'
   			+ '</td></tr>');
 }
