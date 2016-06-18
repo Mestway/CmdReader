@@ -187,7 +187,7 @@ function insert_pair_collecting_row() {
   			+ '<br/>'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span basic-addon1">txt</span>'
-  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" placeholder="Description" />'
+  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" spellcheck="true" placeholder="Description" />'
   			+ '</div>'
   			+ '</td></tr>');
 }
