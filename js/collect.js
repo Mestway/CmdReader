@@ -94,7 +94,7 @@ $(document).ready(function(){
       if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
         exists_orphan_pair = true;
 
-      var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
+      var data_entry = {"cmd":cmd, "nl":text, url:page_url};
       collected_pairs.push(data_entry);
     }
 
