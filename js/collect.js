@@ -58,7 +58,27 @@ $(document).ready(function(){
       	+ '</div>');
 	   }*/
 
-  for (var i = 0; i < 5; i ++)
+
+	// spell checking
+	var spellchecker = new $.SpellChecker('.nl2cmd-box nl2cmd-text', {
+        lang: 'en',
+        parser: 'html',
+        webservice: {
+          path: '../php/SpellChecker.php',
+          driver: 'PSpell'
+        },
+        suggestBox: {
+          position: 'below',
+          offset: 1
+        }
+      });
+
+      // Bind spellchecker handler functions
+      spellchecker.on('check.success', function() {
+        alert('There are no incorrectly spelt words!');
+      });
+
+    for (var i = 0; i < 5; i ++)
 	    insert_pair_collecting_row();
 
     // when the columns are almost full, add content into the table.
@@ -81,63 +101,64 @@ $(document).ready(function(){
 
 	$("#nl2cmd-submit").click(function() {
 
-    being_submitted = true;
-    var collected_pairs = [];
-    var exists_orphan_pair = false;
-		for (var i = 1; i <= row_count; i ++) {
-      var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
-      var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
-      
-      if (cmd == "" && text == "")
-        $("#nl2cmd-row-tr-" + i).remove();
+        // spellchecker.check();
+        being_submitted = true;
+        var collected_pairs = [];
+        var exists_orphan_pair = false;
+            for (var i = 1; i <= row_count; i ++) {
+          var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
+          var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
 
-      if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
-        exists_orphan_pair = true;
+          if (cmd == "" && text == "")
+            $("#nl2cmd-row-tr-" + i).remove();
 
-      var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
-      collected_pairs.push(data_entry);
-    }
+          if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
+            exists_orphan_pair = true;
 
-    if (exists_orphan_pair) {
-      BootstrapDialog.show({
-        message: "There exist incomplete text/cmd pairs, please review you submission.",
-        buttons: [
-        {
-          label: 'Close',
-          action: function(dialogItself){
-              dialogItself.close();
-              being_submitted = false;
-          }
-        }]
-      });
-      return;    
-    }
-
-    BootstrapDialog.show({
-      message: "Are you sure to submit these pairs and move on to a new page?",
-      buttons: [
-      {
-        label: 'Yes',
-        cssClass: 'btn-primary',
-        action: function(){
-          // TODO: deal with the communication to the server
-          $.ajax({
-                url: "/add-pairs",
-                data: {"pairs": JSON.stringify(collected_pairs)},
-                  success:  function(data, status) {
-                  console.log("yoo!" + data);
-                }
-              });
-          window.location.replace("/search.html");
+          var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
+          collected_pairs.push(data_entry);
         }
-      }, {
-        label: 'Close',
-        action: function(dialogItself){
-            dialogItself.close();
-            being_submitted = false;
+
+        if (exists_orphan_pair) {
+          BootstrapDialog.show({
+            message: "There exist incomplete text/cmd pairs, please review you submission.",
+            buttons: [
+            {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+                  being_submitted = false;
+              }
+            }]
+          });
+          return;
         }
-      }]
-    });
+
+        BootstrapDialog.show({
+          message: "Are you sure to submit these pairs and move on to a new page?",
+          buttons: [
+          {
+            label: 'Yes',
+            cssClass: 'btn-primary',
+            action: function(){
+              // TODO: deal with the communication to the server
+              $.ajax({
+                    url: "add-pairs",
+                    data: {"pairs": JSON.stringify(collected_pairs)},
+                      success:  function(data, status) {
+                      console.log("yoo!" + data);
+                    }
+                  });
+              window.location.replace("/search.html");
+            }
+          }, {
+            label: 'Close',
+            action: function(dialogItself){
+                dialogItself.close();
+                being_submitted = false;
+            }
+          }]
+        });
   });
 
 	$("#nl2cmd-report-nopair").click(function() {
@@ -152,7 +173,7 @@ $(document).ready(function(){
               action: function(){
                 // TODO: deal with the communication to the server
                 $.ajax({
-                      url: "/no_pairs",
+                      url: "no_pairs",
                       data: {"url": page_url},
                       success:  function(data, status) {
                         console.log("Yea!" + data);
@@ -189,7 +210,9 @@ function insert_pair_collecting_row() {
   			+ '<br/>'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span basic-addon1">txt</span>'
-  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" placeholder="Description" />'
+  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" spellcheck="false" placeholder="Description" />'
   			+ '</div>'
-  			+ '</td></tr>');
+  			+ '</td></tr>');    // default html textarea spellcheck disabled
+
+  	$("").append()
 }
