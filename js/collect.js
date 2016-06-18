@@ -1,6 +1,7 @@
 var myLayout;
 var row_count = 0;
 var page_url = "";
+var being_submitted = false;
 
 $(document).ready(function(){
 
@@ -58,53 +59,77 @@ $(document).ready(function(){
   		var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
   		var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
 
-  		if (cmd == "" && pair == "")
+  		if (cmd == "" || pair == "")
   			blank_cell_count ++;
   	}
 
-  	if (blank_cell_count == 0)
+  	if (blank_cell_count == 0 && !being_submitted)
   		insert_pair_collecting_row();
 	}, 500);
 
 	$("#nl2cmd-submit").click(function() {
+
+    being_submitted = true;
 		var collected_pairs = [];
+    var exists_orphan_pair = false;
 		for (var i = 1; i <= row_count; i ++) {
       var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
       var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
-      console.log
+      
+      if (cmd == "" && text == "")
+        $("#nl2cmd-row-tr-" + i).remove();
+
+      if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
+        exists_orphan_pair = true;
+
       var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
       collected_pairs.push(data_entry);
+    }
+
+    if (exists_orphan_pair) {
+      BootstrapDialog.show({
+        message: "There exist incomplete text/cmd pairs, please review you submission.",
+        buttons: [
+        {
+          label: 'Close',
+          action: function(dialogItself){
+              dialogItself.close();
+              being_submitted = false;
+          }
+        }]
+      });
+      return;    
     }
 
     BootstrapDialog.show({
       message: "Are you sure to submit these pairs and move on to a new page?",
       buttons: [
       {
-          label: 'Yes',
-          cssClass: 'btn-primary',
-          action: function(){
-            // TODO: deal with the communication to the server
-            $.ajax({
-                  url: "/add-pairs",
-                  data: {"pairs": JSON.stringify(collected_pairs)},
-                    success:  function(data, status) {
-                    console.log("yoo!" + data);
-                  }
-                });
-                window.location.replace("/search.html");
-          }
+        label: 'Yes',
+        cssClass: 'btn-primary',
+        action: function(){
+          // TODO: deal with the communication to the server
+          $.ajax({
+                url: "/add-pairs",
+                data: {"pairs": JSON.stringify(collected_pairs)},
+                  success:  function(data, status) {
+                  console.log("yoo!" + data);
+                }
+              });
+          window.location.replace("/search.html");
+        }
       }, {
-          label: 'Close',
-          action: function(dialogItself){
-              dialogItself.close();
-          }
+        label: 'Close',
+        action: function(dialogItself){
+            dialogItself.close();
+            being_submitted = false;
+        }
       }]
     });
   });
 
 	$("#nl2cmd-report-nopair").click(function() {
-		console.log("nopair!");
-		console.log(page_url);
+		console.log("nopair! " + page_url);
 	
 		BootstrapDialog.show({
           message: "Are you sure there is no pair on this page and want to work on a new page?",
@@ -136,7 +161,7 @@ $(document).ready(function(){
 function insert_pair_collecting_row() {
 	row_count ++;
 	$("#nl2cmd-pair-collect-table tbody").append(
-  			'<tr class="nl2cmd-pair-row"><th scope="">'
+  			'<tr class="nl2cmd-pair-row" id="' + "nl2cmd-row-tr-" + row_count + '"><th scope="">'
   			+ row_count 
   			+ '</th><td id="' + "nl2cmd-row-no-" + row_count + '" class="nl2cmd-pair-td">'
   			+ '<div class="input-group">'
