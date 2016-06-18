@@ -42,6 +42,10 @@ $(document).ready(function(){
         $("#nl2cmd-web-content-panel").hide()
     });
 
+    $("#nl2cmd-new-tab-link").click(function() {
+        myLayout.close('east');
+    });
+
     // tries to set the page to
     /* if (true) {
 		web_content_data.width($("#nl2cmd-web-content-panel").width());
