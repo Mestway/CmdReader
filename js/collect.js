@@ -34,9 +34,13 @@ $(document).ready(function(){
     		+'<div id="web-content-data" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
             +                                 'open the following link and view it in another tab.'
-            + '<a class="lead" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
+            + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
       	    + '</div>');
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+
+    $("#nl2cmd-web-content-panel").click(function() {
+        $("#nl2cmd-web-content-panel").hide()
+    });
 
     // tries to set the page to
     /* if (true) {
