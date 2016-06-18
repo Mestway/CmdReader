@@ -48,12 +48,10 @@ $(document).ready(function(){
         + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link in another browser tab to collect data.'
         + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
       	+ '</div>');
-	} */
+	   }*/
 
-
-
-    for (var i = 0; i < 5; i ++)
-  	    insert_pair_collecting_row();
+  for (var i = 0; i < 5; i ++)
+	    insert_pair_collecting_row();
 
     // when the columns are almost full, add content into the table.
     // this method checks every 500ms to to increase the table size
