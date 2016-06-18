@@ -39,7 +39,11 @@ $(document).ready(function(){
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 
     $("#nl2cmd-web-content-panel").click(function() {
-        $("#nl2cmd-web-content-panel").hide()
+        $("#nl2cmd-web-content-panel").hide();
+    });
+
+    $("#nl2cmd-new-tab-link").click(function() {
+        myLayout.close('east');
     });
 
     // tries to set the page to
