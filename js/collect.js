@@ -1,6 +1,7 @@
 var myLayout;
 var row_count = 0;
 var page_url = "";
+var selected_text = "";
 
 $(document).ready(function(){
 
@@ -27,29 +28,34 @@ $(document).ready(function(){
 	// show the url and ask the user to collect data on the target page
 
 	// this tries to load the page
-  $("#nl2cmd-web-content-panel")
-    .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
-    		+'<div id="web-content-data" class="error_report" height="100%">' 
-        + '<p class="lead" id="error_info">If the page is not successfully loaded, open the following link and view it in another tab. <a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
-      	+ '</div>');
-  
-  // tries to set the page to  
-  if (true) {
-		$("#web-content-data").width($("#nl2cmd-web-content-panel").width());
-  } else {
+    $("#nl2cmd-web-content-panel")
+        .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
+    		+'<div id="web-content-data" class="error_report" height="100%">'
+            + '<p class="lead" id="error_info">If the page is not successfully loaded,'
+            +                                 'open the following link and view it in another tab.'
+            + '<a class="lead" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
+      	    + '</div>');
+    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+
+    // tries to set the page to
+    /* if (true) {
+		web_content_data.width($("#nl2cmd-web-content-panel").width());
+    } else {
 	   $("#nl2cmd-web-content-panel")
       .html('<div id="web-content-data" class="error_report" height="100%">' 
       	+ '<h1>We are sorry!!</h1>'
         + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link in another browser tab to collect data.'
         + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
       	+ '</div>');
-	}
+	} */
 
-  for (var i = 0; i < 5; i ++)
-  	insert_pair_collecting_row();
 
-  // when the columns are almost full, add content into the table.
-  // this method checks every 500ms to to increase the table size
+
+    for (var i = 0; i < 5; i ++)
+  	    insert_pair_collecting_row();
+
+    // when the columns are almost full, add content into the table.
+    // this method checks every 500ms to to increase the table size
 	setInterval(function() {
   	var all_rows = $(".nl2cmd-pair-row");
   	var blank_cell_count = 0;
@@ -85,7 +91,7 @@ $(document).ready(function(){
 
                     // TODO: deal with the communication to the server
                             $.ajax({
-                                  url: "/add-pairs",
+                                  url: "/add_pairs",
                                   data: {"pairs": JSON.stringify(collected_pairs)},
                                     success:  function(data, status) {
                                     console.log("yoo!" + data);
@@ -133,13 +139,24 @@ $(document).ready(function(){
           }]
 	    });
 	});
+
+
+	// mouse selection
+	$("#web-content-data").onmouseup = getSelectedText;
+    if (!$("#web-content-data").all) $("#web-content-data").captureEvents(Event.MOUSEUP);
 });
+
+function getSelectedText(e) {
+    selected_text = (document.all) ? document.selection.createRange().text :
+                    document.getSelection();
+    $("#nl2cmd-row-no-1 div .nl2cmd-cmd").val(selected_text);
+}
 
 function insert_pair_collecting_row() {
 	row_count ++;
 	$("#nl2cmd-pair-collect-table tbody").append(
   			'<tr class="nl2cmd-pair-row"><th scope="">'
-  			+ row_count 
+  			+ row_count
   			+ '</th><td id="' + "nl2cmd-row-no-" + row_count + '" class="nl2cmd-pair-td">'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span" id="basic-addon1">cmd</span>'
