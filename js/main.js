@@ -5,10 +5,12 @@ $(document).ready(function () {
       console.log(url);
       if (url === null) {
         alert("no URLs available!");
+        history.pushState({}, 'Title: search page', './search.html');
         window.location.replace("./collect_page.html?url=http://www.uwplse.org");
       } else {
         console.log(url)
         // similar behavior as an HTTP redirect
+        history.pushState({}, 'Title: search page', './search.html');
         window.location.replace("./collect_page.html?url=" + url);
       }
     });
