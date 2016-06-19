@@ -31,7 +31,7 @@ $(document).ready(function(){
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
-    		+'<div id="web-content-data" class="error_report" height="100%">'
+    		+'<div id="web-content-data-error" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
             +                                 'open the following link and view it in another tab.'
             + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
@@ -39,10 +39,7 @@ $(document).ready(function(){
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 
     $("#nl2cmd-new-tab-link").click(function() {
-        $("#nl2cmd-web-content-panel").hide()
-    });
-
-    $("#nl2cmd-new-tab-link").click(function() {
+        $("#nl2cmd-web-content-panel").hide();
         myLayout.close('east');
     });
 
@@ -100,7 +97,6 @@ $(document).ready(function(){
 	}, 500);
 
 	$("#nl2cmd-submit").click(function() {
-
         // spellchecker.check();
         being_submitted = true;
         var collected_pairs = [];
@@ -115,7 +111,7 @@ $(document).ready(function(){
           if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
             exists_orphan_pair = true;
 
-          var data_entry = {"cmd":cmd, "nl":text, url:"uwplse.org"};
+          var data_entry = {"cmd":cmd, "nl":text, url:page_url};
           collected_pairs.push(data_entry);
         }
 
@@ -141,7 +137,6 @@ $(document).ready(function(){
             label: 'Yes',
             cssClass: 'btn-primary',
             action: function(){
-              // TODO: deal with the communication to the server
               $.ajax({
                     url: "add-pairs",
                     data: {"pairs": JSON.stringify(collected_pairs)},
@@ -159,7 +154,7 @@ $(document).ready(function(){
             }
           }]
         });
-  });
+    });
 
 	$("#nl2cmd-report-nopair").click(function() {
 		console.log("nopair! " + page_url);
@@ -171,7 +166,6 @@ $(document).ready(function(){
               label: 'Yes',
               cssClass: 'btn-primary',
               action: function(){
-                // TODO: deal with the communication to the server
                 $.ajax({
                       url: "no_pairs",
                       data: {"url": page_url},
