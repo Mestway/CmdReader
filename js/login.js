@@ -23,6 +23,7 @@ $(document).ready(function () {
                 }]
             });
         });
+        return false;
     });
 
     $('#user-log-in').click(function() {
@@ -44,5 +45,6 @@ $(document).ready(function () {
                 });
            }
         });
+        return false;
     });
 });

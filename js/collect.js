@@ -65,6 +65,7 @@ $(document).ready(function(){
     $("#nl2cmd-new-tab-link").click(function() {
         // $("#nl2cmd-web-content-panel").hide();
         myLayout.sizePane('west', $('body').width());
+        return false;
     });
 
 
@@ -138,7 +139,7 @@ $(document).ready(function(){
               }]
             });
         }
-
+        return false;
     });
 
 	$("#nl2cmd-report-nopair").click(function() {
@@ -176,6 +177,7 @@ $(document).ready(function(){
               }
           }]
 	    });
+      return false;
 	 });
 
 	 /* --- textual input auto-resize --- */

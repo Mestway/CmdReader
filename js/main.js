@@ -28,10 +28,12 @@ $(document).ready(function () {
     if (search_query) {         // ignore empty search query
         start(search_query);
     }
+    return false;
   });
 
   $('#nl2cmd-auto-redirect').click(function(){
     start("RANDOM_SELECTION");
+    return false;
   });
 
 });
