@@ -21,7 +21,7 @@ $(document).ready(function(){
 		east__minSize: 200,
 		east__size:	"60%",
 		east__onresize_end: function () {
-    	$("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width())
+    	    $("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width())
     },
 	});
 
@@ -43,18 +43,6 @@ $(document).ready(function(){
         myLayout.close('east');
     });
 
-    // tries to set the page to
-    /* if (true) {
-		web_content_data.width($("#nl2cmd-web-content-panel").width());
-    } else {
-	   $("#nl2cmd-web-content-panel")
-      .html('<div id="web-content-data" class="error_report" height="100%">' 
-      	+ '<h1>We are sorry!!</h1>'
-        + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link in another browser tab to collect data.'
-        + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
-      	+ '</div>');
-	   }*/
-
 
 	// spell checking
 	var spellchecker = new $.SpellChecker('.nl2cmd-box nl2cmd-text', {
@@ -75,7 +63,7 @@ $(document).ready(function(){
         alert('There are no incorrectly spelt words!');
       });
 
-    for (var i = 0; i < 5; i ++)
+    for (var i = 0; i < 1; i ++)
 	    insert_pair_collecting_row();
 
     // when the columns are almost full, add content into the table.
@@ -127,33 +115,34 @@ $(document).ready(function(){
               }
             }]
           });
-          return;
+        } else {
+            BootstrapDialog.show({
+              message: "Are you sure to submit these pairs and move on to a new page?",
+              buttons: [
+              {
+                label: 'Yes',
+                cssClass: 'btn-primary',
+                action: function(){
+                  $.ajax({
+                        url: "add-pairs",
+                        data: {"pairs": JSON.stringify(collected_pairs)},
+                          success:  function(data, status) {
+                          console.log("yoo!" + data);
+                        }
+                      });
+                  window.location.replace("/search.html");
+                }
+              }, {
+                label: 'Close',
+                action: function(dialogItself){
+                    dialogItself.close();
+                    being_submitted = false;
+                }
+              }]
+            });
         }
 
-        BootstrapDialog.show({
-          message: "Are you sure to submit these pairs and move on to a new page?",
-          buttons: [
-          {
-            label: 'Yes',
-            cssClass: 'btn-primary',
-            action: function(){
-              $.ajax({
-                    url: "add-pairs",
-                    data: {"pairs": JSON.stringify(collected_pairs)},
-                      success:  function(data, status) {
-                      console.log("yoo!" + data);
-                    }
-                  });
-              window.location.replace("/search.html");
-            }
-          }, {
-            label: 'Close',
-            action: function(dialogItself){
-                dialogItself.close();
-                being_submitted = false;
-            }
-          }]
-        });
+        row_count --;
     });
 
 	$("#nl2cmd-report-nopair").click(function() {
@@ -182,6 +171,8 @@ $(document).ready(function(){
               }
           }]
 	    });
+
+	    row_count --;
 	 });
 });
 
