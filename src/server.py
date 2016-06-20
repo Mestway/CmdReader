@@ -14,6 +14,7 @@ import apiclient.errors as errors
 
 # local
 from db import DBConnection
+import util
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -60,7 +61,7 @@ def search(phrase):
 
     urls = []
     try:
-        for i in range(numResults // limit):
+        for i in range(util.divide_and_round_up(numResults, limit)):
             res = service.cse().list(
                 q=phrase.decode('utf-8') if type(phrase) is bytes else phrase,
                 cx=Search_Engine_ID,
