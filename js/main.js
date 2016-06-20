@@ -4,9 +4,9 @@ $(document).ready(function () {
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        alert("no URLs available!");
-        history.pushState({}, 'Title: search page', './search.html');
-        window.location.replace("./collect_page.html?url=http://www.uwplse.org");
+        alert("Search failed to retrieve any URLs for this query. Please try another one.");
+        // history.pushState({}, 'Title: search page', './search.html');
+        // window.location.replace("./collect_page.html?url=http://www.uwplse.org");
       } else {
         console.log(url)
         // similar behavior as an HTTP redirect
