@@ -41,8 +41,8 @@ $(document).ready(function () {
                         dialogItself.close();
                     }
                 }]
-            });
-            }
+                });
+           }
         });
     });
 });

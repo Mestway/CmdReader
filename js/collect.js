@@ -10,6 +10,10 @@ var being_submitted = false;
 
 $(document).ready(function(){
 
+    window.onbeforeunload = function() {
+        return "Your work will be lost.";
+    };
+
     /* --- Load External Webpage --- */
 	$.urlParam = function(name){
 		var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
@@ -22,7 +26,7 @@ $(document).ready(function(){
 	page_url = $.urlParam('url'); // name
 	console.log(page_url);
 
-    var default_layout_setting = {
+    var vertical_split_layout_setting = {
 		west__minSize: 100,
 		west__size:	"40%",
 		west__resizable: false,
@@ -37,26 +41,25 @@ $(document).ready(function(){
 		center__onresize_end: function () {
 		    if (west__isClosed) {
 		        $("#nl2cmd-web-content-panel").width($("body").width());
-		        $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 		    } else {
-		        $("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+		        $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
 		    }
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
     	}
     }
-
-	myLayout = $('body').layout(default_layout_setting);
+	myLayout = $('body').layout(vertical_split_layout_setting);
 
 	// inlining the web page to work on, if the page is not able to be display, 
 	// show the url and ask the user to collect data on the target page
 
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
-        .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
-    		+'<div id="web-content-data-error" class="error_report" height="100%">'
+        .html('<object id="web-content-data" width="100%" height="100%" data="' + page_url + '"/>')
+    		/* +'<div id="web-content-data-error" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
             +                                 'open the following link and view it in another tab.'
             + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
-      	    + '</div>');
+      	    + '</div>'); */
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 
     $("#nl2cmd-new-tab-link").click(function() {
@@ -173,7 +176,6 @@ $(document).ready(function(){
               }
           }]
 	    });
-
 	 });
 
 	 /* --- textual input auto-resize --- */
