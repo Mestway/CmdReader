@@ -26,8 +26,21 @@ $(document).ready(function(){
 		west__minSize: 100,
 		west__size:	"40%",
 		west__resizable: false,
+		west__onopen_end: function() {
+		    $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+		},
+		west__onclose_end: function() {
+		    $("#nl2cmd-web-content-panel").width($("body").width());
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+		},
 		center__onresize_end: function () {
-    	    $("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width())
+		    if (west__isClosed) {
+		        $("#nl2cmd-web-content-panel").width($("body").width());
+		        $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+		    } else {
+		        $("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+		    }
     	}
     }
 
@@ -163,6 +176,49 @@ $(document).ready(function(){
 
 	 });
 
+	 /* --- textual input auto-resize --- */
+	 var observe;
+     if (window.attachEvent) {
+        observe = function (element, event, handler) {
+            element.attachEvent('on'+event, handler);
+        };
+     }
+     else {
+        observe = function (element, event, handler) {
+            element.addEventListener(event, handler, false);
+        };
+     }
+     function init () {
+        var cmd = $(".nl2cmd-cmd");
+        var text = $(".nl2cmd-text");
+        function resize () {
+            cmd.style.height = 'auto';
+            cmd.style.height = cmd.scrollHeight+'px';
+            text.style.height = 'auto';
+            text.style.height = text.scrollHeight+'px';
+        }
+        /* 0-timeout to get the already changed text */
+        function delayedResize () {
+            window.setTimeout(resize, 0);
+        }
+        observe(cmd, 'change',  resize);
+        observe(cmd, 'cut',     delayedResize);
+        observe(cmd, 'paste',   delayedResize);
+        observe(cmd, 'drop',    delayedResize);
+        observe(cmd, 'keydown', delayedResize);
+        observe(text, 'change',  resize);
+        observe(text, 'cut',     delayedResize);
+        observe(text, 'paste',   delayedResize);
+        observe(text, 'drop',    delayedResize);
+        observe(text, 'keydown', delayedResize);
+
+        cmd.focus();
+        cmd.select();
+        text.focus();
+        text.select();
+        resize();
+     }
+
 	 /* --- Spell checking in textual input --- */
 	 //TODO: unfinished
 	var spellchecker = new $.SpellChecker('.nl2cmd-box nl2cmd-text', {
@@ -241,7 +297,7 @@ function insert_pair_collecting_row() {
   			+ '</th><td id="' + "nl2cmd-row-no-" + row_count + '" class="nl2cmd-pair-td">'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span" id="basic-addon1">cmd</span>'
-  			+ 	 '<input type="text" class="nl2cmd-box nl2cmd-cmd form-control" spellcheck="false" placeholder="Command" />'
+  			+ 	 '<textarea type="text" rows="1" class="nl2cmd-box nl2cmd-cmd form-control" spellcheck="false" placeholder="Command" />'
   			+ '</div>'
   			+ '<br/>'
   			+ '<div class="input-group">'
