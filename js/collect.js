@@ -69,27 +69,31 @@ $(document).ready(function(){
     // when the columns are almost full, add content into the table.
     // this method checks every 500ms to to increase the table size
 	setInterval(function() {
-  	var all_rows = $(".nl2cmd-pair-row");
-  	var blank_cell_count = 0;
+	if (!being_submitted) {
+        var all_rows = $(".nl2cmd-pair-row");
+        var blank_cell_count = 0;
 
-  	for (var i = 1; i <= row_count; i ++) {
-  		var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
-  		var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
+        for (var i = 1; i <= row_count; i ++) {
+            var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
+            var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
 
-  		if (cmd == "" || pair == "")
-  			blank_cell_count ++;
-  	}
+            if (cmd == "" || pair == "")
+                blank_cell_count ++;
+        }
 
-  	if (blank_cell_count == 0 && !being_submitted)
-  		insert_pair_collecting_row();
+        if (blank_cell_count == 0)
+            insert_pair_collecting_row();
+        }
 	}, 500);
 
 	$("#nl2cmd-submit").click(function() {
         // spellchecker.check();
         being_submitted = true;
+        row_count --;
+
         var collected_pairs = [];
         var exists_orphan_pair = false;
-            for (var i = 1; i <= row_count; i ++) {
+        for (var i = 1; i <= (row_count+1); i ++) {
           var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
           var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
 
@@ -142,12 +146,21 @@ $(document).ready(function(){
             });
         }
 
-        row_count --;
     });
 
 	$("#nl2cmd-report-nopair").click(function() {
 		console.log("nopair! " + page_url);
-	
+	    being_submitted = true;
+        row_count --;
+
+        for (var i = 1; i <= (row_count+1); i ++) {
+          var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
+          var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
+
+          if (cmd == "" && text == "")
+            $("#nl2cmd-row-tr-" + i).remove();
+        }
+
 		BootstrapDialog.show({
           message: "Are you sure there is no pair on this page and want to work on a new page?",
           buttons: [
@@ -168,11 +181,11 @@ $(document).ready(function(){
               label: 'Close',
               action: function(dialogItself){
                   dialogItself.close();
+                  being_submitted = false;
               }
           }]
 	    });
 
-	    row_count --;
 	 });
 });
 
