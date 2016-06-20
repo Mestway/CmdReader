@@ -216,4 +216,3 @@ class App(object):
 
 if __name__ == "__main__":
     cherrypy.quickstart(App(), config=config)
-    # search("find bash command")
