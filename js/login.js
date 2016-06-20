@@ -13,7 +13,7 @@ $(document).ready(function () {
                               }
             });
             BootstrapDialog.show({
-                message: "You username: " + username_prefix + user_id.toString(),
+                message: "Your username: " + username_prefix + user_id.toString(),
                 buttons: [{
                     label: "Got it",
                     cssClass: "btn-primary",
