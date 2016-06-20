@@ -1,12 +1,18 @@
 #!/usr/bin/env python
 
+# builtin
 import argparse
 import functools
 import json
 import os
+import sys
+
+# 3rd party
 import cherrypy
 from apiclient.discovery import build
 import apiclient.errors as errors
+
+# local
 from db import DBConnection
 
 # Root location where we can find resource files.
