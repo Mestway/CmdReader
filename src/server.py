@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import argparse
 import functools
 import json
 import os
@@ -222,4 +223,15 @@ class App(object):
         return cherrypy.lib.static.serve_file(os.path.join(ROOT, "login.html"))
 
 if __name__ == "__main__":
+
+    # read and parse cmdline args
+    parser = argparse.ArgumentParser(description="Data gathering server.")
+    parser.add_argument("-H", "--host", metavar="HOST_NAME", default="127.0.0.1", help="Host interface to bind to")
+    parser.add_argument("-p", "--port", metavar="PORT_NUM", default="8080", help="Port to run on")
+    args = parser.parse_args()
+
+    # Setup and start CherryPy
+    cherrypy.config.update({
+        "server.socket_host": args.host,
+        "server.socket_port": int(args.port) })
     cherrypy.quickstart(App(), config=config)

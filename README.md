@@ -23,6 +23,11 @@ In either case, you might prefer to run the server from a virtual environment:
 
 Stop the server with Ctrl+C.
 
+The server accepts a number of command-line arguments for deployment; for help,
+run
+
+    $ python src/server.py --help
+
 Important pages:
 
  - `/`: main entry point for users to start collecting data pairs
