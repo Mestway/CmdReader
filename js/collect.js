@@ -217,7 +217,7 @@ function redirect_to_next(dialog) {
     var query = "";
     // retrieve current search query
     $.getJSON("get_search_query", function(search_query) {
-        query = search_query;s
+        query = search_query;
     });
 
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
