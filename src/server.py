@@ -156,7 +156,14 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def get_search_phrase(self, user_id):
+        return self.search_phrase;
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def pick_url(self, user_id, search_phrase=None):
+        self.search_phrase = search_phrase
         with DBConnection() as db:
             # save search results
             if search_phrase and not db.already_searched(search_phrase):

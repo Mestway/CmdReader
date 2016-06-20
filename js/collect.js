@@ -103,7 +103,7 @@ $(document).ready(function(){
               {
                 label: 'Yes',
                 cssClass: 'btn-primary',
-                action: function(){
+                action: function(dialogItself){
                   $.ajax({
                         url: "add-pairs",
                         data: {"pairs": JSON.stringify(collected_pairs)},
@@ -111,8 +111,7 @@ $(document).ready(function(){
                           console.log("yoo!" + data);
                         }
                       });
-                  redirect_to_next()
-                  dialogItself.close();
+                  redirect_to_next(dialogItself)
                 }
               }, {
                 label: 'Close',
@@ -143,7 +142,7 @@ $(document).ready(function(){
           {
               label: 'Yes',
               cssClass: 'btn-primary',
-              action: function(){
+              action: function(dialogItself){
                 $.ajax({
                       url: "no_pairs",
                       data: {"url": page_url},
@@ -151,8 +150,7 @@ $(document).ready(function(){
                         console.log("Yea!" + data);
                       }
                 });
-                redirect_to_next();
-                dialogItself.close();
+                redirect_to_next(dialogItself);
               }
           }, {
               label: 'Close',
@@ -215,13 +213,21 @@ function collect_annotations() {
     return collected_pairs.length;
 }
 
-function redirect_to_next() {
+function redirect_to_next(dialog) {
+    var query = "";
+    // retrieve current search query
+    $.getJSON("get_search_query", function(search_query) {
+        query = search_query;s
+    });
+
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        alert("Congrats! You completed annotations of all webpages retrieved by the current search query.");
+        alert('Congrats! You completed annotations of all webpages retrieved by the current search query: '
+              + '"' + query + '".');
         window.location.href = "/search.html";
       } else {
+        dialog.close();
         window.location.href = "./collect_page.html?url=" + url;
       }
     });

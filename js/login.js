@@ -29,6 +29,7 @@ $(document).ready(function () {
         var username = $('#username').val();
         $.getJSON("user_login", {username: username}, function(login_success) {
             if (login_success) {
+                console.log("login_success");
                 window.location.href = "/search.html";
             } else {
                 BootstrapDialog.show({
