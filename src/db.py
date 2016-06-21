@@ -70,8 +70,7 @@ class DBConnection(object):
                              "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?",
                              (str(user_id),  str(user_id))):
             annotated_urls.append(url)
-        print("hello")
-        print(annotated_urls)
+        # print(annotated_urls)
         urls = []
         for url, count in c.execute("SELECT Urls.url, " +
                                     "count(InUse.url) as n FROM Urls " +
