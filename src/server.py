@@ -221,8 +221,14 @@ class App(object):
             res += "<h3>Pairs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
             for user, url, nl, cmd in db.pairs():
+                if type(url) is unicode:
+                    url = url.decode('utf-8')
+                if type(nl) is unicode:
+                    nl = nl.decode('utf-8')
+                if type(cmd) is unicode:
+                    cmd = cmd.decode('utf-8')
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                        user, url, nl.decode('utf-8'), cmd)
+                        user, url, nl, cmd)
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
