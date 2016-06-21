@@ -74,7 +74,7 @@ class DBConnection(object):
         if user_id:
             print("retrieve urls annotated by the current user")
             for url, _ in c.execute("SELECT url, user_id FROM NoPairs WHERE user_id = ? " +
-                "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?".format(user_id, user_id)):
+                "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?", (user_id, user_id)):
                 annotated_urls.add(url)
         print(annotated_urls)
         urls = []
