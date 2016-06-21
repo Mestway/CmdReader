@@ -70,12 +70,13 @@ class DBConnection(object):
 
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        annotated_urls = []
+        annotated_urls = set()
         if user_id:
+            print("retrieve urls annotated by the current user")
             for url, _ in c.execute("SELECT url, user_id FROM NoPairs WHERE user_id = ? " +
                              "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?",
                              (str(user_id),  str(user_id))):
-                annotated_urls.append(url)
+                annotated_urls.add(url)
         urls = []
         for url, count in c.execute("SELECT Urls.url, " +
                                     "count(InUse.url) as n FROM Urls " +
