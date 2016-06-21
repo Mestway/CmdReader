@@ -81,7 +81,6 @@ class DBConnection(object):
                             in url_leases if deadline > now and user != user_id ]
             for url, count in self.find_urls_with_less_responses_than():
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
-                lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))
                     return url

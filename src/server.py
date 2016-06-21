@@ -1,21 +1,41 @@
 #!/usr/bin/env python
 
+# builtin
+import argparse
 import functools
 import json
 import os
+import sys
+
+# 3rd party
 import cherrypy
 from apiclient.discovery import build
 import apiclient.errors as errors
+
+# local
 from db import DBConnection
+import util
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Load local site configuration (site_config.py).
+sys.path.append(ROOT)
+try:
+    import site_config
+except ImportError as e:
+    print("site_config.py was not found; see README.md")
+    sys.exit(1)
+for attr in ["admin_username", "admin_password", "google_api_key", "google_search_engine_id"]:
+    assert hasattr(site_config, attr), "site_config.py does not declare {}".format(attr)
+
 # Create sessions folder if it is missing
 try:
     os.makedirs(os.path.join(ROOT, "sessions"))
 except Exception as e:
     pass # no problem!
 
+# CherryPy config
 config = {
     "/": {
         "tools.sessions.on": True,
@@ -24,11 +44,11 @@ config = {
         "tools.sessions.timeout": 60 }, # in minutes
     "/search.html": {
         "tools.staticfile.on": True,
-        "tools.staticfile.filename": os.path.join(ROOT, "search.html")
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "search.html")
     },
     "/collect_page.html": {
         "tools.staticfile.on": True,
-        "tools.staticfile.filename": os.path.join(ROOT, "collect_page.html") },
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "collect_page.html") },
     "/cmd.ico": {
         "tools.staticfile.on": True,
         "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
@@ -47,19 +67,18 @@ config = {
 }
 
 def search(phrase):
-    Google_developer_key = "AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M"
-    service = build("customsearch", "v1", developerKey=Google_developer_key)
-    Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
+    service = build("customsearch", "v1",
+                    developerKey=site_config.google_api_key)
 
     numResults = 10         # TODO: decide this number later based on user experience
     limit = 10              # maximum number of search results returned per query
 
     urls = []
     try:
-        for i in xrange(numResults / limit):
+        for i in range(util.divide_and_round_up(numResults, limit)):
             res = service.cse().list(
-                q=phrase.decode('utf-8'),
-                cx=Search_Engine_ID,
+                q=phrase.decode('utf-8') if type(phrase) is bytes else phrase,
+                cx=site_config.google_search_engine_id,
                 start=str(i*limit+1)
             ).execute()
             for result in res[u'items']:
@@ -72,6 +91,7 @@ def search(phrase):
 
     return urls
 
+<<<<<<< HEAD
 def check_type(value, ty, value_name="value"):
     """
     Verify that the given value has the given type.
@@ -99,6 +119,8 @@ def check_type(value, ty, value_name="value"):
     else:
         raise Exception("unknown type spec {}".format(repr(ty)))
 
+=======
+>>>>>>> 41f189b030e86cc00ad8ec088bd9715b6f2ac7e8
 def user_id_required(f):
     @functools.wraps(f)
     def g(*args, **kwargs):
@@ -109,8 +131,7 @@ def user_id_required(f):
     return g
 
 def is_admin(username, password):
-    # TODO: real auth
-    return username == "admin" and password == "admin"
+    return username == site_config.admin_username and password == site_config.admin_password
 
 def parse_auth(value):
     parsed = cherrypy.lib.httpauth.parseAuthorization(value)
@@ -159,7 +180,14 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def get_search_phrase(self, user_id):
+        return self.search_phrase;
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def pick_url(self, user_id, search_phrase=None):
+        self.search_phrase = search_phrase
         with DBConnection() as db:
             # save search results
             if search_phrase and search_phrase != "RANDOM_SELECTION":
@@ -172,7 +200,7 @@ class App(object):
     @cherrypy.tools.json_out()
     def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
-        check_type(pairs, [{"url":unicode, "nl":unicode, "cmd":unicode}], value_name="pairs")
+        util.check_type(pairs, [{"url":str, "nl":str, "cmd":str}], value_name="pairs")
         with DBConnection() as db:
             db.add_pairs(user_id=user_id, pairs=pairs)
             return True
@@ -216,8 +244,18 @@ class App(object):
 
     @cherrypy.expose
     def index(self):
-        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "login.html"))
+        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "html", "login.html"))
 
 if __name__ == "__main__":
+
+    # read and parse cmdline args
+    parser = argparse.ArgumentParser(description="Data gathering server.")
+    parser.add_argument("-H", "--host", metavar="HOST_NAME", default="127.0.0.1", help="Host interface to bind to")
+    parser.add_argument("-p", "--port", metavar="PORT_NUM", default="8080", help="Port to run on")
+    args = parser.parse_args()
+
+    # Setup and start CherryPy
+    cherrypy.config.update({
+        "server.socket_host": args.host,
+        "server.socket_port": int(args.port) })
     cherrypy.quickstart(App(), config=config)
-    # search("find bash command")

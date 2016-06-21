@@ -13,7 +13,7 @@ $(document).ready(function () {
                               }
             });
             BootstrapDialog.show({
-                message: "You username: " + username_prefix + user_id.toString(),
+                message: "Your username: " + username_prefix + user_id.toString(),
                 buttons: [{
                     label: "Got it",
                     cssClass: "btn-primary",
@@ -23,13 +23,15 @@ $(document).ready(function () {
                 }]
             });
         });
+        return false;
     });
 
     $('#user-log-in').click(function() {
         var username = $('#username').val();
         $.getJSON("user_login", {username: username}, function(login_success) {
             if (login_success) {
-                window.location.replace("/search.html");
+                console.log("login_success");
+                window.location.href = "/search.html";
             } else {
                 BootstrapDialog.show({
                 message: "User " + username + " does not exist. Please make sure the username is correct.",
@@ -40,8 +42,9 @@ $(document).ready(function () {
                         dialogItself.close();
                     }
                 }]
-            });
-            }
+                });
+           }
         });
+        return false;
     });
 });

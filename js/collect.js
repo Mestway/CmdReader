@@ -1,11 +1,20 @@
 var myLayout;
-var row_count = 0;
+
 var page_url = "";
+
 var selected_text = "";
+
+var row_count = 0;
+var collected_pairs = [];
 var being_submitted = false;
 
 $(document).ready(function(){
 
+    window.onbeforeunload = function() {
+        return "Your work will be lost.";
+    };
+
+    /* --- Load External Webpage --- */
 	$.urlParam = function(name){
 		var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
 		if (results == null)
@@ -17,46 +26,205 @@ $(document).ready(function(){
 	page_url = $.urlParam('url'); // name
 	console.log(page_url);
 
-	myLayout = $('body').layout({
-		east__minSize: 200,
-		east__size:	"60%",
-		east__onresize_end: function () {
-    	$("#web-content-data").width($("body").width()-$("#nl2cmd-web-working-panel").width())
-    },
-	});
+    var vertical_split_layout_setting = {
+		west__minSize: 100,
+		west__size:	"40%",
+		west__resizable: false,
+		west__onopen_end: function() {
+		    $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+		},
+		west__onclose_end: function() {
+		    $("#nl2cmd-web-content-panel").width($("body").width());
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+		},
+		center__onresize_end: function () {
+		    if (west__isClosed) {
+		        $("#nl2cmd-web-content-panel").width($("body").width());
+		    } else {
+		        $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+		    }
+		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+    	}
+    }
+	myLayout = $('body').layout(vertical_split_layout_setting);
 
 	// inlining the web page to work on, if the page is not able to be display, 
 	// show the url and ask the user to collect data on the target page
 
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
-        .html('<object id="web-content-data" height="85%" data="' + page_url + '"/>'
-    		+'<div id="web-content-data-error" class="error_report" height="100%">'
+        .html('<object id="web-content-data" width="100%" height="100%" data="' + page_url + '"/>')
+    		/* +'<div id="web-content-data-error" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
             +                                 'open the following link and view it in another tab.'
             + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
-      	    + '</div>');
+      	    + '</div>'); */
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
 
     $("#nl2cmd-new-tab-link").click(function() {
-        $("#nl2cmd-web-content-panel").hide();
-        myLayout.close('east');
+        // $("#nl2cmd-web-content-panel").hide();
+        myLayout.sizePane('west', $('body').width());
+        return false;
     });
 
-    // tries to set the page to
-    /* if (true) {
-		web_content_data.width($("#nl2cmd-web-content-panel").width());
-    } else {
-	   $("#nl2cmd-web-content-panel")
-      .html('<div id="web-content-data" class="error_report" height="100%">' 
-      	+ '<h1>We are sorry!!</h1>'
-        + '<p class="lead">We are unable to inline the page in this working panel, please copy and open the following link in another browser tab to collect data.'
-        + '<br/><a class="lead" href="'+ page_url + '">' + page_url + '</a></p>'
-      	+ '</div>');
-	   }*/
 
+    /* --- Input Panel Management ---*/
+    for (var i = 0; i < 1; i ++)
+	    insert_pair_collecting_row();
 
-	// spell checking
+    // when the columns are almost full, add content into the table.
+    // this method checks every 500ms to to increase the table size
+	setInterval(function() {
+	if (!being_submitted) {
+        var all_rows = $(".nl2cmd-pair-row");
+        var blank_cell_count = 0;
+
+        for (var i = 1; i <= row_count; i ++) {
+            var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
+            var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
+
+            if (cmd == "" || pair == "")
+                blank_cell_count ++;
+        }
+
+        if (blank_cell_count == 0)
+            insert_pair_collecting_row();
+        }
+	}, 500);
+
+	$("#nl2cmd-submit").click(function() {
+        // spellchecker.check();
+        being_submitted = true;
+        remove_row(row_count);
+
+        var num_annotations = collect_annotations();
+        var exist_orphan_pair = (num_annotations == -1);
+
+        if (exist_orphan_pair) {
+          BootstrapDialog.show({
+            message: "There exist incomplete text/cmd pairs, please review you submission.",
+            buttons: [
+            {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+                  being_submitted = false;
+              }
+            }]
+          });
+        } else {
+            BootstrapDialog.show({
+              message: "Are you sure to submit these pairs and move on to a new page?",
+              buttons: [
+              {
+                label: 'Yes',
+                cssClass: 'btn-primary',
+                action: function(dialogItself){
+                  $.ajax({
+                        url: "add-pairs",
+                        data: {"pairs": JSON.stringify(collected_pairs)},
+                          success:  function(data, status) {
+                          console.log("yoo!" + data);
+                        }
+                      });
+                  redirect_to_next(dialogItself)
+                }
+              }, {
+                label: 'Close',
+                action: function(dialogItself){
+                    being_submitted = false;
+                    dialogItself.close();
+                }
+              }]
+            });
+        }
+        return false;
+    });
+
+	$("#nl2cmd-report-nopair").click(function() {
+		console.log("nopair! " + page_url);
+	    being_submitted = true;
+        remove_row(row_count);
+
+        var num_annotations = collect_annotations();
+        var no_pair_warning = "Are you sure there is no pair on this page and want to work on a new page?";
+        if (num_annotations != 0) {
+            no_pair_warning = 'You have chose the "No pair" option, anything you put in the collection entries will '
+                              + 'be discarded. Still want to proceed to a new page?';
+        }
+		BootstrapDialog.show({
+          message: no_pair_warning,
+          buttons: [
+          {
+              label: 'Yes',
+              cssClass: 'btn-primary',
+              action: function(dialogItself){
+                $.ajax({
+                      url: "no_pairs",
+                      data: {"url": page_url},
+                      success:  function(data, status) {
+                        console.log("Yea!" + data);
+                      }
+                });
+                redirect_to_next(dialogItself);
+              }
+          }, {
+              label: 'Close',
+              action: function(dialogItself){
+                  being_submitted = false;
+                  dialogItself.close();
+              }
+          }]
+	    });
+      return false;
+	 });
+
+	 /* --- textual input auto-resize --- */
+	 var observe;
+     if (window.attachEvent) {
+        observe = function (element, event, handler) {
+            element.attachEvent('on'+event, handler);
+        };
+     }
+     else {
+        observe = function (element, event, handler) {
+            element.addEventListener(event, handler, false);
+        };
+     }
+     function init () {
+        var cmd = $(".nl2cmd-cmd");
+        var text = $(".nl2cmd-text");
+        function resize () {
+            cmd.style.height = 'auto';
+            cmd.style.height = cmd.scrollHeight+'px';
+            text.style.height = 'auto';
+            text.style.height = text.scrollHeight+'px';
+        }
+        /* 0-timeout to get the already changed text */
+        function delayedResize () {
+            window.setTimeout(resize, 0);
+        }
+        observe(cmd, 'change',  resize);
+        observe(cmd, 'cut',     delayedResize);
+        observe(cmd, 'paste',   delayedResize);
+        observe(cmd, 'drop',    delayedResize);
+        observe(cmd, 'keydown', delayedResize);
+        observe(text, 'change',  resize);
+        observe(text, 'cut',     delayedResize);
+        observe(text, 'paste',   delayedResize);
+        observe(text, 'drop',    delayedResize);
+        observe(text, 'keydown', delayedResize);
+
+        cmd.focus();
+        cmd.select();
+        text.focus();
+        text.select();
+        resize();
+     }
+
+	 /* --- Spell checking in textual input --- */
+	 //TODO: unfinished
 	var spellchecker = new $.SpellChecker('.nl2cmd-box nl2cmd-text', {
         lang: 'en',
         parser: 'html',
@@ -75,120 +243,54 @@ $(document).ready(function(){
         alert('There are no incorrectly spelt words!');
       });
 
-    for (var i = 0; i < 5; i ++)
-	    insert_pair_collecting_row();
+      /* --- Select text with mouse --- */
+      //TODO: not implemented
+});
 
-    // when the columns are almost full, add content into the table.
-    // this method checks every 500ms to to increase the table size
-	setInterval(function() {
-  	var all_rows = $(".nl2cmd-pair-row");
-  	var blank_cell_count = 0;
+function remove_row(i) {
+    var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
+    var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
 
-  	for (var i = 1; i <= row_count; i ++) {
-  		var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
-  		var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
+    if (cmd == "" && text == "") {
+        $("#nl2cmd-row-tr-" + i).remove();
+        row_count --;
+    }
+}
 
-  		if (cmd == "" || pair == "")
-  			blank_cell_count ++;
-  	}
-
-  	if (blank_cell_count == 0 && !being_submitted)
-  		insert_pair_collecting_row();
-	}, 500);
-
-	$("#nl2cmd-submit").click(function() {
-        // spellchecker.check();
-        being_submitted = true;
-        var collected_pairs = [];
-        var exists_orphan_pair = false;
-            for (var i = 1; i <= row_count; i ++) {
+function collect_annotations() {
+    collected_pairs = [];
+    for (var i = 1; i <= row_count; i ++) {
           var cmd = $("#nl2cmd-row-no-" + i + " div .nl2cmd-cmd").val();
           var text = $("#nl2cmd-row-no-" + i + " div .nl2cmd-text").val();
 
-          if (cmd == "" && text == "")
-            $("#nl2cmd-row-tr-" + i).remove();
+          if ((cmd == "" && text != "" )|| (cmd != "" && text == "")) {
+            return -1;
+          } else {
+            var data_entry = {"cmd":cmd, "nl":text, url:page_url};
+            collected_pairs.push(data_entry);
+          }
+    }
+    return collected_pairs.length;
+}
 
-          if ((cmd == "" && text != "" )|| (cmd != "" && text == ""))
-            exists_orphan_pair = true;
-
-          var data_entry = {"cmd":cmd, "nl":text, url:page_url};
-          collected_pairs.push(data_entry);
-        }
-
-        if (exists_orphan_pair) {
-          BootstrapDialog.show({
-            message: "There exist incomplete text/cmd pairs, please review you submission.",
-            buttons: [
-            {
-              label: 'Close',
-              action: function(dialogItself){
-                  dialogItself.close();
-                  being_submitted = false;
-              }
-            }]
-          });
-          return;
-        }
-
-        BootstrapDialog.show({
-          message: "Are you sure to submit these pairs and move on to a new page?",
-          buttons: [
-          {
-            label: 'Yes',
-            cssClass: 'btn-primary',
-            action: function(){
-              $.ajax({
-                    url: "add-pairs",
-                    data: {"pairs": JSON.stringify(collected_pairs)},
-                      success:  function(data, status) {
-                      console.log("yoo!" + data);
-                    }
-                  });
-              window.location.replace("/search.html");
-            }
-          }, {
-            label: 'Close',
-            action: function(dialogItself){
-                dialogItself.close();
-                being_submitted = false;
-            }
-          }]
-        });
+function redirect_to_next(dialog) {
+    var query = "";
+    // retrieve current search query
+    $.getJSON("get_search_query", function(search_query) {
+        query = search_query;
     });
 
-	$("#nl2cmd-report-nopair").click(function() {
-		console.log("nopair! " + page_url);
-	
-		BootstrapDialog.show({
-          message: "Are you sure there is no pair on this page and want to work on a new page?",
-          buttons: [
-          {
-              label: 'Yes',
-              cssClass: 'btn-primary',
-              action: function(){
-                $.ajax({
-                      url: "no_pairs",
-                      data: {"url": page_url},
-                      success:  function(data, status) {
-                        console.log("Yea!" + data);
-                      }
-                    });
-                    window.location.replace("/search.html");
-              }
-          }, {
-              label: 'Close',
-              action: function(dialogItself){
-                  dialogItself.close();
-              }
-          }]
-	    });
-	 });
-});
-
-function getSelectedText(e) {
-    selected_text = (document.all) ? document.selection.createRange().text :
-                    document.getSelection();
-    $("#nl2cmd-row-no-1 div .nl2cmd-cmd").val(selected_text);
+    $.getJSON("pick_url", {search_phrase: query}, function(url) {
+      console.log(url);
+      if (url === null) {
+        alert('Congrats! You completed annotations of all webpages retrieved by the current search query: '
+              + '"' + query + '".');
+        window.location.href = "/search.html";
+      } else {
+        dialog.close();
+        window.location.href = "./collect_page.html?url=" + url;
+      }
+    });
 }
 
 function insert_pair_collecting_row() {
@@ -199,7 +301,7 @@ function insert_pair_collecting_row() {
   			+ '</th><td id="' + "nl2cmd-row-no-" + row_count + '" class="nl2cmd-pair-td">'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span" id="basic-addon1">cmd</span>'
-  			+ 	 '<input type="text" class="nl2cmd-box nl2cmd-cmd form-control" spellcheck="false" placeholder="Command" />'
+  			+ 	 '<textarea type="text" rows="1" class="nl2cmd-box nl2cmd-cmd form-control" spellcheck="false" placeholder="Command" />'
   			+ '</div>'
   			+ '<br/>'
   			+ '<div class="input-group">'
@@ -209,4 +311,10 @@ function insert_pair_collecting_row() {
   			+ '</td></tr>');    // default html textarea spellcheck disabled
 
   	$("").append()
+}
+
+function getSelectedText(e) {
+    selected_text = (document.all) ? document.selection.createRange().text :
+                    document.getSelection();
+    $("#nl2cmd-row-no-1 div .nl2cmd-cmd").val(selected_text);
 }
