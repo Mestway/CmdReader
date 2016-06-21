@@ -226,7 +226,7 @@ class App(object):
                 if type(nl) is unicode:
                     nl = nl.decode('utf-8')
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                        user, url, nl, cmd)
+                        user, url, nl, cmd.encode('utf-8'))
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
