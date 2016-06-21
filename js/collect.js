@@ -68,12 +68,12 @@ $(document).ready(function(){
     $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
     		+ '<div id="web-content-data-error" class="error_report" height="100%">'
-            + '<p class="lead" id="error_info">If the page is not successfully loaded,'
+            + '<p class="lead" id="error_info">If the page is not successfully loaded, '
             +                                 'click '
             + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">'
             + 'here '
             + '</a>'
-            + 'and view it in another tab.'
+            + 'and view it in another tab. '
             + 'Otherwise, you may '
             + '<a id="hide-error-message">'
             + 'hide this message'
@@ -321,7 +321,7 @@ function redirect_to_next(dialog) {
         window.location.href = "/search.html";
       } else {
         dialog.close();
-        window.location.href = "./collect_page.html?url=" + url;
+        window.location.replace("./collect_page.html?url=" + url);
       }
     });
 
