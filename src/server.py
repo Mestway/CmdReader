@@ -18,12 +18,24 @@ import util
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+
+# Load local site configuration (site_config.py).
+sys.path.append(ROOT)
+try:
+    import site_config
+except ImportError as e:
+    print("site_config.py was not found; see README.md")
+    sys.exit(1)
+for attr in ["admin_username", "admin_password", "google_api_key", "google_search_engine_id"]:
+    assert hasattr(site_config, attr), "site_config.py does not declare {}".format(attr)
+
 # Create sessions folder if it is missing
 try:
     os.makedirs(os.path.join(ROOT, "sessions"))
 except Exception as e:
     pass # no problem!
 
+# CherryPy config
 config = {
     "/": {
         "tools.sessions.on": True,
@@ -53,8 +65,7 @@ config = {
 
 def search(phrase):
     service = build("customsearch", "v1",
-                    developerKey="AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M")
-    Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
+                    developerKey=site_config.google_api_key)
 
     numResults = 10         # TODO: decide this number later based on user experience
     limit = 10              # maximum number of search results returned per query
@@ -64,7 +75,7 @@ def search(phrase):
         for i in range(util.divide_and_round_up(numResults, limit)):
             res = service.cse().list(
                 q=phrase.decode('utf-8') if type(phrase) is bytes else phrase,
-                cx=Search_Engine_ID,
+                cx=site_config.google_search_engine_id,
                 start=str(i*limit+1)
             ).execute()
             for result in res[u'items']:
@@ -114,8 +125,7 @@ def user_id_required(f):
     return g
 
 def is_admin(username, password):
-    # TODO: real auth
-    return username == "admin" and password == "admin"
+    return username == site_config.admin_username and password == site_config.admin_password
 
 def parse_auth(value):
     parsed = cherrypy.lib.httpauth.parseAuthorization(value)

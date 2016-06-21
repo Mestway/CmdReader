@@ -17,6 +17,12 @@ In either case, you might prefer to run the server from a virtual environment:
     $ . envdir/bin/activate
     $ pip install -r requirements.txt
 
+Finally you will need to configure a few server parameters:
+
+    $ cp site_config.py.sample site_config.py
+
+Then modify `site_config.py` appropriately.
+
 ### Run
 
     $ python src/server.py
