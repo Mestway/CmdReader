@@ -6,11 +6,12 @@
 
        <!-- Bootstrap core CSS -->
        <link href="css/bootstrap.min.css" rel="stylesheet">
+       <link href="css/jquery-ui.css" rel="stylesheet">
        <link href="css/login.css" rel="stylesheet">
 
-       <script src="js/jquery-3.0.0.js"></script>
-       <script src="js/jquery-ui.js"></script>
+       <script src="js/jquery-1.11.3.js"></script>
        <script src="js/jquery.layout.js"></script>
+       <script src="js/jquery-ui.js"></script>
 
        <script src="js/modal.js"> </script>
        <script src="js/bootstrap-dialog.js"></script>
@@ -45,53 +46,29 @@
       <br/><button id="user-log-in" class="btn btn-primary btn-block" type="submit">Start Workflow</button>
       <br/>
     </form>
-      <a id="create-new-user" style="cursor:pointer">Click here to get an access code if you don't have one!</a>
+      <a id="new-user-registration">Click here to get an access code if you don't have one!</a>
     </div>
 
     <!-- Modal -->
-    <div class="modal fade" id="myModalNorm" tabindex="-1" role="dialog"
-         aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal fade" id="myModalNorm" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
+
                 <!-- Modal Header -->
-                <div class="modal-header">
+                <!-- <div class="modal-header">
                     <button type="button" class="close"
                        data-dismiss="modal">
                            <span aria-hidden="true">&times;</span>
                            <span class="sr-only">Close</span>
                     </button>
                     <h4 class="modal-title" id="myModalLabel">
-                        Modal title
+                        Tell us something about yourself:
                     </h4>
-                </div>
+                </div> -->
 
-                <!-- Modal Body -->
-                <div class="modal-body">
-
-                    <form role="form">
-                      <div class="form-group">
-                        <label for="exampleInputEmail1">First Name</label>
-                          <input type="email" class="form-control"
-                          id="exampleInputEmail1" placeholder="Enter email"/>
-                      </div>
-                      <div class="form-group">
-                        <label for="exampleInputPassword1">Last Name</label>
-                          <input type="password" class="form-control"
-                              id="exampleInputPassword1" placeholder="Password"/>
-                      </div>
-                      <div class="checkbox">
-                        <label>
-                            <input type="checkbox"/> Check me out
-                        </label>
-                      </div>
-                      <button type="submit" class="btn btn-default">Submit</button>
-                    </form>
-
-
-                </div>
 
                 <!-- Modal Footer -->
-                <div class="modal-footer">
+                <!-- <div class="modal-footer">
                     <button type="button" class="btn btn-default"
                             data-dismiss="modal">
                                 Close
@@ -99,7 +76,7 @@
                     <button type="button" class="btn btn-primary">
                         Save changes
                     </button>
-                </div>
+                </div> -->
             </div>
         </div>
     </div>

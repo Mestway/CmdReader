@@ -130,14 +130,17 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def register_user(self, user_id):
+    def register_user(self, user_id, first_name, last_name):
+        print("hey")
         with DBConnection() as db:
-            db.register_user(user_id=user_id)
+            db.register_user(user_id, first_name, last_name)
             return True
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def user_login(self, username):
+        if not username:
+            return False
         # Username format: nl2cmdXX
         user_id = int(username[6:])
         with DBConnection() as db:
@@ -219,6 +222,12 @@ class App(object):
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
             for user, url, nl, cmd in db.pairs():
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, nl, cmd)
+            res += "</tbody></table>"
+
+            res += "<h3>Registered Users</h3>"
+            res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th></tr></thead><tbody>"
+            for user, fname, lname in db.users():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, fname, lname)
             res += "</tbody></table>"
 
         res += "</html>"

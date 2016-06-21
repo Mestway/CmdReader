@@ -22,7 +22,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT)")
 
         self.conn.commit()
 
@@ -63,6 +63,11 @@ class DBConnection(object):
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
             yield (user, url, nl, cmd)
 
+    def users(self):
+        c = self.conn.cursor()
+        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
+            yield (user, fname, lname)
+
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
         annotated_urls = []
@@ -71,7 +76,6 @@ class DBConnection(object):
                              "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?",
                              (str(user_id),  str(user_id))):
                 annotated_urls.append(url)
-        # print(annotated_urls)
         urls = []
         for url, count in c.execute("SELECT Urls.url, " +
                                     "count(InUse.url) as n FROM Urls " +
@@ -102,9 +106,10 @@ class DBConnection(object):
         num_users = len(c.execute("SELECT * FROM Users").fetchall())
         return (num_users + 1)
 
-    def register_user(self, user_id):
+    def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
-        c.execute('INSERT INTO Users (user_id) VALUES (?)', (user_id,))
+        c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',
+                  (user_id, first_name, last_name))
         self.conn.commit()
 
     def user_exist(self, user_id):
