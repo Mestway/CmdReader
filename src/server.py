@@ -153,7 +153,7 @@ class App(object):
     @user_id_required
     @cherrypy.tools.json_out()
     def get_current_user(self, user_id):
-        print(user_id)
+        # print(user_id)
         return user_id;
 
     @cherrypy.expose
