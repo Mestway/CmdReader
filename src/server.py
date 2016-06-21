@@ -182,7 +182,7 @@ class App(object):
     @cherrypy.tools.json_out()
     def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
-        util.check_type(pairs, [{"url":str, "nl":str, "cmd":str}], value_name="pairs")
+        util.check_type(pairs, [{"url":unicode, "nl":unicode, "cmd":unicode}], value_name="pairs")
         with DBConnection() as db:
             db.add_pairs(user_id=user_id, pairs=pairs)
             return True

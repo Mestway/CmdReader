@@ -63,15 +63,25 @@ class DBConnection(object):
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
             yield (user, url, nl, cmd)
 
-    def find_urls_with_less_responses_than(self, n=MAX_RESPONSES):
+    def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
+        annotated_urls = []
+        for url, _ in c.execute("SELECT url, user_id FROM NoPairs WHERE user_id = ? " +
+                             "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?",
+                             (str(user_id),  str(user_id))):
+            annotated_urls.append(url)
+        print("hello")
+        print(annotated_urls)
+        urls = []
         for url, count in c.execute("SELECT Urls.url, " +
                                     "count(InUse.url) as n FROM Urls " +
                                     "LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) " +
                                     "AS InUse ON Urls.url = InUse.url " +
                                     "GROUP BY Urls.url HAVING n < ?", (n,)):
-            yield (url, count)
+            if not url in annotated_urls:
+                urls.append((url, count))
+        return urls
 
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
@@ -79,7 +89,7 @@ class DBConnection(object):
         with url_lease_lock:
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
-            for url, count in self.find_urls_with_less_responses_than():
+            for url, count in self.find_urls_with_less_responses_than(user_id):
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))

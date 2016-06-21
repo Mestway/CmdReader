@@ -23,7 +23,7 @@ def check_type(value, ty, value_name="value"):
         {k:ty,...}                - value must be a dict with keys of the given types
     """
 
-    if ty in [str, int, float, bytes]:
+    if ty in [str, unicode, int, float, bytes]:
         assert type(value) is ty, "{} has type {}, not {}".format(value_name, type(value), ty)
     elif type(ty) is list:
         assert type(value) is list, "{} has type {}, not {}".format(value_name, type(value), dict)

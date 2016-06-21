@@ -67,19 +67,27 @@ $(document).ready(function(){
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
-    		+'<div id="web-content-data-error" class="error_report" height="100%">'
+    		+ '<div id="web-content-data-error" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
             +                                 'click '
             + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">'
             + 'here '
             + '</a>'
             + 'and view it in another tab.'
-      	    + '</div>');
+            + 'Otherwise, you may '
+            + '<a id="hide-error-message">'
+            + 'hide this message'
+            + '</a>'
+            + '.'
+      	    + '</div>' );
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+    $("#hide-error-message").click(function() {
+        $('#web-content-data').height($('body').height());
+        $('#web-content-data-error').hide();
+    });
     $("#nl2cmd-new-tab-link").click(function() {
         myLayout.sizePane('west', $('body').width());
-        // return false;
     });
 
 
