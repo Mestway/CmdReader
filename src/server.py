@@ -212,7 +212,7 @@ class App(object):
 
         with DBConnection() as db:
             res += "<h3>URLs in queue</h3>"
-            for url, _ in db.find_urls_with_less_responses_than():
+            for url, _ in db.find_urls_with_less_responses_than(None):
                 res += url + "<br>"
 
             res += "<h3>Pairs</h3>"
