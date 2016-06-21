@@ -52,7 +52,7 @@
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
             <li><a>Step 2: collect all pairs of "bash command + natural language description" you found on the webpage.</a></li>
-            <li><a href="/">Log Out</a></li>
+            <li class="user-log-out"><a href="/">Log Out</a></li>
           </ul>
         </div><!--/.nav-collapse -->
       </div>
@@ -72,6 +72,13 @@
       </div>
     </div>
 
-    <div class="ui-layout-center" id="nl2cmd-web-content-panel"></div>
+    <div class="ui-layout-center" id="nl2cmd-web-content-panel">
+      <object id="web-content-data" height="100%"/>
+      <!-- <div id="web-content-data-error" class="error_report" height="100%">
+          <p class="lead" id="error_info">If the page is not successfully loaded,
+            click <a class="lead" id="nl2cmd-new-tab-link" href="" target="_blank">here</a> and view it in another tab.'
+          </p>
+      </div> -->
+    </div>
   </body>
 </html>

@@ -91,36 +91,6 @@ def search(phrase):
 
     return urls
 
-<<<<<<< HEAD
-def check_type(value, ty, value_name="value"):
-    """
-    Verify that the given value has the given type.
-        value      - the value to check
-        ty         - the type to check for
-        value_name - the name to print for debugging
-
-    The type ty can be:
-        str, int, float, or bytes - value must have this type
-        [ty]                      - value must be a list of ty
-        {k:ty,...}                - value must be a dict with keys of the given types
-    """
-
-    if ty in [str, int, float, bytes, unicode]:
-        assert type(value) is ty, "{} has type {}, not {}".format(value_name, type(value), ty)
-    elif type(ty) is list:
-        assert type(value) is list, "{} has type {}, not {}".format(value_name, type(value), dict)
-        for i in range(len(value)):
-            check_type(value[i], ty[0], "{}[{}]".format(value_name, i))
-    elif type(ty) is dict:
-        assert type(value) is dict, "{} has type {}, not {}".format(value_name, type(value), dict)
-        for k, t in ty.items():
-            assert k in value, "{} is missing key {}".format(value_name, repr(k))
-            check_type(value[k], t, "{}[{}]".format(value_name, repr(k)))
-    else:
-        raise Exception("unknown type spec {}".format(repr(ty)))
-
-=======
->>>>>>> 41f189b030e86cc00ad8ec088bd9715b6f2ac7e8
 def user_id_required(f):
     @functools.wraps(f)
     def g(*args, **kwargs):
@@ -176,6 +146,18 @@ class App(object):
                 return True
             else:
                 return False
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def get_current_user(self, user_id):
+        print(user_id)
+        return user_id;
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def logout_user(self):
+        cherrypy.session["user_id"] = None
+        return True
 
     @cherrypy.expose
     @user_id_required

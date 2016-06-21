@@ -6,12 +6,24 @@ var selected_text = "";
 
 var row_count = 0;
 var collected_pairs = [];
+var safely_redirect = false;
 var being_submitted = false;
+
+/* --- The page content is only displayable to logged-in users --- */
+$.getJSON("get_current_user", function(uid) {
+    var user_id = uid;
+    console.log(user_id);
+    if (user_id === null) {
+        safely_redirect = true;
+        window.location.replace("/");
+    }
+});
 
 $(document).ready(function(){
 
     window.onbeforeunload = function() {
-        return "Your work will be lost.";
+        if (!safely_redirect)
+            return "Your work will be lost.";
     };
 
     /* --- Load External Webpage --- */
@@ -54,18 +66,20 @@ $(document).ready(function(){
 
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
-        .html('<object id="web-content-data" width="100%" height="100%" data="' + page_url + '"/>')
-    		/* +'<div id="web-content-data-error" class="error_report" height="100%">'
+        .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
+    		+'<div id="web-content-data-error" class="error_report" height="100%">'
             + '<p class="lead" id="error_info">If the page is not successfully loaded,'
-            +                                 'open the following link and view it in another tab.'
-            + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">' + page_url + '</a></p>'
-      	    + '</div>'); */
-    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+            +                                 'click '
+            + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">'
+            + 'here '
+            + '</a>'
+            + 'and view it in another tab.'
+      	    + '</div>');
 
+    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
     $("#nl2cmd-new-tab-link").click(function() {
-        // $("#nl2cmd-web-content-panel").hide();
         myLayout.sizePane('west', $('body').width());
-        return false;
+        // return false;
     });
 
 
@@ -245,6 +259,17 @@ $(document).ready(function(){
 
       /* --- Select text with mouse --- */
       //TODO: not implemented
+
+      /* --- User log out --- */
+      $('#user-log-out').click(function() {
+        $.ajax({url: "logout_user",
+             data: {"user_id": user_id},
+             success:  function(data, status) {
+                  console.log("User " + username_prefix + user_id.toString()
+                                + " successfully log out.");
+                  }
+        });
+    });
 });
 
 function remove_row(i) {
@@ -291,6 +316,8 @@ function redirect_to_next(dialog) {
         window.location.href = "./collect_page.html?url=" + url;
       }
     });
+
+    safely_redirect = true;
 }
 
 function insert_pair_collecting_row() {
