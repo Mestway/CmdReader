@@ -41,11 +41,14 @@ config = {
     "/fonts": {
         "tools.staticdir.on": True,
         "tools.staticdir.dir": os.path.join(ROOT, "fonts") },
+    "/php": {
+        "tools.staticdir.on": True,
+        "tools.staticdir.dir": os.path.join(ROOT, "php") },
 }
 
 def search(phrase):
-    service = build("customsearch", "v1",
-                    developerKey="AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M")
+    Google_developer_key = "AIzaSyA049kTJjSL8DotsLVf4rSKdc0wuVrsV0M"
+    service = build("customsearch", "v1", developerKey=Google_developer_key)
     Search_Engine_ID = "001089351014153505670:7jbzwugbvrc"
 
     numResults = 10         # TODO: decide this number later based on user experience
@@ -82,7 +85,7 @@ def check_type(value, ty, value_name="value"):
         {k:ty,...}                - value must be a dict with keys of the given types
     """
 
-    if ty in [str, int, float, bytes]:
+    if ty in [str, int, float, bytes, unicode]:
         assert type(value) is ty, "{} has type {}, not {}".format(value_name, type(value), ty)
     elif type(ty) is list:
         assert type(value) is list, "{} has type {}, not {}".format(value_name, type(value), dict)
@@ -159,8 +162,9 @@ class App(object):
     def pick_url(self, user_id, search_phrase=None):
         with DBConnection() as db:
             # save search results
-            if search_phrase and not db.already_searched(search_phrase):
-                db.add_urls(search_phrase, search(search_phrase))
+            if search_phrase and search_phrase != "RANDOM_SELECTION":
+                if not db.already_searched(search_phrase):
+                    db.add_urls(search_phrase, search(search_phrase))
             return db.lease_url(user_id=user_id)
 
     @cherrypy.expose
@@ -168,7 +172,7 @@ class App(object):
     @cherrypy.tools.json_out()
     def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
-        check_type(pairs, [{"url":str, "nl":str, "cmd":str}], value_name="pairs")
+        check_type(pairs, [{"url":unicode, "nl":unicode, "cmd":unicode}], value_name="pairs")
         with DBConnection() as db:
             db.add_pairs(user_id=user_id, pairs=pairs)
             return True
@@ -203,7 +207,7 @@ class App(object):
 
             res += "<h3>Pairs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
-            for url, user, nl, cmd in db.pairs():
+            for user, url, nl, cmd in db.pairs():
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, url, nl, cmd)
             res += "</tbody></table>"
 
