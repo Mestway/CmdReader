@@ -222,7 +222,7 @@ class App(object):
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
             for user, url, nl, cmd in db.pairs():
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                        user, url.decode('utf-8'), nl.decode('utf-8'), cmd.decode('utf-8'))
+                        user, url.encode('utf-8'), nl.encode('utf-8'), cmd.encode('utf-8'))
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
