@@ -44,11 +44,11 @@ config = {
         "tools.sessions.timeout": 60 }, # in minutes
     "/search.html": {
         "tools.staticfile.on": True,
-        "tools.staticfile.filename": os.path.join(ROOT, "search.html")
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "search.html")
     },
     "/collect_page.html": {
         "tools.staticfile.on": True,
-        "tools.staticfile.filename": os.path.join(ROOT, "collect_page.html") },
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "collect_page.html") },
     "/cmd.ico": {
         "tools.staticfile.on": True,
         "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
@@ -237,7 +237,7 @@ class App(object):
 
     @cherrypy.expose
     def index(self):
-        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "login.html"))
+        return cherrypy.lib.static.serve_file(os.path.join(ROOT, "html", "login.html"))
 
 if __name__ == "__main__":
 
