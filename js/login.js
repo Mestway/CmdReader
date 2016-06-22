@@ -4,7 +4,7 @@ $(document).ready(function () {
 
     $('#new-user-registration').click(function() {
         BootstrapDialog.show({
-            title: "Tell us a bit more about yourself:",
+            title: "Please tell us a bit more about yourself:",
             message: $('<div class="modal-body">'
                       +  '<form role="form">'
                       + '<div class="form-group">'
@@ -42,7 +42,7 @@ $(document).ready(function () {
                             // confirm
                             BootstrapDialog.show({
                                 title: "Login Information",
-                                message: "Your username: " + username_prefix + user_id.toString(),
+                                message: "Your username: <b>" + username_prefix + user_id.toString() + "</b>",
                                 buttons: [{
                                     label: "Got it",
                                     cssClass: "btn-primary",
