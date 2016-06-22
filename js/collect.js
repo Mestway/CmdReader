@@ -209,6 +209,38 @@ $(document).ready(function(){
       return false;
 	 });
 
+    /* --- Skip Current Page --- */
+    $("#nl2cmd-skip-page").click(function() {
+        var skip_warning = 'You may skip a web page only when it is technically difficult to work with. '
+                           + 'If there is no useful pairs on it, use the "No pair" option instead.';
+        BootstrapDialog.show({
+          message: skip_warning,
+          buttons: [
+          {
+              label: 'Skip',
+              cssClass: 'btn-primary',
+              action: function(dialogItself){
+                // record skip action
+                $.ajax({url: "skip-url",
+                     data: {"url": page_url},
+                     success:  function(data, status) {
+                          console.log("User " + username_prefix + user_id.toString()
+                                        + " chose to skip url " + page_url + ".");
+                          }
+                });
+                redirect_to_next();
+                dialogItself.close();
+              }
+          }, {
+              label: 'Close',
+              action: function(dialogItself){
+                  being_submitted = false;
+                  dialogItself.close();
+              }
+          }]
+	    });
+    });
+
 	 /* --- textual input auto-resize --- */
 	 var observe;
      if (window.attachEvent) {
@@ -274,18 +306,6 @@ $(document).ready(function(){
 
       /* --- Select text with mouse --- */
       //TODO: not implemented
-
-      /* --- Skip Current Page --- */
-      $("#skip-current-page").click(function() {
-        $.ajax({url: "skip-url",
-             data: {"url": page_url},
-             success:  function(data, status) {
-                  console.log("User " + username_prefix + user_id.toString()
-                                + " chose to skip url " + page_url + ".");
-                  }
-        });
-        redirect_to_next();
-      });
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {
