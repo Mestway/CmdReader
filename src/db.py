@@ -102,6 +102,13 @@ class DBConnection(object):
         return None
 
     # --- User administration ---
+    def get_user_names(self, user_id):
+        c = self.conn.cursor()
+        username_prefix = "nl2cmd"
+        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
+                                            (user_id,)):
+            return fname + ' ' + lname # + ' (' + username_prefix + '%d)' % user_id
+
     def num_users(self):
         c = self.conn.cursor()
         num_users = len(c.execute("SELECT * FROM Users").fetchall())

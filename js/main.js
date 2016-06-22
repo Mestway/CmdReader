@@ -1,9 +1,13 @@
 /* --- The page content is only displayable to logged-in users --- */
+var username_prefix = "nl2cmd";
+
 $.getJSON("get_current_user", function(uid) {
     var user_id = uid;
     console.log(user_id);
     if (user_id === null) {
         window.location.replace("/");
+    } else {
+        $('#user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
     }
 });
 
@@ -46,7 +50,6 @@ $(document).ready(function () {
   });
 
   $('#user-log-out').click(function() {
-        var username_prefix = "nl2cmd";
         console.log("...")
         $.ajax({url: "logout_user",
              success:  function(data, status) {
