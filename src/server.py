@@ -159,6 +159,13 @@ class App(object):
         return user_id;
 
     @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def get_user_names(self, user_id):
+        with DBConnection() as db:
+            return db.get_user_names(user_id)
+
+    @cherrypy.expose
     @cherrypy.tools.json_out()
     def logout_user(self):
         cherrypy.session["user_id"] = None

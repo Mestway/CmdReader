@@ -10,12 +10,16 @@ var safely_redirect = false;
 var being_submitted = false;
 
 /* --- The page content is only displayable to logged-in users --- */
+var username_prefix = "nl2cmd";
+
 $.getJSON("get_current_user", function(uid) {
     var user_id = uid;
-    console.log(user_id);
+    console.log(username_prefix + user_id.toString());
     if (user_id === null) {
         safely_redirect = true;
         window.location.replace("/");
+    } else {
+        $('#user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
     }
 });
 
@@ -170,10 +174,11 @@ $(document).ready(function(){
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
-        var no_pair_warning = "Are you sure there is no pair on this page and want to work on a new page?";
+        var no_pair_warning = 'You have chosen the "No pair" option. Please make sure you have examed the web page carefully. '
+                              + 'If so, click "Yes" and proceed to the next page.';
         if (num_annotations != 0) {
-            no_pair_warning = 'You have chose the "No pair" option, anything you put in the collection entries will '
-                              + 'be discarded. Still want to proceed to a new page?';
+            no_pair_warning = 'You have chosen the "No pair" option, anything you put in the collection entries will '
+                              + 'be discarded. Still want to proceed to the next page?';
         }
 		BootstrapDialog.show({
           message: no_pair_warning,
