@@ -180,6 +180,13 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def skip_url(self, user_id, url):
+        with DBConnection() as db:
+            db.skip_url(user_id, url)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def pick_url(self, user_id, search_phrase=None):
         self.search_phrase = search_phrase
         with DBConnection() as db:
@@ -235,6 +242,14 @@ class App(object):
                 cmd = cmd.decode().encode('utf-8')
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                         user, url, nl, cmd)
+            res += "</tbody></table>"
+
+            res += "<h3>Skipped URLs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
+            for user, url in db.skipped():
+                url = url.decode().encode('utf-8')
+                res += "<tr><td>{}</td><td>{}</td></tr>".format(
+                        user, url)
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"

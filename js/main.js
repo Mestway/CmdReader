@@ -17,7 +17,7 @@ $(document).ready(function () {
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        alert("Search failed to retrieve any URLs for this query. Please try another one.");
+        alert("Oops, currently there are no un-annotated URLs in our database. Please search with a novel query.");
         // history.pushState({}, 'Title: search page', './search.html');
         // window.location.replace("./collect_page.html?url=http://www.uwplse.org");
       } else {

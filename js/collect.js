@@ -154,7 +154,8 @@ $(document).ready(function(){
                           console.log("yoo!" + data);
                         }
                       });
-                  redirect_to_next(dialogItself)
+                  redirect_to_next()
+                  dialogItself.close()
                 }
               }, {
                 label: 'Close',
@@ -194,7 +195,8 @@ $(document).ready(function(){
                         console.log("Yea!" + data);
                       }
                 });
-                redirect_to_next(dialogItself);
+                redirect_to_next();
+                dialogItself.close();
               }
           }, {
               label: 'Close',
@@ -273,6 +275,18 @@ $(document).ready(function(){
       /* --- Select text with mouse --- */
       //TODO: not implemented
 
+      /* --- Skip Current Page --- */
+      $("#skip-current-page").click(function() {
+        $.ajax({url: "skip-url",
+             data: {"url": page_url},
+             success:  function(data, status) {
+                  console.log("User " + username_prefix + user_id.toString()
+                                + " chose to skip url " + page_url + ".");
+                  }
+        });
+        redirect_to_next();
+      });
+
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",
@@ -311,7 +325,7 @@ function collect_annotations() {
     return collected_pairs.length;
 }
 
-function redirect_to_next(dialog) {
+function redirect_to_next() {
     var query = "";
     // retrieve current search query
     $.getJSON("get_search_query", function(search_query) {
@@ -325,7 +339,6 @@ function redirect_to_next(dialog) {
               + '"' + query + '".');
         window.location.href = "/search.html";
       } else {
-        dialog.close();
         window.location.replace("./collect_page.html?url=" + url);
       }
     });
