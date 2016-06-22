@@ -18,6 +18,8 @@ class DBConnection(object):
 
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
 
+        c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
+
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
@@ -63,6 +65,11 @@ class DBConnection(object):
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
             yield (user, url, nl, cmd)
 
+    def skipped(self):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM Skipped"):
+            yield (user, url)
+
     def users(self):
         c = self.conn.cursor()
         for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
@@ -71,11 +78,15 @@ class DBConnection(object):
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
         annotated_urls = set()
+        skipped_urls = set()
         if user_id:
-            print("retrieve urls annotated by the current user")
+            # print("retrieve urls annotated by the current user")
             for url, _ in c.execute("SELECT url, user_id FROM NoPairs WHERE user_id = ? " +
                 "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?", (user_id, user_id)):
                 annotated_urls.add(url)
+            for url, _ in c.execute("SELECT url, user_id FROM Skipped WHERE user_id = ?", (user_id,)):
+                skipped_urls.add(url)
+
         print(annotated_urls)
         urls = []
         for url, count in c.execute("SELECT Urls.url, " +
@@ -84,7 +95,7 @@ class DBConnection(object):
                                                 "UNION ALL SELECT url FROM Pairs) " +
                                     "AS InUse ON Urls.url = InUse.url " +
                                     "GROUP BY Urls.url HAVING n < ?", (n,)):
-            if not url in annotated_urls:
+            if not url in annotated_urls and not url in skipped_urls:
                 urls.append((url, count))
         return urls
 
@@ -100,6 +111,12 @@ class DBConnection(object):
                     url_leases.append((url, user_id, now + lease_duration))
                     return url
         return None
+
+    def skip_url(self, user_id, url):
+        c = self.conn.cursor()
+        c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',
+                  (url, user_id))
+        self.conn.commit()
 
     # --- User administration ---
     def get_user_names(self, user_id):
