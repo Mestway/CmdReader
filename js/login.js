@@ -42,7 +42,7 @@ $(document).ready(function () {
                             // confirm
                             BootstrapDialog.show({
                                 title: "Login Information",
-                                message: "Your username: <b>" + username_prefix + user_id.toString() + "</b>",
+                                message: "Your access code: <b>" + username_prefix + user_id.toString() + "</b>",
                                 buttons: [{
                                     label: "Got it",
                                     cssClass: "btn-primary",

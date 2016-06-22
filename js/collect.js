@@ -137,7 +137,7 @@ $(document).ready(function(){
           });
         } else {
             BootstrapDialog.show({
-              message: "Are you sure to submit these pairs and move on to a new page?",
+              message: "Submit and continue to the next page?",
               buttons: [
               {
                 label: 'Yes',
