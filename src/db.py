@@ -1,13 +1,58 @@
-import sqlite3
 import datetime
+
+import urllib2
+from bs4 import BeautifulSoup
+import random, string
+
+# import scipy.sparse as ssp
+from simhash import Simhash
+
+import sqlite3
 import threading
 
 MAX_RESPONSES = 3
+SIMHASH_BITNUM = 64
+SIMHASH_DIFFBIT = 8
 
 # Depending on how often we expect to be doing server updates, we might want to
 # make this information persistent.
 url_leases = []
 url_lease_lock = threading.Lock()
+
+def distance(f1, f2):
+    x = (f1 ^ f2) & ((1 << SIMHASH_BITNUM) - 1)
+    ans = 0
+    while x:
+        ans += 1
+        x &= x - 1
+    return ans
+
+def randomstr(length):
+   return ''.join(random.choice(string.lowercase) for i in range(length))
+
+def extract_text_from_url(url):
+    try:
+        html = urllib2.urlopen(url, timeout=1).read()
+    except urllib2.URLError, e:
+        return randomstr(180)
+
+    soup = BeautifulSoup(html, "html.parser")
+
+    # kill all script and style elements
+    for script in soup(["script", "style"]):
+        script.extract()    # rip it out
+
+    # get text
+    text = soup.get_text()
+
+    # break into lines and remove leading and trailing space on each
+    # lines = (line.strip() for line in text.splitlines())
+    # break multi-headlines into a line each
+    # chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+    # drop blank lines
+    # text = '\n'.join(chunk for chunk in chunks if chunk)
+
+    return text
 
 class DBConnection(object):
     def __init__(self):
@@ -18,6 +63,8 @@ class DBConnection(object):
 
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
 
+        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT)")
+
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
 
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
@@ -27,6 +74,9 @@ class DBConnection(object):
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT)")
 
         self.conn.commit()
+
+        # self.max_num_urls = 100000
+        # self.url_similarity = ssp.lil_matrix((self.max_num_urls, self.max_num_urls))
 
     def __enter__(self, *args, **kwargs):
         return self
@@ -50,6 +100,7 @@ class DBConnection(object):
     def add_urls(self, search_phrase, urls):
         c = self.conn.cursor()
         for url in urls:
+            self.index_url_content(url)
             c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase, url))
         self.conn.commit()
 
@@ -70,34 +121,42 @@ class DBConnection(object):
         for user, url in c.execute("SELECT user_id, url FROM Skipped"):
             yield (user, url)
 
-    def users(self):
-        c = self.conn.cursor()
-        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
-            yield (user, fname, lname)
-
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        annotated_urls = set()
-        skipped_urls = set()
-        if user_id:
-            # print("retrieve urls annotated by the current user")
-            for url, _ in c.execute("SELECT url, user_id FROM NoPairs WHERE user_id = ? " +
-                "UNION ALL SELECT url, user_id FROM Pairs WHERE user_id = ?", (user_id, user_id)):
-                annotated_urls.add(url)
-            for url, _ in c.execute("SELECT url, user_id FROM Skipped WHERE user_id = ?", (user_id,)):
-                skipped_urls.add(url)
-
-        print(annotated_urls)
-        urls = []
         for url, count in c.execute("SELECT Urls.url, " +
                                     "count(InUse.url) as n FROM Urls " +
                                     "LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) " +
                                     "AS InUse ON Urls.url = InUse.url " +
                                     "GROUP BY Urls.url HAVING n < ?", (n,)):
-            if not url in annotated_urls and not url in skipped_urls:
-                urls.append((url, count))
-        return urls
+            if not self.already_annotated(user_id, url) and \
+                not self.already_skipped(user_id, url) and \
+                not self.duplicate(url):
+                yield (url, count)
+
+    def already_annotated(self, user_id, url):
+        c = self.conn.cursor()
+        if user_id:
+            # print("retrieve urls annotated by the current user")
+            for _ in c.execute("SELECT 1 FROM NoPairs WHERE user_id = ? AND url = ? LIMIT 1", (user_id, url)):
+                return True
+            for _ in c.execute("SELECT 1 FROM Pairs WHERE user_id = ? AND url = ? LIMIT 1", (user_id, url)):
+                return True
+        return False
+
+    def already_skipped(self, user_id, url):
+        c = self.conn.cursor()
+        if user_id:
+            for _ in c.execute("SELECT 1 FROM Skipped WHERE user_id = ? AND url = ? LIMIT 1", (user_id, url)):
+                return True
+        return False
+
+    def duplicate(self, url):
+        c = self.conn.cursor()
+        for _ in c.execute("SELECT 1 FROM SearchContent WHERE url = ? AND min_distance <= ? LIMIT 1",
+                           (url, SIMHASH_DIFFBIT)):
+            return True
+        return False
 
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
@@ -106,6 +165,7 @@ class DBConnection(object):
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
             for url, count in self.find_urls_with_less_responses_than(user_id):
+                print(url)
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))
@@ -118,19 +178,42 @@ class DBConnection(object):
                   (url, user_id))
         self.conn.commit()
 
+    # --- Search content management ---
+    def index_url_content(self, url):
+        if self.url_indexed(url):
+            return
+        print("Indexing " + url)
+        raw_text = extract_text_from_url(url)
+        fingerprint = Simhash(raw_text).value
+        if not isinstance(fingerprint, long):
+            print("Warning: failed to generate fingerprint for " + url)
+
+        min_distance = SIMHASH_BITNUM
+        c = self.conn.cursor()
+        for _url, _fingerprint, _min_distance in c.execute(("SELECT url, fingerprint, min_distance FROM SearchContent")):
+            fingerprint_dis = distance(fingerprint, long(_fingerprint))
+            if fingerprint_dis < min_distance:
+                min_distance = fingerprint_dis
+            # if fingerprint_dis < _min_distance:
+            #     c.execute("UPDATE SearchContent SET min_distance = ? WHERE url = ?", (fingerprint_dis, _url))
+        # print(fingerprint)
+        # print(min_distance)
+        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance) VALUES (?, ?, ?)",
+                  (url, str(fingerprint), min_distance))
+
+    def url_indexed(self, url):
+        c = self.conn.cursor()
+        for _ in c.execute("SELECT 1 FROM SearchContent WHERE url = ? LIMIT 1", (url,)):
+            return True
+        return False
+
+    def search_content(self):
+        c = self.conn.cursor()
+        for url, fingerprint, min_distance in c.execute("SELECT url, fingerprint, min_distance FROM SearchContent"):
+            yield (url, fingerprint, min_distance)
+
+
     # --- User administration ---
-    def get_user_names(self, user_id):
-        c = self.conn.cursor()
-        username_prefix = "nl2cmd"
-        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
-                                            (user_id,)):
-            return fname + ' ' + lname # + ' (' + username_prefix + '%d)' % user_id
-
-    def num_users(self):
-        c = self.conn.cursor()
-        num_users = len(c.execute("SELECT * FROM Users").fetchall())
-        return (num_users + 1)
-
     def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
         c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',
@@ -142,3 +225,20 @@ class DBConnection(object):
         for _ in c.execute("SELECT 1 FROM Users WHERE user_id = ? LIMIT 1", (user_id,)):
             return True
         return False
+
+    def num_users(self):
+        c = self.conn.cursor()
+        num_users = len(c.execute("SELECT * FROM Users").fetchall())
+        return (num_users + 1)
+
+    def users(self):
+        c = self.conn.cursor()
+        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
+            yield (user, fname, lname)
+
+    def get_user_names(self, user_id):
+        c = self.conn.cursor()
+        # username_prefix = "nl2cmd"
+        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
+                                            (user_id,)):
+            return fname + ' ' + lname # + ' (' + username_prefix + '%d)' % user_id
