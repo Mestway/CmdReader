@@ -252,6 +252,12 @@ class App(object):
                         user, url)
             res += "</tbody></table>"
 
+            res += "<h3>Search Content</h3>"
+            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th></tr></thead><tbody>"
+            for url, fingerprint, min_distance in db.search_content():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance)
+            res += "</tbody></table>"
+
             res += "<h3>Registered Users</h3>"
             res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th></tr></thead><tbody>"
             for user, fname, lname in db.users():
