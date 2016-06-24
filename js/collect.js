@@ -229,8 +229,7 @@ $(document).ready(function(){
                                         + " chose to skip url " + page_url + ".");
                           }
                      });
-                }
-                // , 1500);
+                //} , 1500);
                 redirect_to_next();
                 dialogItself.close();
               }
