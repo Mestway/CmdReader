@@ -221,14 +221,16 @@ $(document).ready(function(){
               cssClass: 'btn-primary',
               action: function(dialogItself){
                 // record skip action
-                setTimeout(function() {$.ajax({url: "skip_url",
+                // setTimeout(function() {
+                $.ajax({url: "skip_url",
                      data: {"url": page_url},
                      success:  function(data, status) {
                           console.log("User " + username_prefix + user_id.toString()
                                         + " chose to skip url " + page_url + ".");
                           }
                      });
-                }, 1500);
+                }
+                // , 1500);
                 redirect_to_next();
                 dialogItself.close();
               }
