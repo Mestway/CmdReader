@@ -7,13 +7,13 @@ var selected_text = "";
 var row_count = 0;
 var collected_pairs = [];
 var safely_redirect = false;
-var being_submitted = false;
+var in_submission = false;
 
 /* --- The page content is only displayable to logged-in users --- */
 var username_prefix = "nl2cmd";
-
+var user_id;
 $.getJSON("get_current_user", function(uid) {
-    var user_id = uid;
+    user_id = uid;
     console.log(username_prefix + user_id.toString());
     if (user_id === null) {
         safely_redirect = true;
@@ -102,7 +102,7 @@ $(document).ready(function(){
     // when the columns are almost full, add content into the table.
     // this method checks every 500ms to to increase the table size
 	setInterval(function() {
-	if (!being_submitted) {
+	if (!in_submission) {
         var all_rows = $(".nl2cmd-pair-row");
         var blank_cell_count = 0;
 
@@ -121,7 +121,7 @@ $(document).ready(function(){
 
 	$("#nl2cmd-submit").click(function() {
         // spellchecker.check();
-        being_submitted = true;
+        in_submission = true;
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
@@ -135,7 +135,21 @@ $(document).ready(function(){
               label: 'Close',
               action: function(dialogItself){
                   dialogItself.close();
-                  being_submitted = false;
+                  in_submission = false;
+              }
+            }]
+          });
+        } else if (num_annotations === 0) {
+          BootstrapDialog.show({
+            message: 'You cannot submit an empty worksheet. '
+                    + 'If there is no pair on the web page, use the "No pair" option instead. '
+                    + 'Use the "Skip" option to skip the web page without submitting anything.',
+            buttons: [
+            {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+                  in_submission = false;
               }
             }]
           });
@@ -150,17 +164,17 @@ $(document).ready(function(){
                   $.ajax({
                         url: "add-pairs",
                         data: {"pairs": JSON.stringify(collected_pairs)},
-                          success:  function(data, status) {
+                        success:  function(data, status) {
                           console.log("yoo!" + data);
+                          redirect_to_next()
+                          dialogItself.close()
                         }
                       });
-                  redirect_to_next()
-                  dialogItself.close()
                 }
               }, {
                 label: 'Close',
                 action: function(dialogItself){
-                    being_submitted = false;
+                    in_submission = false;
                     dialogItself.close();
                 }
               }]
@@ -171,7 +185,7 @@ $(document).ready(function(){
 
 	$("#nl2cmd-report-nopair").click(function() {
 		console.log("nopair! " + page_url);
-	    being_submitted = true;
+	    in_submission = true;
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
@@ -193,15 +207,15 @@ $(document).ready(function(){
                       data: {"url": page_url},
                       success:  function(data, status) {
                         console.log("Yea!" + data);
+                        redirect_to_next();
+                        dialogItself.close();
                       }
                 });
-                redirect_to_next();
-                dialogItself.close();
               }
           }, {
               label: 'Close',
               action: function(dialogItself){
-                  being_submitted = false;
+                  in_submission = false;
                   dialogItself.close();
               }
           }]
@@ -212,7 +226,7 @@ $(document).ready(function(){
     /* --- Skip Current Page --- */
     $("#nl2cmd-skip-page").click(function() {
         var skip_warning = 'You may skip a web page when encounter technical issues. '
-                           + 'If there is no pairs found on the page, use the "No pair" option instead.';
+                           + 'If there is no pair on the web page, use the "No pair" option instead.';
         BootstrapDialog.show({
           message: skip_warning,
           buttons: [
@@ -227,16 +241,16 @@ $(document).ready(function(){
                      success:  function(data, status) {
                           console.log("User " + username_prefix + user_id.toString()
                                         + " chose to skip url " + page_url + ".");
-                          }
-                     });
+                          redirect_to_next();
+                          dialogItself.close();
+                     }
+                });
                 //} , 1500);
-                redirect_to_next();
-                dialogItself.close();
               }
           }, {
               label: 'Close',
               action: function(dialogItself){
-                  being_submitted = false;
+                  in_submission = false;
                   dialogItself.close();
               }
           }]
@@ -350,21 +364,33 @@ function collect_annotations() {
 function redirect_to_next() {
     var query = "";
     // retrieve current search query
-    $.getJSON("get_search_query", function(search_query) {
+    $.getJSON("get_search_phrase", function(search_query) {
         query = search_query;
+        console.log(query)
     });
 
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        alert('Congrats! You completed annotations of all webpages retrieved by the current search query: '
-              + '"' + query + '".');
-        window.location.href = "/search.html";
+        var query_completion_warning = 'Congrats! You have annotated all the web pages we have searched so far. '
+            + 'You will be automatically redirect to the search page.';
+        BootstrapDialog.show({
+          message: query_completion_warning,
+          buttons: [
+          {
+              label: 'Close',
+              action: function(dialogItself){
+                  window.location.replace("/search.html");
+                  dialogItself.close();
+              }
+          }]
+	    });
       } else {
         window.location.replace("./collect_page.html?url=" + url);
       }
     });
 
+    // in_submission = false;
     safely_redirect = true;
 }
 

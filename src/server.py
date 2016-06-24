@@ -175,7 +175,8 @@ class App(object):
     @user_id_required
     @cherrypy.tools.json_out()
     def get_search_phrase(self, user_id):
-        return self.search_phrase;
+        # return self.search_phrase;
+        return ""
 
     @cherrypy.expose
     @user_id_required
@@ -189,10 +190,10 @@ class App(object):
     @user_id_required
     @cherrypy.tools.json_out()
     def pick_url(self, user_id, search_phrase=None):
-        self.search_phrase = search_phrase
         with DBConnection() as db:
             # save search results
             if search_phrase and search_phrase != "RANDOM_SELECTION":
+                self.search_phrase = search_phrase
                 if not db.already_searched(search_phrase):
                     db.add_urls(search_phrase, search(search_phrase))
             return db.lease_url(user_id=user_id)

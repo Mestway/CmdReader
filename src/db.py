@@ -65,6 +65,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT)")
 
+        # c.execute("DELETE FROM Skipped")
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
 
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
