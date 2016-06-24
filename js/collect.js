@@ -142,8 +142,8 @@ $(document).ready(function(){
         } else if (num_annotations === 0) {
           BootstrapDialog.show({
             message: 'You cannot submit an empty worksheet. '
-                    + 'If there is no pair on the web page, use the "No pair" option instead. '
-                    + 'Use the "Skip" option to skip the web page without submitting anything.',
+                    + '<li>Use the "No pair" option if there is no pairs on the web page.</li>'
+                    + '<li>Use the "Skip" option to skip the web page.</li>',
             buttons: [
             {
               label: 'Close',
@@ -189,12 +189,12 @@ $(document).ready(function(){
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
-        var no_pair_warning = 'Please make sure you have examed the web page carefully and didn\'t overlook a pair by accident. '
+        var no_pair_warning = 'Please make sure you have examed the web page carefully and didn\'t overlook anything.<br/> '
                               + 'If so, click "Yes" and proceed to the next page.';
         if (num_annotations != 0) {
             no_pair_warning = 'You have chosen the "No pair" option, anything you put in the collection entries will '
                               + 'be discarded. Still want to proceed to the next page?';
-        }
+        }a
 		BootstrapDialog.show({
           message: no_pair_warning,
           buttons: [
@@ -225,7 +225,7 @@ $(document).ready(function(){
 
     /* --- Skip Current Page --- */
     $("#nl2cmd-skip-page").click(function() {
-        var skip_warning = 'You may skip a web page when encounter technical issues. '
+        var skip_warning = 'You may skip a web page when encounter technical issues. <br/>'
                            + 'If there is no pair on the web page, use the "No pair" option instead.';
         BootstrapDialog.show({
           message: skip_warning,
