@@ -155,7 +155,7 @@ $(document).ready(function(){
           });
         } else {
             BootstrapDialog.show({
-              message: "Submit and continue to the next page?",
+              message: "Submit " + num_annotations.toString() + " pairs and continue to the next page?",
               buttons: [
               {
                 label: 'Yes',
