@@ -175,7 +175,7 @@ $(document).ready(function(){
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
-        var no_pair_warning = 'You have chosen the "No pair" option. Please make sure you have examed the web page carefully. '
+        var no_pair_warning = 'Please make sure you have examed the web page carefully and didn\'t overlook a pair by accident. '
                               + 'If so, click "Yes" and proceed to the next page.';
         if (num_annotations != 0) {
             no_pair_warning = 'You have chosen the "No pair" option, anything you put in the collection entries will '
@@ -211,8 +211,8 @@ $(document).ready(function(){
 
     /* --- Skip Current Page --- */
     $("#nl2cmd-skip-page").click(function() {
-        var skip_warning = 'You may skip a web page only when it is technically difficult to work with. '
-                           + 'If there is no useful pairs on it, use the "No pair" option instead.';
+        var skip_warning = 'You may skip a web page when encounter technical issues. '
+                           + 'If there is no pairs found on the page, use the "No pair" option instead.';
         BootstrapDialog.show({
           message: skip_warning,
           buttons: [
@@ -221,13 +221,14 @@ $(document).ready(function(){
               cssClass: 'btn-primary',
               action: function(dialogItself){
                 // record skip action
-                $.ajax({url: "skip-url",
+                setTimeout(function() {$.ajax({url: "skip_url",
                      data: {"url": page_url},
                      success:  function(data, status) {
                           console.log("User " + username_prefix + user_id.toString()
                                         + " chose to skip url " + page_url + ".");
                           }
-                });
+                     });
+                }, 500);
                 redirect_to_next();
                 dialogItself.close();
               }
