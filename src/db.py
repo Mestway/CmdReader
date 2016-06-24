@@ -32,10 +32,11 @@ def randomstr(length):
 
 def extract_text_from_url(url):
     try:
-        html = urllib2.urlopen(url, timeout=1).read()
+        html = urllib2.urlopen(url, timeout=1)
     except urllib2.URLError, e:
         return randomstr(180)
 
+    html = html.read()
     soup = BeautifulSoup(html, "html.parser")
 
     # kill all script and style elements
@@ -65,7 +66,6 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT)")
 
-        # c.execute("DELETE FROM Skipped")
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
 
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
