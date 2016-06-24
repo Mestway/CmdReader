@@ -73,7 +73,7 @@ $(document).ready(function(){
         .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
     		+ '<div id="web-content-data-error">'
             + '<p class="lead" id="error_info">If the page is not loaded successfully, '
-            +                                 'open the URL in a new window: '
+            +                                 'click on the URL to open it in a new window: '
             + '<a id="nl2cmd-new-tab-link" href="'+ page_url + '">'
             + page_url
             + '</a>'
