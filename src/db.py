@@ -76,7 +76,7 @@ class DBConnection(object):
 
         self.conn.commit()
 
-        self.index_urls()
+        # self.index_urls()
 
     def __enter__(self, *args, **kwargs):
         return self
