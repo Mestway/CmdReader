@@ -71,18 +71,18 @@ $(document).ready(function(){
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
-    		+ '<div id="web-content-data-error" class="error_report" height="100%">'
-            + '<p class="lead" id="error_info">If the page is not successfully loaded, '
-            +                                 'click '
-            + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">'
-            + 'here '
+    		+ '<div id="web-content-data-error">'
+            + '<p class="lead" id="error_info">If the page is not loaded successfully, '
+            +                                 'open the URL in a new window: '
+            + '<a id="nl2cmd-new-tab-link" href="'+ page_url + '">'
+            + page_url
             + '</a>'
-            + 'and view it in another tab. '
+            + '. <br/>'
             + 'Otherwise, you may '
             + '<a id="hide-error-message">'
             + 'hide this message'
             + '</a>'
-            + '.'
+            + '.<p/>'
       	    + '</div>' );
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
@@ -91,7 +91,9 @@ $(document).ready(function(){
         $('#web-content-data-error').hide();
     });
     $("#nl2cmd-new-tab-link").click(function() {
+        window.open(this.href, 'newwindow', "width=480, height=640, top=0, left=960");
         myLayout.sizePane('west', $('body').width());
+        return false;
     });
 
 
@@ -142,8 +144,8 @@ $(document).ready(function(){
         } else if (num_annotations === 0) {
           BootstrapDialog.show({
             message: 'You cannot submit an empty worksheet. '
-                    + 'If there is no pair on the web page, use the "No pair" option instead. '
-                    + 'Use the "Skip" option to skip the web page without submitting anything.',
+                    + '<li>Use the "No pair" option if there is no pairs on the web page.</li>'
+                    + '<li>Use the "Skip" option to skip the web page.</li>',
             buttons: [
             {
               label: 'Close',
@@ -189,7 +191,7 @@ $(document).ready(function(){
         remove_row(row_count);
 
         var num_annotations = collect_annotations();
-        var no_pair_warning = 'Please make sure you have examed the web page carefully and didn\'t overlook a pair by accident. '
+        var no_pair_warning = 'Please make sure you have examed the web page carefully and didn\'t overlook anything.<br/> '
                               + 'If so, click "Yes" and proceed to the next page.';
         if (num_annotations != 0) {
             no_pair_warning = 'You have chosen the "No pair" option, anything you put in the collection entries will '
@@ -225,7 +227,7 @@ $(document).ready(function(){
 
     /* --- Skip Current Page --- */
     $("#nl2cmd-skip-page").click(function() {
-        var skip_warning = 'You may skip a web page when encounter technical issues. '
+        var skip_warning = 'You may skip a web page when encounter technical issues. <br/>'
                            + 'If there is no pair on the web page, use the "No pair" option instead.';
         BootstrapDialog.show({
           message: skip_warning,
@@ -327,7 +329,7 @@ $(document).ready(function(){
       $('#nl2cmd-search').click(function() {
         window.location.replace("/search.html");
         // safely_redirect = true;
-      })
+      });
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {

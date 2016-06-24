@@ -167,6 +167,12 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    def get_access_code(self, first_name, last_name):
+        with DBConnection() as db:
+            return db.get_access_code(first_name, last_name)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def logout_user(self):
         cherrypy.session["user_id"] = None
         return True
