@@ -222,6 +222,7 @@ class App(object):
         with DBConnection() as db:
             return db.already_searched(search_phrase)
 
+    @cherrypy.expose
     @admin_only
     def status(self):
         import db
