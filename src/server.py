@@ -183,6 +183,7 @@ class App(object):
     def skip_url(self, user_id, url):
         with DBConnection() as db:
             db.skip_url(user_id, url)
+            return True
 
     @cherrypy.expose
     @user_id_required
