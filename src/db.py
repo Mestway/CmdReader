@@ -76,8 +76,7 @@ class DBConnection(object):
 
         self.conn.commit()
 
-        # self.max_num_urls = 100000
-        # self.url_similarity = ssp.lil_matrix((self.max_num_urls, self.max_num_urls))
+        self.index_urls()
 
     def __enter__(self, *args, **kwargs):
         return self
@@ -180,6 +179,12 @@ class DBConnection(object):
         self.conn.commit()
 
     # --- Search content management ---
+
+    # check if there exists unindexed URLs in the DB and add them to the index
+    def index_urls(self):
+        for url, _ in self.find_urls_with_less_responses_than(None):
+            self.index_url_content(url)
+
     def index_url_content(self, url):
         if self.url_indexed(url):
             return
