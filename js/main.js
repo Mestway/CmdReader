@@ -14,6 +14,11 @@ $.getJSON("get_current_user", function(uid) {
 $(document).ready(function () {
 
   function start(query) {
+    $.getJSON("already_searched", {search_phrase: query}, function(searched) {
+        if (!searched)
+            $("#index-progress").text("Indexing webpages... You will be automatically redirect when finished.");
+    });
+
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
