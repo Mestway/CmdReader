@@ -248,3 +248,10 @@ class DBConnection(object):
         for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
                                             (user_id,)):
             return fname + ' ' + lname # + ' (' + username_prefix + '%d)' % user_id
+
+    def get_access_code(self, first_name, last_name):
+        c = self.conn.cursor()
+        for user, _, _ in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE first_name = ? AND last_name = ?",
+                                    (first_name, last_name)):
+            return user
+        return -1

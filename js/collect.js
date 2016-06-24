@@ -326,8 +326,8 @@ $(document).ready(function(){
       /* --- Jump to search page --- */
       $('#nl2cmd-search').click(function() {
         window.location.replace("/search.html");
-        safely_redirect = true;
-      })
+        // safely_redirect = true;
+      });
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {
