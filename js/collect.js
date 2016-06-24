@@ -71,18 +71,18 @@ $(document).ready(function(){
 	// this tries to load the page
     $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
-    		+ '<div id="web-content-data-error" class="error_report" height="100%">'
-            + '<p class="lead" id="error_info">If the page is not successfully loaded, '
-            +                                 'click '
-            + '<a class="lead" id="nl2cmd-new-tab-link" href="'+ page_url + '" target="_blank">'
-            + 'here '
+    		+ '<div id="web-content-data-error">'
+            + '<p class="lead" id="error_info">If the page is not loaded successfully, '
+            +                                 'open the URL in a new window: '
+            + '<a id="nl2cmd-new-tab-link" href="'+ page_url + '">'
+            + page_url
             + '</a>'
-            + 'and view it in another tab. '
+            + '. <br/>'
             + 'Otherwise, you may '
             + '<a id="hide-error-message">'
             + 'hide this message'
             + '</a>'
-            + '.'
+            + '.<p/>'
       	    + '</div>' );
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
@@ -91,7 +91,9 @@ $(document).ready(function(){
         $('#web-content-data-error').hide();
     });
     $("#nl2cmd-new-tab-link").click(function() {
+        window.open(this.href, 'newwindow', "width=480, height=640, top=0, left=960");
         myLayout.sizePane('west', $('body').width());
+        return false;
     });
 
 
@@ -194,7 +196,7 @@ $(document).ready(function(){
         if (num_annotations != 0) {
             no_pair_warning = 'You have chosen the "No pair" option, anything you put in the collection entries will '
                               + 'be discarded. Still want to proceed to the next page?';
-        }a
+        }
 		BootstrapDialog.show({
           message: no_pair_warning,
           buttons: [
