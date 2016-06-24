@@ -217,6 +217,11 @@ class App(object):
             return True
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def already_searched(self, search_phrase):
+        with DBConnection() as db:
+            return db.already_searched(search_phrase)
+
     @admin_only
     def status(self):
         import db

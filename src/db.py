@@ -91,12 +91,6 @@ class DBConnection(object):
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
         self.conn.commit()
 
-    def already_searched(self, search_phrase):
-        c = self.conn.cursor()
-        for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
-            return True
-        return False
-
     def add_urls(self, search_phrase, urls):
         c = self.conn.cursor()
         for url in urls:
@@ -177,6 +171,13 @@ class DBConnection(object):
         c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',
                   (url, user_id))
         self.conn.commit()
+
+    # --- Query management ---
+    def already_searched(self, search_phrase):
+        c = self.conn.cursor()
+        for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
+            return True
+        return False
 
     # --- Search content management ---
 
