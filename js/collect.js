@@ -323,6 +323,12 @@ $(document).ready(function(){
       /* --- Select text with mouse --- */
       //TODO: not implemented
 
+      /* --- Jump to search page --- */
+      $('#nl2cmd-search').click(function() {
+        window.location.replace("/search.html");
+        safely_redirect = true;
+      })
+
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",
