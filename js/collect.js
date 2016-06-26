@@ -140,6 +140,9 @@ $(document).ready(function(){
                   dialogItself.close();
               }
             }],
+            hidden: function() {
+                in_submission = false;
+            },
             close: function() {
                 in_submission = false;
             }
@@ -156,6 +159,9 @@ $(document).ready(function(){
                   dialogItself.close();
               }
             }],
+            hidden: function() {
+                in_submission = false;
+            },
             close: function() {
                 in_submission = false;
             }
