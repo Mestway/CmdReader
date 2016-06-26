@@ -24,7 +24,23 @@ $(document).ready(function () {
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        alert("Oops, currently there are no un-annotated URLs in our database. Please search with a novel query.");
+        var no_url_warning;
+        if (query === "RANDOM_SELECTION")
+            no_url_warning = 'Oops, you have seen all URLs in our database. Please try search for something new.';
+        else
+            no_url_warning = '"' + query + '" has been searched before and you have seen all the URLs retrieved. '
+                             + 'Please search with a novel query. ';
+        BootstrapDialog.show({
+          message: no_url_warning,
+          buttons: [
+          {
+              label: 'Close',
+              action: function(dialogItself){
+                  window.location.replace("/search.html");
+                  dialogItself.close();
+              }
+          }]
+	    });
         // history.pushState({}, 'Title: search page', './search.html');
         // window.location.replace("./collect_page.html?url=http://www.uwplse.org");
       } else {
