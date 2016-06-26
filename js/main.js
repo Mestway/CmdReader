@@ -13,10 +13,13 @@ $.getJSON("get_current_user", function(uid) {
 
 $(document).ready(function () {
 
+  $("#index-progress-img").hide()
+  
   function start(query) {
     if (query !== "RANDOM_SELECTION") {
         $.getJSON("already_searched", {search_phrase: query}, function(searched) {
             if (!searched)
+                $("#index-progress-img").show()
                 $("#index-progress").text("Indexing webpages... You will be automatically redirect when finished.");
         });
     }

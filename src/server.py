@@ -54,6 +54,9 @@ config = {
     "/cmd.ico": {
         "tools.staticfile.on": True,
         "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
+    "/wait.svg": {
+        "tools.staticfile.on": True,
+        "tools.staticfile.filename": os.path.join(ROOT, "wait.svg") },
     "/js": {
         "tools.staticdir.on": True,
         "tools.staticdir.dir": os.path.join(ROOT, "js") },
