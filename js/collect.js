@@ -140,12 +140,6 @@ $(document).ready(function(){
                   dialogItself.close();
               }
             }],
-            hidden: function() {
-                in_submission = false;
-            },
-            close: function() {
-                in_submission = false;
-            }
           });
         } else if (num_annotations === 0) {
           BootstrapDialog.show({
@@ -159,12 +153,6 @@ $(document).ready(function(){
                   dialogItself.close();
               }
             }],
-            hidden: function() {
-                in_submission = false;
-            },
-            close: function() {
-                in_submission = false;
-            }
           });
         } else {
             BootstrapDialog.show({
@@ -190,10 +178,7 @@ $(document).ready(function(){
                     dialogItself.close();
                 }
               }],
-              close: function() {
-                in_submission = false;
-              }
-            });
+          });
         }
         return false;
     });
@@ -233,9 +218,6 @@ $(document).ready(function(){
                   dialogItself.close();
               }
           }],
-          close: function() {
-            in_submission = false;
-          }
 	    });
       return false;
 	 });
@@ -269,10 +251,12 @@ $(document).ready(function(){
                   dialogItself.close();
               }
           }],
-          close: function() {
-            in_submission = false;
-          }
 	    });
+    });
+
+    $(window).on('hidden.bs.modal', function() {
+        console.log('Fired when hide event has finished!');
+        in_submission = false;
     });
 
 	 /* --- textual input auto-resize --- */
