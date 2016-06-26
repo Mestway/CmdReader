@@ -1,1 +1,124 @@
-developer_api_key = "6879-54375d68b31badfc186ca869e07fa7c1"
+# -*- coding: utf-8 -*-
+"""
+Provides functions for building the assets for the Hypothesis client
+application.
+"""
+import sys
+sys.path.append('.')
+
+import json
+from _compat import urlparse
+
+from jinja2 import Environment, PackageLoader
+
+jinja_env = Environment(loader=PackageLoader('hypothes', 'templates'))
+
+def url_with_path(url):
+    if urlparse.urlparse(url).path == '':
+        return '{}/'.format(url)
+    else:
+        return url
+
+
+def _app_html_context(assets_env, api_url, service_url, ga_tracking_id,
+                      sentry_public_dsn, websocket_url):
+    """
+    Returns a dict of asset URLs and contents used by the sidebar app
+    HTML tempate.
+    """
+
+    if urlparse.urlparse(service_url).hostname == 'localhost':
+        ga_cookie_domain = 'none'
+    else:
+        ga_cookie_domain = 'auto'
+
+    # the serviceUrl parameter must contain a path element
+    service_url = url_with_path(service_url)
+
+    app_config = {
+        'apiUrl': api_url,
+        'serviceUrl': service_url,
+        # 'release': __version__
+    }
+
+    if websocket_url:
+        app_config.update({
+            'websocketUrl': websocket_url,
+        })
+
+    if sentry_public_dsn:
+        app_config.update({
+            'raven': {
+                'dsn': sentry_public_dsn,
+                # 'release': __version__
+            }
+        })
+
+    return {
+        'app_config': json.dumps(app_config),
+        'app_css_urls': assets_env.urls('app_css'),
+        'app_js_urls': assets_env.urls('app_js'),
+        'ga_tracking_id': ga_tracking_id,
+        'ga_cookie_domain': ga_cookie_domain,
+        'register_url': service_url + 'register',
+    }
+
+
+def render_app_html(assets_env,
+                    service_url,
+                    api_url,
+                    sentry_public_dsn,
+                    ga_tracking_id=None,
+                    websocket_url=None,
+                    extra=None):
+    """
+    Return the HTML for the Hypothesis app page,
+    used by the sidebar, stream and single-annotation page.
+
+    :param assets_env: The assets environment
+    :param service_url: The base URL of the Hypothesis service
+                     (eg. https://hypothes.is/)
+    :param api_url: The root URL for the Hypothesis service API
+    :param websocket_url: The WebSocket URL which the client should connect to
+    :param sentry_public_dsn: The _public_ Sentry DSN for client-side
+                              crash reporting
+    :param ga_tracking_id: The Google Analytics tracking ID
+    :param extra: A dict of optional properties specifying link tags and
+                  meta attributes to be included on the page, passed through to
+                  app.html.jinja2
+    """
+    template = jinja_env.get_template('app.html.jinja2')
+    context = _app_html_context(api_url=api_url,
+                                service_url=service_url,
+                                ga_tracking_id=ga_tracking_id,
+                                sentry_public_dsn=sentry_public_dsn,
+                                assets_env=assets_env,
+                                websocket_url=websocket_url).copy()
+    if extra is not None:
+        context.update(extra)
+    return template.render(context)
+
+
+def render_embed_js(assets_env, app_html_url, base_url=None):
+    """
+    Return the code for the script which is injected into a page in order
+    to load the Hypothesis annotation client into it.
+
+    :param assets_env: The assets environment
+    :param app_html_url: The URL of the app.html page for the sidebar
+    :param base_url: The absolute base URL of the web service
+    """
+
+    def absolute_asset_urls(bundle_name):
+        return [urlparse.urljoin(base_url, url)
+                for url in assets_env.urls(bundle_name)]
+
+    template = jinja_env.get_template('embed.js.jinja2')
+    template_args = {
+        'app_html_url': app_html_url,
+        'inject_resource_urls': absolute_asset_urls('inject_js') +
+                                absolute_asset_urls('inject_css')
+    }
+    return template.render(template_args)
+
+# developer_api_key = "6879-54375d68b31badfc186ca869e07fa7c1"
