@@ -1,6 +1,8 @@
 import datetime
 
 import urllib2
+import socket
+
 from bs4 import BeautifulSoup
 import random, string
 
@@ -34,6 +36,10 @@ def extract_text_from_url(url):
     try:
         html = urllib2.urlopen(url, timeout=1)
     except urllib2.URLError, e:
+        print("extract_text_from_url(url) urllib2.URLError")
+        return randomstr(180)
+    except socket.timeout, e:
+        print("extract_text_from_url(url) socket.timeout")
         return randomstr(180)
 
     html = html.read()
