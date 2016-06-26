@@ -69,8 +69,9 @@ $(document).ready(function(){
 	// show the url and ask the user to collect data on the target page
 
 	// this tries to load the page
+	var hypothes_header = "https://via.hypothes.is/"
     $("#nl2cmd-web-content-panel")
-        .html('<object id="web-content-data" width="100%" height="85%" data="' + page_url + '"/>'
+        .html('<object id="web-content-data" width="100%" height="85%" data="' + hypothes_header + page_url + '"/>'
     		+ '<div id="web-content-data-error">'
             + '<p class="lead" id="error_info">If the page is not loaded successfully, '
             +                                 'click on the URL to open it in a new window: '
