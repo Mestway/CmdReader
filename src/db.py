@@ -239,16 +239,6 @@ class DBConnection(object):
             return True
         return False
 
-    def num_users(self):
-        c = self.conn.cursor()
-        num_users = len(c.execute("SELECT * FROM Users").fetchall())
-        return (num_users + 1)
-
-    def users(self):
-        c = self.conn.cursor()
-        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
-            yield (user, fname, lname)
-
     def get_user_names(self, user_id):
         c = self.conn.cursor()
         # username_prefix = "nl2cmd"
@@ -262,3 +252,28 @@ class DBConnection(object):
                                     (first_name, last_name)):
             return user
         return -1
+
+    def num_users(self):
+        c = self.conn.cursor()
+        num_users = len(c.execute("SELECT * FROM Users").fetchall())
+        return (num_users + 1)
+
+    def users(self):
+        c = self.conn.cursor()
+        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
+            yield (user, fname, lname)
+
+    ###### Danger Zone ######
+
+    # remove records of a user from the database
+    def remove_user(self, user_id, options="complete"):
+        c = self.conn.cursor()
+        c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM NoPairs WHERE user_id = ?", (user_id,))
+        c.execute("DELETE FROM Pairs WHERE user_id = ?", (user_id,))
+        if options == "complete":
+            c.execute("DELETE FROM Users WHERE user_id = ?", (user_id,))
+
+
+
+
