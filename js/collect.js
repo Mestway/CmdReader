@@ -138,9 +138,11 @@ $(document).ready(function(){
               label: 'Close',
               action: function(dialogItself){
                   dialogItself.close();
-                  in_submission = false;
               }
-            }]
+            }],
+            close: function() {
+                in_submission = false;
+            }
           });
         } else if (num_annotations === 0) {
           BootstrapDialog.show({
@@ -152,9 +154,11 @@ $(document).ready(function(){
               label: 'Close',
               action: function(dialogItself){
                   dialogItself.close();
-                  in_submission = false;
               }
-            }]
+            }],
+            close: function() {
+                in_submission = false;
+            }
           });
         } else {
             BootstrapDialog.show({
@@ -177,10 +181,12 @@ $(document).ready(function(){
               }, {
                 label: 'Close',
                 action: function(dialogItself){
-                    in_submission = false;
                     dialogItself.close();
                 }
-              }]
+              }],
+              close: function() {
+                in_submission = false;
+              }
             });
         }
         return false;
@@ -218,10 +224,12 @@ $(document).ready(function(){
           }, {
               label: 'Close',
               action: function(dialogItself){
-                  in_submission = false;
                   dialogItself.close();
               }
-          }]
+          }],
+          close: function() {
+            in_submission = false;
+          }
 	    });
       return false;
 	 });
@@ -248,15 +256,16 @@ $(document).ready(function(){
                           dialogItself.close();
                      }
                 });
-                //} , 1500);
               }
           }, {
               label: 'Close',
               action: function(dialogItself){
-                  in_submission = false;
                   dialogItself.close();
               }
-          }]
+          }],
+          close: function() {
+            in_submission = false;
+          }
 	    });
     });
 
