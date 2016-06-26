@@ -273,6 +273,9 @@ class DBConnection(object):
         c.execute("DELETE FROM Pairs WHERE user_id = ?", (user_id,))
         if options == "complete":
             c.execute("DELETE FROM Users WHERE user_id = ?", (user_id,))
+            print("Completely removed user %d from the database" % user_id)
+        else:
+            print("Removed trace of user %d from the database" % user_id)
 
 
 
