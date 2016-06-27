@@ -7,7 +7,7 @@ $.getJSON("get_current_user", function(uid) {
     if (user_id === null) {
         window.location.replace("/");
     } else {
-        $('#user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
+        $('#nl2cmd-user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
     }
 });
 
