@@ -210,6 +210,13 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def get_url_html(self, user_id, url):
+        with DBConnection() as db:
+            return db.get_url_html(url)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
         util.check_type(pairs, [{"url":unicode, "nl":unicode, "cmd":unicode}], value_name="pairs")
