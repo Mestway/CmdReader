@@ -12,6 +12,11 @@ from simhash import Simhash
 import sqlite3
 import threading
 
+import re
+
+html_rel2abs = re.compile('"/[^\s<>]*/*http')
+hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
+
 MAX_RESPONSES = 3
 SIMHASH_BITNUM = 64
 SIMHASH_DIFFBIT = 8
@@ -32,17 +37,28 @@ def distance(f1, f2):
 def randomstr(length):
    return ''.join(random.choice(string.lowercase) for i in range(length))
 
+def remove_headers(content):
+    content = re.sub(hypothes_header, '\n', content)
+    return content
+
+# convert relative paths to absolute ones
+def path_rel2abs(content):
+    return re.sub(html_rel2abs, '"http', content)
+
 def extract_text_from_url(url):
+    hypothes_header = "https://via.hypothes.is/"
     try:
-        html = urllib2.urlopen(url, timeout=1)
+        html = urllib2.urlopen(hypothes_header + url, timeout=1)
     except urllib2.URLError, e:
-        print("extract_text_from_url(url) urllib2.URLError")
-        return randomstr(180)
+        print("extract_text_from_url() urllib2.URLError")
+        return "", randomstr(180)
     except socket.timeout, e:
-        print("extract_text_from_url(url) socket.timeout")
-        return randomstr(180)
+        print("extract_text_from_url() socket.timeout")
+        return "", randomstr(180)
 
     html = html.read()
+    html = remove_headers(html)
+    html = path_rel2abs(html)
     soup = BeautifulSoup(html, "html.parser")
 
     # kill all script and style elements
@@ -59,7 +75,7 @@ def extract_text_from_url(url):
     # drop blank lines
     # text = '\n'.join(chunk for chunk in chunks if chunk)
 
-    return text
+    return html, text
 
 class DBConnection(object):
     def __init__(self):
@@ -70,7 +86,10 @@ class DBConnection(object):
 
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
+
+        c.execute("ALTER TABLE SearchContent ADD html TEXT")
+        # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_html ON SearchContent (html)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
 
@@ -92,6 +111,7 @@ class DBConnection(object):
         self.conn.close()
 
     # --- URL management ---
+
     def mark_has_no_pairs(self, url, user_id):
         c = self.conn.cursor()
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
@@ -179,6 +199,7 @@ class DBConnection(object):
         self.conn.commit()
 
     # --- Query management ---
+
     def already_searched(self, search_phrase):
         c = self.conn.cursor()
         for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
@@ -196,10 +217,10 @@ class DBConnection(object):
         if self.url_indexed(url):
             return
         print("Indexing " + url)
-        raw_text = extract_text_from_url(url)
+        html, raw_text = extract_text_from_url(url)
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
-            print("Warning: failed to generate fingerprint for " + url)
+            print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
 
         min_distance = SIMHASH_BITNUM
         c = self.conn.cursor()
@@ -211,14 +232,21 @@ class DBConnection(object):
             #     c.execute("UPDATE SearchContent SET min_distance = ? WHERE url = ?", (fingerprint_dis, _url))
         # print(fingerprint)
         # print(min_distance)
-        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance) VALUES (?, ?, ?)",
-                  (url, str(fingerprint), min_distance))
+        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, html) VALUES (?, ?, ?, ?)",
+                  (url, str(fingerprint), min_distance, unicode(html)))
 
     def url_indexed(self, url):
         c = self.conn.cursor()
         for _ in c.execute("SELECT 1 FROM SearchContent WHERE url = ? LIMIT 1", (url,)):
             return True
         return False
+
+    def get_url_html(self, url):
+        c = self.conn.cursor()
+        for _, html in c.execute("SELECT url, html FROM SearchContent WHERE url = ?", (url,)):
+            with open("temp.html", 'w') as o_f:
+                o_f.write(html)
+            return html
 
     def search_content(self):
         c = self.conn.cursor()
@@ -227,6 +255,7 @@ class DBConnection(object):
 
 
     # --- User administration ---
+
     def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
         c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',

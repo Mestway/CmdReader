@@ -70,18 +70,41 @@ $(document).ready(function () {
     return false;
   });
 
-  $('#nl2cmd-auto-redirect').click(function(){
+  $('#nl2cmd-auto-redirect').click(function() {
     start("RANDOM_SELECTION");
     return false;
   });
 
-  $('#user-log-out').click(function() {
-        console.log("...")
+  $('#nl2cmd-user-view-report').click(function() {
+    var user_report = '';
+    $.getJSON("get_user_report", function(total_num_pairs, num_urls_annotated, num_urls_no_pairs, num_urls_skipped) {
+        user_report = user_report + '<span>Total number of pairs annotated:&#9;' + total_num_pairs + '</span><br>';
+        user_report = user_report + '<span>Number of urls annotated:&#9;' + num_urls_annotated + '</span><br>';
+        user_report = user_report + '<span>Number of urls with no pairs:&#9;' + num_urls_no_pairs + '</span><br>';
+        user_report = user_report + '<span>Number of urls skipped:&#9;' + num_urls_skipped + '</span><br>';
+    });
+    BootstrapDialog.show({
+        title: 'Performance Report'
+        message: user_report,
+        buttons: [
+            {
+              label: 'Close',
+              action: function(dialogItself){
+                  window.location.replace("/search.html");
+                  dialogItself.close();
+            }
+        }]
+	});
+    return false;
+  });
+
+  $('#nl2cmd-user-log-out').click(function() {
         $.ajax({url: "logout_user",
              success:  function(data, status) {
                   console.log("User " + username_prefix + user_id.toString()
                                 + " successfully log out.");
                   }
         });
+        return false;
   });
 });

@@ -86,6 +86,11 @@ $(document).ready(function(){
             + '.<p/>'
       	    + '</div>' );
 
+    /* $.getJSON('get_url_html', {url: page_url}, function(html) {
+        $("#nl2cmd-web-content-panel").html(html);
+        console.log(html);
+	}); */
+
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
     $("#hide-error-message").click(function() {
         $('#web-content-data').height($('body').height());

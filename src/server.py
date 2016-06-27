@@ -147,6 +147,8 @@ class App(object):
         if not username:
             return False
         # Username format: nl2cmdXX
+        if not username.startswith("nl2cmd"):
+            return False
         user_id = int(username[6:])
         with DBConnection() as db:
             if db.user_exist(user_id):
@@ -180,6 +182,8 @@ class App(object):
         cherrypy.session["user_id"] = None
         return True
 
+    # --- Search ---
+
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
@@ -206,6 +210,13 @@ class App(object):
                 if not db.already_searched(search_phrase):
                     db.add_urls(search_phrase, search(search_phrase))
             return db.lease_url(user_id=user_id)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def get_url_html(self, user_id, url):
+        with DBConnection() as db:
+            return db.get_url_html(url)
 
     @cherrypy.expose
     @user_id_required
