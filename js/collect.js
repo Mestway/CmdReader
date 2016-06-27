@@ -86,8 +86,7 @@ $(document).ready(function(){
       	    + '</div>' ); */
 
     $.getJSON('get_url_html', {url: page_url}, function(html) {
-        $("#nl2cmd-web-content-panel")
-        .html(html);
+        $("#nl2cmd-web-content-panel").html(html);
         console.log(html);
 	});
 

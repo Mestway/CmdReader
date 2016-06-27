@@ -12,6 +12,11 @@ from simhash import Simhash
 import sqlite3
 import threading
 
+import re
+
+html_rel2abs = re.compile('"/[^\s<>]*/*http')
+hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
+
 MAX_RESPONSES = 3
 SIMHASH_BITNUM = 64
 SIMHASH_DIFFBIT = 8
@@ -32,6 +37,14 @@ def distance(f1, f2):
 def randomstr(length):
    return ''.join(random.choice(string.lowercase) for i in range(length))
 
+def remove_headers(content):
+    content = re.sub(hypothes_header, '\n', content)
+    return content
+
+# convert relative paths to absolute ones
+def path_rel2abs(content):
+    return re.sub(html_rel2abs, '"http', content)
+
 def extract_text_from_url(url):
     hypothes_header = "https://via.hypothes.is/"
     try:
@@ -44,6 +57,8 @@ def extract_text_from_url(url):
         return "", randomstr(180)
 
     html = html.read()
+    html = remove_headers(html)
+    html = path_rel2abs(html)
     soup = BeautifulSoup(html, "html.parser")
 
     # kill all script and style elements
@@ -226,6 +241,8 @@ class DBConnection(object):
     def get_url_html(self, url):
         c = self.conn.cursor()
         for _, html in c.execute("SELECT url, html FROM SearchContent WHERE url = ?", (url,)):
+            with open("temp.html", 'w') as o_f:
+                o_f.write(html)
             return html
 
     def search_content(self):
