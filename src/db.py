@@ -253,6 +253,27 @@ class DBConnection(object):
         for url, fingerprint, min_distance in c.execute("SELECT url, fingerprint, min_distance FROM SearchContent"):
             yield (url, fingerprint, min_distance)
 
+    # --- User management ---
+
+    def get_num_pairs_annotated(self, user_id):
+        c = self.conn.cursor()
+        for count in c.execute("SELECT COUNT (*) FROM Pairs WHERE user_id = ?", (user_id,)):
+            return count
+
+    def get_num_urls_annotated(self, user_id):
+        c = self.conn.cursor()
+        for count in c.execute("SELECT COUNT (DISTINCT url) FROM Pairs WHERE user_id = ?", (user_id,)):
+            return count
+
+    def get_num_urls_no_pairs(self, user_id):
+        c = self.conn.cursor()
+        for count in c.execute("SELECT COUNT (DISTINCT url) FROM NoPairs WHERE user_id = ?", (user_id,)):
+            return count
+
+    def get_num_urls_skipped(self, user_id):
+        c = self.conn.cursor()
+        for count in c.execute("SELECT COUNT (DISTINCT url) FROM Skipped WHERE user_id = ?", (user_id,)):
+            return count
 
     # --- User administration ---
 

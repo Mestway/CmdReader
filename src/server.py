@@ -117,7 +117,8 @@ def admin_only(f):
     def g(*args, **kwargs):
         admin = cherrypy.session.get("admin")
         if not admin:
-            if "authorization" in cherrypy.request.headers and is_admin(*parse_auth(cherrypy.request.headers["authorization"])):
+            if "authorization" in cherrypy.request.headers and \
+                    is_admin(*parse_auth(cherrypy.request.headers["authorization"])):
                 cherrypy.session["admin"] = True
             else:
                 cherrypy.response.headers["WWW-Authenticate"] = 'Basic realm="User Visible Realm"'
@@ -169,6 +170,17 @@ class App(object):
     def get_user_names(self, user_id):
         with DBConnection() as db:
             return db.get_user_names(user_id)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def get_user_report(self, user_id):
+        with DBConnection() as db:
+            return db.get_user_names(user_id), \
+                   db.get_num_pairs_annotated(user_id), \
+                   db.get_num_urls_annotated(user_id), \
+                   db.get_num_urls_no_pairs(user_id), \
+                   db.get_num_urls_skipped(user_id)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
