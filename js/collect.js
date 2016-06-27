@@ -70,7 +70,7 @@ $(document).ready(function(){
 
 	// this tries to load the page
 	var hypothes_header = "https://via.hypothes.is/"
-    /* $("#nl2cmd-web-content-panel")
+    $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + hypothes_header + page_url + '"/>'
     		+ '<div id="web-content-data-error">'
             + '<p class="lead" id="error_info">If the page is not loaded successfully, '
@@ -84,12 +84,12 @@ $(document).ready(function(){
             + 'hide this message'
             + '</a>'
             + '.<p/>'
-      	    + '</div>' ); */
+      	    + '</div>' );
 
-    $.getJSON('get_url_html', {url: page_url}, function(html) {
+    /* $.getJSON('get_url_html', {url: page_url}, function(html) {
         $("#nl2cmd-web-content-panel").html(html);
         console.log(html);
-	}); 
+	}); */
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
     $("#hide-error-message").click(function() {

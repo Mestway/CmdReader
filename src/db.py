@@ -88,7 +88,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
 
-        # c.execute("ALTER TABLE SearchContent ADD html TEXT")
+        c.execute("ALTER TABLE SearchContent ADD html TEXT")
         # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_html ON SearchContent (html)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
@@ -111,6 +111,7 @@ class DBConnection(object):
         self.conn.close()
 
     # --- URL management ---
+
     def mark_has_no_pairs(self, url, user_id):
         c = self.conn.cursor()
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
@@ -198,6 +199,7 @@ class DBConnection(object):
         self.conn.commit()
 
     # --- Query management ---
+
     def already_searched(self, search_phrase):
         c = self.conn.cursor()
         for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
@@ -253,6 +255,7 @@ class DBConnection(object):
 
 
     # --- User administration ---
+
     def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
         c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',

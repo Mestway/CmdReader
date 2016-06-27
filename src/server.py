@@ -147,6 +147,8 @@ class App(object):
         if not username:
             return False
         # Username format: nl2cmdXX
+        if not username.startswith("nl2cmd"):
+            return False
         user_id = int(username[6:])
         with DBConnection() as db:
             if db.user_exist(user_id):
