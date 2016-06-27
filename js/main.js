@@ -84,7 +84,7 @@ $(document).ready(function () {
         user_report = user_report + '<span>Number of urls skipped:&#9;' + num_urls_skipped + '</span><br>';
     });
     BootstrapDialog.show({
-        title: 'Performance Report'
+        title: 'Performance Report',
         message: user_report,
         buttons: [
             {
