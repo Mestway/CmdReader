@@ -73,6 +73,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
 
+        # c.execute("ALTER TABLE SearchContent ADD html TEXT")
         # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_html ON SearchContent (html)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")

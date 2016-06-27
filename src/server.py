@@ -180,6 +180,8 @@ class App(object):
         cherrypy.session["user_id"] = None
         return True
 
+    # --- Search ---
+
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()

@@ -69,6 +69,7 @@ $(document).ready(function(){
 	// show the url and ask the user to collect data on the target page
 
 	// this tries to load the page
+	var hypothes_header = "https://via.hypothes.is/"
     /* $("#nl2cmd-web-content-panel")
         .html('<object id="web-content-data" width="100%" height="85%" data="' + hypothes_header + page_url + '"/>'
     		+ '<div id="web-content-data-error">'
@@ -89,7 +90,7 @@ $(document).ready(function(){
         $("#nl2cmd-web-content-panel")
         .html(html);
         console.log(html);
-	});
+	}); 
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
     $("#hide-error-message").click(function() {
