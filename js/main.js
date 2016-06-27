@@ -79,7 +79,7 @@ $(document).ready(function () {
   $('#nl2cmd-user-view-report').click(function() {
     $.getJSON("get_user_report", function(data) {
         var user_report = '';
-        user_report = user_report + '<span>Name:&#9;                           ' + data[0] + '</span><br>';
+        user_report = user_report + '<span>======== ' + data[0] + ' ========</span><br>';
         user_report = user_report + '<span>Total number of pairs annotated:&#9;' + data[1] + '</span><br>';
         user_report = user_report + '<span>Number of urls annotated:&#9;       ' + data[2] + '</span><br>';
         user_report = user_report + '<span>Number of urls with no pairs:&#9;   ' + data[3] + '</span><br>';
