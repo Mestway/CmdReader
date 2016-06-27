@@ -1,8 +1,9 @@
 /* --- The page content is only displayable to logged-in users --- */
 var username_prefix = "nl2cmd";
+var user_id;
 
 $.getJSON("get_current_user", function(uid) {
-    var user_id = uid;
+    user_id = uid;
     console.log(user_id);
     if (user_id === null) {
         window.location.replace("/");
