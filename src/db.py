@@ -158,6 +158,16 @@ class DBConnection(object):
         for user, url in c.execute("SELECT user_id, url FROM Skipped"):
             yield (user, url)
 
+    def find_urls_that_is_done(self, n=MAX_RESPONSES):
+        c = self.conn.cursor()
+        for url, count in c.execute("SELECT Urls.url, " +
+                                    "count(InUse.url) as n FROM Urls " +
+                                    "LEFT JOIN (SELECT url FROM NoPairs " +
+                                                "UNION ALL SELECT url FROM Pairs) " +
+                                    "AS InUse ON Urls.url = InUse.url " +
+                                    "GROUP BY Urls.url HAVING n >= ?", (n,)):
+            yield (url, count)
+
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT Urls.url, " +
@@ -166,10 +176,7 @@ class DBConnection(object):
                                                 "UNION ALL SELECT url FROM Pairs) " +
                                     "AS InUse ON Urls.url = InUse.url " +
                                     "GROUP BY Urls.url HAVING n < ?", (n,)):
-            if not self.already_annotated(user_id, url) and \
-                not self.already_skipped(user_id, url) and \
-                not self.duplicate(url):
-                yield (url, count)
+            yield (url, count)
 
     def already_annotated(self, user_id, url):
         c = self.conn.cursor()
@@ -202,11 +209,14 @@ class DBConnection(object):
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
             for url, count in self.find_urls_with_less_responses_than(user_id):
-                print("Leased: " + url)
-                lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
-                if count + lease_count < MAX_RESPONSES:
-                    url_leases.append((url, user_id, now + lease_duration))
-                    return url
+                if not self.already_annotated(user_id, url) and \
+                    not self.already_skipped(user_id, url) and \
+                    not self.duplicate(url):
+                    print("Leased: " + url)
+                    lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
+                    if count + lease_count < MAX_RESPONSES:
+                        url_leases.append((url, user_id, now + lease_duration))
+                        return url
         return None
 
     def skip_url(self, user_id, url):
