@@ -78,6 +78,11 @@ $(document).ready(function () {
 
   $('#nl2cmd-user-view-report').click(function() {
     $.getJSON("get_user_report", function(data) {
+        var encouraging_msg;
+        if (data[1] === 0)
+            encouraging_msg = '       Start annotating and you may check your progress here.       <br>';
+        else
+            encouraging_msg = '              Great Job! Keep going!          <br>';
         var user_report = '';
         user_report = user_report + '<span>======== ' + data[0] + ' ========</span><br>';
         user_report = user_report + '<span>Total number of pairs annotated:&#9;' + data[1] + '</span><br>';
@@ -85,7 +90,7 @@ $(document).ready(function () {
         user_report = user_report + '<span>Number of urls with no pairs:&#9;   ' + data[3] + '</span><br>';
         user_report = user_report + '<span>Number of urls skipped:&#9;         ' + data[4] + '</span><br>';
         user_report = user_report + '<br>';
-        user_report = user_report + '              Great Job! Keep going!          <br>';
+        user_report = user_report + ;
         user_report = user_report + '                    ¯\\_(ツ)_/¯                <br>';
         console.log(user_report)
         BootstrapDialog.show({
