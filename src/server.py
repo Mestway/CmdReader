@@ -8,6 +8,7 @@ import os
 import sys
 reload(sys)
 sys.setdefaultencoding("utf-8")
+import threading
 
 # 3rd party
 import cherrypy
@@ -137,7 +138,6 @@ class App(object):
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def register_user(self, user_id, first_name, last_name):
-        print("hey")
         with DBConnection() as db:
             db.register_user(user_id, first_name, last_name)
             return True
@@ -161,7 +161,6 @@ class App(object):
     @user_id_required
     @cherrypy.tools.json_out()
     def get_current_user(self, user_id):
-        # print(user_id)
         return user_id;
 
     @cherrypy.expose
@@ -220,8 +219,16 @@ class App(object):
             if search_phrase and search_phrase != "RANDOM_SELECTION":
                 self.search_phrase = search_phrase
                 if not db.already_searched(search_phrase):
-                    db.add_urls(search_phrase, search(search_phrase))
+                    url_list = search(search_phrase)
+                    db.add_urls(search_phrase, url_list)
+                    db.add_urls(search_phrase, [url_list[0]], True)
+                    t = threading.Thread(target=self.add_urls, args=(search_phrase, url_list[1:]))
+                    t.start()
             return db.lease_url(user_id=user_id)
+
+    def add_urls(self, search_phrase, urls):
+        with DBConnection() as db:
+            db.add_urls(search_phrase, urls, True)
 
     @cherrypy.expose
     @user_id_required

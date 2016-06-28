@@ -1,7 +1,8 @@
 import datetime
 
-import urllib2
 import socket
+import ssl
+import urllib2
 
 from bs4 import BeautifulSoup
 import random, string
@@ -34,6 +35,14 @@ def distance(f1, f2):
         x &= x - 1
     return ans
 
+def ensure_unicode(content):
+    if isinstance(content, str):
+        try:
+            content = content.decode('utf-8')
+        except UnicodeDecodeError, e:
+            content = content.decode('iso-8859-1')
+    return unicode(content)
+
 def randomstr(length):
    return ''.join(random.choice(string.lowercase) for i in range(length))
 
@@ -48,13 +57,17 @@ def path_rel2abs(content):
 def extract_text_from_url(url):
     hypothes_header = "https://via.hypothes.is/"
     try:
-        html = urllib2.urlopen(hypothes_header + url, timeout=1)
+        html = urllib2.urlopen(hypothes_header + url, timeout=2)
     except urllib2.URLError, e:
-        print("extract_text_from_url() urllib2.URLError")
+        print("Error: extract_text_from_url() urllib2.URLError")
         return "", randomstr(180)
     except socket.timeout, e:
-        print("extract_text_from_url() socket.timeout")
+        print("Error: extract_text_from_url() socket.timeout")
         return "", randomstr(180)
+    except ssl.SSLError, e:
+        print("Error: extract_text_from_url() ssl.SSLError")
+        return "", randomstr(180)
+
 
     html = html.read()
     html = remove_headers(html)
@@ -79,7 +92,7 @@ def extract_text_from_url(url):
 
 class DBConnection(object):
     def __init__(self):
-        self.conn = sqlite3.connect("data.db", detect_types=sqlite3.PARSE_DECLTYPES)
+        self.conn = sqlite3.connect("data.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
         c = self.conn.cursor()
 
         c.execute("CREATE TABLE IF NOT EXISTS Urls    (search_phrase TEXT, url TEXT)")
@@ -117,12 +130,16 @@ class DBConnection(object):
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
         self.conn.commit()
 
-    def add_urls(self, search_phrase, urls):
+    def add_urls(self, search_phrase, urls, caching=False):
         c = self.conn.cursor()
         for url in urls:
-            self.index_url_content(url)
-            c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase, url))
+            if caching:
+                self.index_url_content(url)
+            else:
+                c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase, url))
         self.conn.commit()
+        if not caching:
+            print "%d URLs remembered" % len(urls)
 
     def add_pairs(self, user_id, pairs):
         c = self.conn.cursor()
@@ -185,7 +202,7 @@ class DBConnection(object):
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
             for url, count in self.find_urls_with_less_responses_than(user_id):
-                print(url)
+                print("Leased: " + url)
                 lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                 if count + lease_count < MAX_RESPONSES:
                     url_leases.append((url, user_id, now + lease_duration))
@@ -215,12 +232,16 @@ class DBConnection(object):
 
     def index_url_content(self, url):
         if self.url_indexed(url):
+            print(url + " already indexed")
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
-            print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
+            if isinstance(fingerprint, int):
+                fingerprint = long(fingerprint)
+            else:
+                print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
 
         min_distance = SIMHASH_BITNUM
         c = self.conn.cursor()
@@ -233,7 +254,7 @@ class DBConnection(object):
         # print(fingerprint)
         # print(min_distance)
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, html) VALUES (?, ?, ?, ?)",
-                  (url, str(fingerprint), min_distance, unicode(html)))
+                  (url, str(fingerprint), min_distance, ensure_unicode(html)))
 
     def url_indexed(self, url):
         c = self.conn.cursor()
