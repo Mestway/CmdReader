@@ -134,7 +134,7 @@ class DBConnection(object):
         c = self.conn.cursor()
         for p in pairs:
             c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)",
-                      (user_id, p["url"], p["nl"], p["cmd"]))
+                      (user_id, p["url"], p["nl"].strip(), p["cmd"].strip()))
         self.conn.commit()
 
     def pairs(self):
@@ -163,7 +163,7 @@ class DBConnection(object):
             if caching:
                 self.index_url_content(url)
             else:
-                c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase, url))
+                c.execute("INSERT INTO Urls (search_phrase, url) VALUES (?, ?)", (search_phrase.strip(), url))
         self.conn.commit()
         if not caching:
             print "%d URLs remembered" % len(urls)
@@ -322,7 +322,7 @@ class DBConnection(object):
         c = self.conn.cursor()
         alias = pokemon_name_list[int(user_id) - 1]
         c.execute('INSERT INTO Users (user_id, first_name, last_name, alias) VALUES (?, ?, ?, ?)',
-                  (user_id, first_name, last_name, alias))
+                  (user_id, first_name.strip(), last_name.strip(), alias))
         self.conn.commit()
 
     def user_exist(self, user_id):
