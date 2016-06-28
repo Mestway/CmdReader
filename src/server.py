@@ -182,6 +182,13 @@ class App(object):
                    db.get_num_urls_skipped(user_id)
 
     @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
+    def get_leaderboard(self, user_id):
+        with DBConnection() as db:
+            return db.get_leaderboard(user_id)
+
+    @cherrypy.expose
     @cherrypy.tools.json_out()
     def get_access_code(self, first_name, last_name):
         with DBConnection() as db:

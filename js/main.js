@@ -78,14 +78,14 @@ $(document).ready(function () {
 
   $('#nl2cmd-user-view-report').click(function() {
     $.getJSON("get_user_report", function(data) {
-        console.log(data)
+        // console.log(data)
         var encouraging_msg;
         if (data[1].toString() === '0')
             encouraging_msg = 'You haven\'t submitted any pair so far. Looking forward to your input!<br>';
         else
             encouraging_msg = '              Great Job! Keep going!          <br>';
         var user_report = '';
-        user_report = user_report + '<span>======== ' + data[0] + ' ========</span><br>';
+        // user_report = user_report + '<span></span><br>';
         user_report = user_report + '<span>Total number of pairs annotated:&#9;' + data[1] + '</span><br>';
         user_report = user_report + '<span>Number of urls annotated:&#9;       ' + data[2] + '</span><br>';
         user_report = user_report + '<span>Number of urls with no pairs:&#9;   ' + data[3] + '</span><br>';
@@ -94,7 +94,7 @@ $(document).ready(function () {
         user_report = user_report + encouraging_msg;
         user_report = user_report + '                    ¯\\_(ツ)_/¯                <br>';
         BootstrapDialog.show({
-            title: 'Annotation Statistics',
+            title: '======== ' + data[0] + ' ========',
             message: user_report,
             buttons: [
                 {
@@ -105,6 +105,50 @@ $(document).ready(function () {
                 }
             }]
         });
+    });
+    return false;
+  });
+
+  $('#nl2cmd-user-leaderboard').click(function() {
+    $.getJSON("get_leaderboard", function(data) {
+        console.log(data);
+        if (data.length > 0) {
+            var leaderboard = '<ol type="1">';
+            var on_leaderboard = -1;
+            var encouraging_msg;
+            for (var i = 0; i < data.length; i ++) {
+                var display_name = data[i][1];
+                var num_pairs = data[i][2];
+                if (data[i][0] === user_id) {
+                    display_name = '<b>' + display_name + '</b>';
+                    on_leaderboard = i;
+                }
+                leaderboard = leaderboard + '<span>' + (i+1).toString() + '. ' + display_name + ' (' + num_pairs
+                            + ' pairs)</span><br>';
+            }
+            leaderboard = leaderboard + '</ol>';
+            if (on_leaderboard === 0) {
+                encouraging_msg = '          Excellent! You are No.1!          <br>';
+            } else if (on_leaderboard > 0) {
+                encouraging_msg = '           Great Job! Keep going!         <br>';
+            } else {
+                encouraging_msg = '         Don\'t be discouraged -- annotate more and your name will show here!       <br>';
+            }
+            leaderboard = leaderboard + encouraging_msg;
+            leaderboard = leaderboard + '                  ✌(◕‿-)✌                <br>';
+            BootstrapDialog.show({
+                title: 'Leaderboard',
+                message: leaderboard,
+                buttons: [
+                    {
+                      label: 'Close',
+                      action: function(dialogItself){
+                          window.location.replace("/search.html");
+                          dialogItself.close();
+                    }
+                }]
+            });
+        }
     });
     return false;
   });
