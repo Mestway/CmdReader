@@ -312,6 +312,10 @@ class App(object):
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance)
             res += "</tbody></table>"
 
+            res += "<h3>URLs Finished</h3>"
+            for url, _ in db.find_urls_that_is_done(None):
+                res += url + "<br>"
+
             res += "<h3>Registered Users</h3>"
             res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th></tr></thead><tbody>"
             for user, fname, lname in db.users():
