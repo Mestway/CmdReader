@@ -90,7 +90,7 @@ $(document).ready(function () {
         user_report = user_report + '<span>Number of urls with no pairs:&#9;   ' + data[3] + '</span><br>';
         user_report = user_report + '<span>Number of urls skipped:&#9;         ' + data[4] + '</span><br>';
         user_report = user_report + '<br>';
-        user_report = user_report + ;
+        user_report = user_report + encouraging_msg;
         user_report = user_report + '                    ¯\\_(ツ)_/¯                <br>';
         console.log(user_report)
         BootstrapDialog.show({
