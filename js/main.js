@@ -78,9 +78,10 @@ $(document).ready(function () {
 
   $('#nl2cmd-user-view-report').click(function() {
     $.getJSON("get_user_report", function(data) {
+        console.log(data)
         var encouraging_msg;
-        if (data[1] === 0)
-            encouraging_msg = '       Start annotating and you may check your progress here.       <br>';
+        if (data[1].toString() === '0')
+            encouraging_msg = 'You haven\'t submitted any pair so far. Looking forward to your input!<br>';
         else
             encouraging_msg = '              Great Job! Keep going!          <br>';
         var user_report = '';
@@ -92,7 +93,6 @@ $(document).ready(function () {
         user_report = user_report + '<br>';
         user_report = user_report + encouraging_msg;
         user_report = user_report + '                    ¯\\_(ツ)_/¯                <br>';
-        console.log(user_report)
         BootstrapDialog.show({
             title: 'Annotation Statistics',
             message: user_report,
