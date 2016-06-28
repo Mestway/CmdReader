@@ -1,3 +1,4 @@
+import collections
 import datetime
 
 import socket
@@ -14,6 +15,7 @@ import sqlite3
 import threading
 
 import re
+from fun import pokemon_name_list
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
@@ -112,9 +114,12 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT)")
 
+        # c.execute("ALTER TABLE Users Add alias TEXT")
+
         self.conn.commit()
 
         # self.index_urls()
+        # self.assign_aliases()
 
     def __enter__(self, *args, **kwargs):
         return self
@@ -122,6 +127,28 @@ class DBConnection(object):
     def __exit__(self, *args, **kwargs):
         self.conn.commit()
         self.conn.close()
+
+    # --- Data management ---
+
+    def add_pairs(self, user_id, pairs):
+        c = self.conn.cursor()
+        for p in pairs:
+            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)",
+                      (user_id, p["url"], p["nl"], p["cmd"]))
+        self.conn.commit()
+
+    def pairs(self):
+        c = self.conn.cursor()
+        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
+            yield (user, url, nl, cmd)
+
+    # --- Query management ---
+
+    def already_searched(self, search_phrase):
+        c = self.conn.cursor()
+        for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
+            return True
+        return False
 
     # --- URL management ---
 
@@ -140,18 +167,6 @@ class DBConnection(object):
         self.conn.commit()
         if not caching:
             print "%d URLs remembered" % len(urls)
-
-    def add_pairs(self, user_id, pairs):
-        c = self.conn.cursor()
-        for p in pairs:
-            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)",
-                      (user_id, p["url"], p["nl"], p["cmd"]))
-        self.conn.commit()
-
-    def pairs(self):
-        c = self.conn.cursor()
-        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
-            yield (user, url, nl, cmd)
 
     def skipped(self):
         c = self.conn.cursor()
@@ -215,20 +230,12 @@ class DBConnection(object):
                   (url, user_id))
         self.conn.commit()
 
-    # --- Query management ---
-
-    def already_searched(self, search_phrase):
-        c = self.conn.cursor()
-        for _ in c.execute("SELECT 1 FROM Urls WHERE search_phrase = ? LIMIT 1", (search_phrase,)):
-            return True
-        return False
-
     # --- Search content management ---
 
-    # check if there exists unindexed URLs in the DB and add them to the index
-    def index_urls(self):
-        for url, _ in self.find_urls_with_less_responses_than(None):
-            self.index_url_content(url)
+    # UNUSED: check if there exists unindexed URLs in the DB and add them to the index
+    # def index_urls(self):
+    #     for url, _ in self.find_urls_with_less_responses_than(None):
+    #         self.index_url_content(url)
 
     def index_url_content(self, url):
         if self.url_indexed(url):
@@ -249,10 +256,6 @@ class DBConnection(object):
             fingerprint_dis = distance(fingerprint, long(_fingerprint))
             if fingerprint_dis < min_distance:
                 min_distance = fingerprint_dis
-            # if fingerprint_dis < _min_distance:
-            #     c.execute("UPDATE SearchContent SET min_distance = ? WHERE url = ?", (fingerprint_dis, _url))
-        # print(fingerprint)
-        # print(min_distance)
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, html) VALUES (?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, ensure_unicode(html)))
 
@@ -275,6 +278,17 @@ class DBConnection(object):
             yield (url, fingerprint, min_distance)
 
     # --- User management ---
+    def get_leaderboard(self, user_id):
+        leaderboard = collections.defaultdict(int)
+        for user, _, _, _, in self.pairs():
+            leaderboard[user] += 1
+        print_leaderboard = []
+        for user, num_pairs in sorted(leaderboard.items(), key=lambda x:x[1], reverse=True)[:10]:
+            if user == user_id:
+                print_leaderboard.append((self.get_user_names(user), num_pairs))
+            else:
+                print_leaderboard.append((self.get_user_alias(user), num_pairs))
+        return print_leaderboard
 
     def get_num_pairs_annotated(self, user_id):
         c = self.conn.cursor()
@@ -298,10 +312,17 @@ class DBConnection(object):
 
     # --- User administration ---
 
+    def assign_aliases(self):
+        c = self.conn.cursor()
+        for user, _, _ in self.users():
+            c.execute('UPDATE Users SET alias = ? WHERE user_id = ?', (pokemon_name_list[user-1], user))
+        self.conn.commit()
+
     def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
-        c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',
-                  (user_id, first_name, last_name))
+        alias = pokemon_name_list[user_id - 1]
+        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias) VALUES (?, ?, ?, ?)',
+                  (user_id, first_name, last_name, alias))
         self.conn.commit()
 
     def user_exist(self, user_id):
@@ -313,9 +334,14 @@ class DBConnection(object):
     def get_user_names(self, user_id):
         c = self.conn.cursor()
         # username_prefix = "nl2cmd"
-        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
+        for _, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users WHERE user_id = ?",
                                             (user_id,)):
             return fname + ' ' + lname # + ' (' + username_prefix + '%d)' % user_id
+
+    def get_user_alias(self, user_id):
+        c = self.conn.cursor()
+        for _, alias in c.execute("SELECT user_id, alias FROM Users WHERE user_id = ?", (user_id,)):
+            return alias
 
     def get_access_code(self, first_name, last_name):
         c = self.conn.cursor()
@@ -337,7 +363,7 @@ class DBConnection(object):
     ###### Danger Zone ######
 
     # remove records of a user from the database
-    def remove_user(self, user_id, options="complete"):
+    def remove_user(self, user_id, options="skipped_only"):
         c = self.conn.cursor()
         c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))
         if not options == "skipped_only":
