@@ -78,7 +78,7 @@ $(document).ready(function () {
 
   $('#nl2cmd-user-view-report').click(function() {
     $.getJSON("get_user_report", function(data) {
-        console.log(data)
+        // console.log(data)
         var encouraging_msg;
         if (data[1].toString() === '0')
             encouraging_msg = 'You haven\'t submitted any pair so far. Looking forward to your input!<br>';
@@ -105,6 +105,32 @@ $(document).ready(function () {
                 }
             }]
         });
+    });
+    return false;
+  });
+
+  $('#nl2cmd-user-leaderboard').click(function() {
+    $.getJSON("get_leaderboard", function(data) {
+        console.log(data);
+        if (data.length > 0) {
+            var leaderboard = '<ol type="1">';
+            for (var i = 0; i < data.length; i ++) {
+                leaderboard = leaderboard + '<li>' + data[i][0] + ' (' + data[i][1] + ' pairs)</li>\n';
+            }
+            leaderboard = leaderboard + '</ol>';
+            BootstrapDialog.show({
+                title: 'Leaderboard',
+                message: leaderboard,
+                buttons: [
+                    {
+                      label: 'Close',
+                      action: function(dialogItself){
+                          window.location.replace("/search.html");
+                          dialogItself.close();
+                    }
+                }]
+            });
+        }
     });
     return false;
   });
