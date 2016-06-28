@@ -298,6 +298,14 @@ class App(object):
                         user, url, nl, cmd)
             res += "</tbody></table>"
 
+            res += "<h3>NoPairs URLs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
+            for user, url in db.nopairs():
+                url = url.decode().encode('utf-8')
+                res += "<tr><td>{}</td><td>{}</td></tr>".format(
+                        user, url)
+            res += "</tbody></table>"
+
             res += "<h3>Skipped URLs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
             for user, url in db.skipped():
