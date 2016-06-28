@@ -168,6 +168,11 @@ class DBConnection(object):
         if not caching:
             print "%d URLs remembered" % len(urls)
 
+    def nopairs(self):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM NoPairs"):
+            yield (user, url)
+
     def skipped(self):
         c = self.conn.cursor()
         for user, url in c.execute("SELECT user_id, url FROM Skipped"):
