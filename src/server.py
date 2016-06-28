@@ -76,7 +76,7 @@ def search(phrase):
     service = build("customsearch", "v1",
                     developerKey=site_config.google_api_key)
 
-    numResults = 10         # TODO: decide this number later based on user experience
+    numResults = 50         # TODO: decide this number later based on user experience
     limit = 10              # maximum number of search results returned per query
 
     urls = []
