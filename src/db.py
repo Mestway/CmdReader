@@ -112,7 +112,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT)")
 
         # c.execute("ALTER TABLE Users Add alias TEXT")
 
@@ -285,9 +285,9 @@ class DBConnection(object):
         print_leaderboard = []
         for user, num_pairs in sorted(leaderboard.items(), key=lambda x:x[1], reverse=True)[:10]:
             if user == user_id:
-                print_leaderboard.append((self.get_user_names(user), num_pairs))
+                print_leaderboard.append((user, self.get_user_names(user), num_pairs))
             else:
-                print_leaderboard.append((self.get_user_alias(user), num_pairs))
+                print_leaderboard.append((user, self.get_user_alias(user), num_pairs))
         return print_leaderboard
 
     def get_num_pairs_annotated(self, user_id):

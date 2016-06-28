@@ -114,10 +114,28 @@ $(document).ready(function () {
         console.log(data);
         if (data.length > 0) {
             var leaderboard = '<ol type="1">';
+            var on_leaderboard = -1;
+            var encouraging_msg;
             for (var i = 0; i < data.length; i ++) {
-                leaderboard = leaderboard + '<li>' + data[i][0] + ' (' + data[i][1] + ' pairs)</li>\n';
+                var display_name = data[i][1];
+                var num_pairs = data[i][2];
+                if (data[i][0] === user_id) {
+                    display_name = '<b>' + display_name + '</b>';
+                    on_leaderboard = i;
+                }
+                leaderboard = leaderboard + '<span>' + (i+1).toString() + '. ' + display_name + ' (' + num_pairs
+                            + ' pairs)</span><br>';
             }
             leaderboard = leaderboard + '</ol>';
+            if (on_leaderboard === 0) {
+                encouraging_msg = '          Excellent! You are No.1!          <br>';
+            } else if (on_leaderboard > 0) {
+                encouraging_msg = '           Great Job! Keep going!         <br>';
+            } else {
+                encouraging_msg = '         Don\'t be discouraged -- annotate more and your name will show here!       <br>';
+            }
+            leaderboard = leaderboard + encouraging_msg;
+            leaderboard = leaderboard + '                  ✌(◕‿-)✌                <br>';
             BootstrapDialog.show({
                 title: 'Leaderboard',
                 message: leaderboard,
