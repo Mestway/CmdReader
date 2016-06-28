@@ -340,13 +340,16 @@ class DBConnection(object):
     def remove_user(self, user_id, options="complete"):
         c = self.conn.cursor()
         c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM NoPairs WHERE user_id = ?", (user_id,))
-        c.execute("DELETE FROM Pairs WHERE user_id = ?", (user_id,))
-        if options == "complete":
-            c.execute("DELETE FROM Users WHERE user_id = ?", (user_id,))
-            print("Completely removed user %d from the database" % user_id)
+        if not options == "skipped_only":
+            c.execute("DELETE FROM NoPairs WHERE user_id = ?", (user_id,))
+            c.execute("DELETE FROM Pairs WHERE user_id = ?", (user_id,))
+            if options == "complete":
+                c.execute("DELETE FROM Users WHERE user_id = ?", (user_id,))
+                print("Completely removed user %d from the database" % user_id)
+            else:
+                print("Removed trace of user %d from the database" % user_id)
         else:
-            print("Removed trace of user %d from the database" % user_id)
+            print("Removed skipping history of user %d from the database" % user_id)
 
 
 

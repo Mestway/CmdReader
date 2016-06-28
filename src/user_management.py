@@ -1,5 +1,8 @@
+import sys
 from db import DBConnection
 
 if __name__ == "__main__":
+    user_id = int(sys.argv[1])
+    option = sys.argv[2]
     with DBConnection() as db:
-        db.remove_user(1, "")
+        db.remove_user(user_id, option)
