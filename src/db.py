@@ -320,8 +320,9 @@ class DBConnection(object):
 
     def register_user(self, user_id, first_name, last_name):
         c = self.conn.cursor()
-        c.execute('INSERT INTO Users (user_id, first_name, last_name) VALUES (?, ?, ?)',
-                  (user_id, first_name, last_name))
+        alias = pokemon_name_list[user_id - 1]
+        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias) VALUES (?, ?, ?, ?)',
+                  (user_id, first_name, last_name, alias))
         self.conn.commit()
 
     def user_exist(self, user_id):
