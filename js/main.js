@@ -85,7 +85,7 @@ $(document).ready(function () {
         else
             encouraging_msg = '              Great Job! Keep going!          <br>';
         var user_report = '';
-        user_report = user_report + '<span>======== ' + data[0] + ' ========</span><br>';
+        // user_report = user_report + '<span></span><br>';
         user_report = user_report + '<span>Total number of pairs annotated:&#9;' + data[1] + '</span><br>';
         user_report = user_report + '<span>Number of urls annotated:&#9;       ' + data[2] + '</span><br>';
         user_report = user_report + '<span>Number of urls with no pairs:&#9;   ' + data[3] + '</span><br>';
@@ -94,7 +94,7 @@ $(document).ready(function () {
         user_report = user_report + encouraging_msg;
         user_report = user_report + '                    ¯\\_(ツ)_/¯                <br>';
         BootstrapDialog.show({
-            title: 'Annotation Statistics',
+            title: '======== ' + data[0] + ' ========',
             message: user_report,
             buttons: [
                 {
