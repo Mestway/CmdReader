@@ -313,7 +313,7 @@ class App(object):
             res += "</tbody></table>"
 
             res += "<h3>URLs Finished</h3>"
-            for url, _ in db.find_urls_that_is_done(None):
+            for url, _ in db.find_urls_that_is_done():
                 res += url + "<br>"
 
             res += "<h3>Registered Users</h3>"
