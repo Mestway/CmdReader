@@ -244,7 +244,7 @@ class DBConnection(object):
         now = datetime.datetime.now()
         with url_lease_lock:
             for (url, user, deadline) in url_leases:
-                if url == leased_url and user == user_id and deadline > now:
+                if url == leased_url and user == user_id and deadline > (now + datetime.timedelta(minutes=5)):
                         # the lease hasn't expired yet
                         return
             # add fifteen more minutes to the lease
