@@ -254,7 +254,7 @@ class DBConnection(object):
                         return
             # add fifteen more minutes to the lease
             self.unlease_url(user_id, leased_url)
-            url_leases.append((url, user_id, now + lease_duration))
+            url_leases.append((leased_url, user_id, now + lease_duration))
             print("Renewed lease of " + url + " to " + str(user_id))
 
     def unlease_url(self, user_id, leased_url):
