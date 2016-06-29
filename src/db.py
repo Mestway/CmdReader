@@ -142,7 +142,7 @@ class DBConnection(object):
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
             yield (user, url, nl, cmd)
 
-    def cmds(self):
+    def commands(self):
         c = self.conn.cursor()
         for cmd in c.execute("SELECT DISTINCT cmd FROM Pairs"):
             yield cmd

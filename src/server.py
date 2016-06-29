@@ -294,15 +294,16 @@ class App(object):
         else:
             res += "N/A"
 
-        res += "<h3>Commands collected</h3>"
-        cmds = []
-        for cmd in db.cmds():
-            cmds.append(cmd)
-        res += "{}<br>".format(len(cmds))
-        for cmd in sorted(cmds):
-            res += cmd + "<br>"
-
         with DBConnection() as db:
+            res += "<h3>Commands collected</h3>"
+            cmds = []
+            for cmd in db.commands():
+                cmds.append(cmd)
+            res += "{}<br>".format(len(cmds))
+            for cmd, in sorted(cmds):
+                print(cmd)
+                res += cmd + "<br>"
+
             res += "<h3>URLs in queue</h3>"
             for url, _ in db.find_urls_with_less_responses_than(None):
                 res += url + "<br>"
