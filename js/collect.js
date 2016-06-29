@@ -43,25 +43,37 @@ $(document).ready(function(){
 	console.log(page_url);
 
     var vertical_split_layout_setting = {
-		west__minSize: 100,
-		west__size:	"40%",
-		west__resizable: false,
-		west__onopen_end: function() {
-		    $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
-		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
-		},
-		west__onclose_end: function() {
-		    $("#nl2cmd-web-content-panel").width($("body").width());
-		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
-		},
-		center__onresize_end: function () {
-		    if (west__isClosed) {
-		        $("#nl2cmd-web-content-panel").width($("body").width());
-		    } else {
-		        $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
-		    }
-		    $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
-    	}
+		west: {
+		    // minSize: 100,
+		    size:	"40%",
+		    resizable: false,
+		    /* onopen_start: function() {
+		        $("#nl2cmd-web-working-panel").width($("body").width() * 0.4);
+		    }, */
+            onopen_end: function() {
+                $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+                $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+            },
+            /* onclose_start: function() {
+                $("#nl2cmd-web-working-panel").width(0);
+            }, */
+            onclose_end: function() {
+                $("#nl2cmd-web-content-panel").width($("body").width());
+                $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+            }
+        },
+		center: {
+		    onresize_start: function() {
+		        if (west__isClosed) {
+                    $("#nl2cmd-web-content-panel").width($("body").width());
+                } else {
+                    $("#nl2cmd-web-content-panel").width($("body").width()-$("#nl2cmd-web-working-panel").width());
+                }
+		    },
+		    onresize_end: function () {
+                $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+            }
+        }
     }
 	myLayout = $('body').layout(vertical_split_layout_setting);
 
