@@ -153,13 +153,13 @@ $(document).ready(function () {
     return false;
   });
 
-  /* $('#nl2cmd-user-log-out').click(function() {
+  $('#nl2cmd-user-log-out').click(function() {
         $.ajax({url: "logout_user",
              success:  function(data, status) {
                   console.log("User " + username_prefix + user_id.toString()
                                 + " successfully log out.");
-                  }
+                  window.location.replace("/");
+             }
         });
-        return false;
-  }); */
+  });
 });
