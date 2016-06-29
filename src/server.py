@@ -294,6 +294,14 @@ class App(object):
         else:
             res += "N/A"
 
+        res += "<h3>Commands collected</h3>"
+        cmds = []
+        for cmd in db.cmds():
+            cmds.append(cmd)
+        res += "{}<br>".format(len(cmds))
+        for cmd in sorted(cmds):
+            res += cmd + "<br>"
+
         with DBConnection() as db:
             res += "<h3>URLs in queue</h3>"
             for url, _ in db.find_urls_with_less_responses_than(None):
@@ -309,22 +317,22 @@ class App(object):
                         user, url, nl, cmd)
             res += "</tbody></table>"
 
-            res += "<h3>NoPairs URLs</h3>"
+            """res += "<h3>NoPairs URLs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
             for user, url in db.nopairs():
                 url = url.decode().encode('utf-8')
                 res += "<tr><td>{}</td><td>{}</td></tr>".format(
                         user, url)
             res += "</tbody></table>"
-
-            res += "<h3>Skipped URLs</h3>"
+            """
+            """res += "<h3>Skipped URLs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
             for user, url in db.skipped():
                 url = url.decode().encode('utf-8')
                 res += "<tr><td>{}</td><td>{}</td></tr>".format(
                         user, url)
             res += "</tbody></table>"
-
+            """
             res += "<h3>Search Content</h3>"
             res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th></tr></thead><tbody>"
             for url, fingerprint, min_distance in db.search_content():
