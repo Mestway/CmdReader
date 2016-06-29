@@ -337,11 +337,11 @@ $(document).ready(function(){
       });
 
       /* --- Renew URL lease --- */
-      /* setInterval(function() {
+      setInterval(function() {
         $.ajax({url: "more_time_on_page",
              data: {"current_url": page_url}
         });
-      }, 3e5); */
+      }, 3e5);
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {
