@@ -336,6 +336,13 @@ $(document).ready(function(){
         // safely_redirect = true;
       });
 
+      /* --- Renew URL lease --- */
+      /* setInterval(function() {
+        $.ajax({url: "more_time_on_page",
+             data: {"current_url": page_url}
+        });
+      }, 3e5); */
+
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",

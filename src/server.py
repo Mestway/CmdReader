@@ -197,6 +197,13 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def more_time_on_page(self, user_id, current_url):
+        with DBConnection() as db:
+            db.renew_lease(user_id, current_url)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def logout_user(self, user_id, current_url=None):
         cherrypy.session["user_id"] = None
         if current_url:
