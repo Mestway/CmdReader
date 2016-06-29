@@ -235,7 +235,7 @@ class DBConnection(object):
                     lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                     if count + lease_count < MAX_RESPONSES:
                         url_leases.append((url, user_id, now + lease_duration))
-                        print("Leased: " + url + " to " + str(user))
+                        print("Leased: " + url + " to " + str(user_id))
                         return url
         return None
 
