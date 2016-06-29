@@ -232,22 +232,30 @@ class DBConnection(object):
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
-                    print("Leased: " + url)
                     lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                     if count + lease_count < MAX_RESPONSES:
                         url_leases.append((url, user_id, now + lease_duration))
+                        print("Leased: " + url + " to " + str(user))
                         return url
         return None
 
-    # def renew_lease(self, user_id, leased_url):
-    #     global url_leases
-    #     with url_lease_lock:
-
+    def renew_lease(self, user_id, leased_url, lease_duration=datetime.timedelta(minutes=15)):
+        global url_leases
+        now = datetime.datetime.now()
+        with url_lease_lock:
+            for (url, user, deadline) in url_leases:
+                if url == leased_url and user == user_id and deadline > now:
+                        # the lease hasn't expired yet
+                        return
+            # add fifteen more minutes to the lease
+            self.unlease_url(user_id, leased_url)
+            url_leases.append((url, user_id, now + lease_duration))
+            print("Renewed lease of " + url + " to " + str(user_id))
 
     def unlease_url(self, user_id, leased_url):
         global url_leases
         url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
-                       if url != leased_url or user != user_id]
+                       if url != leased_url or user != user_id ]
 
     def skip_url(self, user_id, url):
         c = self.conn.cursor()
