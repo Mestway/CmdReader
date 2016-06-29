@@ -250,13 +250,13 @@ class DBConnection(object):
             # add fifteen more minutes to the lease
             self.unlease_url(user_id, leased_url)
             url_leases.append((url, user_id, now + lease_duration))
-            print("Renewed lease of " + url + " to " + str(user_id))
+            # print("Renewed lease of " + url + " to " + str(user_id))
 
     def unlease_url(self, user_id, leased_url):
         global url_leases
         url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
                        if url != leased_url or user != user_id ]
-        print("Unleased: " + url + " from " + str(user_id))
+        # print("Unleased: " + url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
         c = self.conn.cursor()
