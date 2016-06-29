@@ -339,11 +339,12 @@ $(document).ready(function(){
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",
-             data: {"user_id": user_id},
+             data: {"current_url": page_url},
              success:  function(data, status) {
                   console.log("User " + username_prefix + user_id.toString()
                                 + " successfully log out.");
-                  }
+                  window.location.replace("/");
+             }
         });
     });
 });

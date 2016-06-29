@@ -239,6 +239,16 @@ class DBConnection(object):
                         return url
         return None
 
+    # def renew_lease(self, user_id, leased_url):
+    #     global url_leases
+    #     with url_lease_lock:
+
+
+    def unlease_url(self, user_id, leased_url):
+        global url_leases
+        url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
+                       if url != leased_url or user != user_id]
+
     def skip_url(self, user_id, url):
         c = self.conn.cursor()
         c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',

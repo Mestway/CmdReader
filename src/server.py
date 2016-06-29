@@ -195,9 +195,13 @@ class App(object):
             return db.get_access_code(first_name, last_name)
 
     @cherrypy.expose
+    @user_id_required
     @cherrypy.tools.json_out()
-    def logout_user(self):
+    def logout_user(self, user_id, current_url=None):
         cherrypy.session["user_id"] = None
+        if current_url:
+            with DBConnection() as db:
+                db.unlease_url(user_id, current_url)
         return True
 
     # --- Search ---

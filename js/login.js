@@ -65,7 +65,7 @@ $(document).ready(function () {
         $.getJSON("user_login", {username: username}, function(login_success) {
             if (login_success) {
                 console.log("login_success");
-                window.location.href = "/search.html";
+                window.location.replace("/search.html");
             } else {
                 BootstrapDialog.show({
                 message: "User " + username + " does not exist. Please make sure the username is correct.",
