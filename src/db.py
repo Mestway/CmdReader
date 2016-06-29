@@ -256,6 +256,7 @@ class DBConnection(object):
         global url_leases
         url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
                        if url != leased_url or user != user_id ]
+        print("Unleased: " + url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
         c = self.conn.cursor()
