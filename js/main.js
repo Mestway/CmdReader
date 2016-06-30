@@ -1,4 +1,5 @@
 /* --- The page content is only displayable to logged-in users --- */
+
 var username_prefix = "nl2cmd";
 var user_id;
 
