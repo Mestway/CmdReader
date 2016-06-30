@@ -301,7 +301,7 @@ class App(object):
                 cmds.append(cmd)
             res += "{}<br>".format(len(cmds))
             for cmd, in sorted(cmds):
-                print(cmd)
+                # print(cmd)
                 res += cmd + "<br>"
 
             res += "<h3>URLs in queue</h3>"
