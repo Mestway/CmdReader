@@ -292,7 +292,7 @@ class App(object):
     def user_record(self, user_id):
         with DBConnection() as db:
             if not db.user_exist(user_id):
-                return "User %d does not exist!" % user_id
+                return "User %s does not exist!" % user_id
 
             num_pairs_annotated = 0
             num_urls_no_pairs = 0
