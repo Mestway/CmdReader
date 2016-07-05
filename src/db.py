@@ -95,6 +95,15 @@ def extract_text_from_url(url):
 class DBConnection(object):
     def __init__(self):
         self.conn = sqlite3.connect("data.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
+
+    def __enter__(self, *args, **kwargs):
+        return self
+
+    def __exit__(self, *args, **kwargs):
+        self.conn.commit()
+        self.conn.close()
+
+    def create_schema(self):
         c = self.conn.cursor()
 
         c.execute("CREATE TABLE IF NOT EXISTS Urls    (search_phrase TEXT, url TEXT)")
@@ -116,17 +125,10 @@ class DBConnection(object):
 
         # c.execute("ALTER TABLE Users Add alias TEXT")
 
-        self.conn.commit()
-
         # self.index_urls()
         # self.assign_aliases()
 
-    def __enter__(self, *args, **kwargs):
-        return self
-
-    def __exit__(self, *args, **kwargs):
         self.conn.commit()
-        self.conn.close()
 
     # --- Data management ---
 
