@@ -420,7 +420,7 @@ class DBConnection(object):
     ###### Danger Zone ######
 
     # remove records of a user from the database
-    def remove_user(self, user_id, options="skipped_only"):
+    def remove_user(self, user_id, options=""):
         c = self.cursor
         if options == "skipped_only":
             c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))

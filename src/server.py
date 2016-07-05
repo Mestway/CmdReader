@@ -300,19 +300,27 @@ class App(object):
 
         with DBConnection() as db:
             res += "<h3>Commands collected</h3>"
+            pairs = []
             cmds = []
+            for _, _, nl, cmd in db.pairs():
+                pairs.append((nl, cmd))
             for cmd in db.commands():
                 cmds.append(cmd)
-            res += "{}<br>".format(len(cmds))
+            res += "{} pairs <br>".format(len(pairs))
+            res += "{} unique commands <br>".format(len(cmds))
             for cmd, in sorted(cmds):
-                # print(cmd)
                 res += cmd + "<br>"
 
-            res += "<h3>URLs in queue</h3>"
+            """res += "<h3>URLs in queue</h3>"
             for url, _ in db.find_urls_with_less_responses_than(None):
                 res += url + "<br>"
+            """
 
-            res += "<h3>Pairs</h3>"
+            res += "<h3>URLs Finished</h3>"
+            for url, _ in db.find_urls_that_is_done():
+                res += url + "<br>"
+
+            """res += "<h3>Pairs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
             for user, url, nl, cmd in db.pairs():
                 url = url.decode().encode('utf-8')
@@ -321,6 +329,7 @@ class App(object):
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                         user, url, nl, cmd)
             res += "</tbody></table>"
+            """
 
             """res += "<h3>NoPairs URLs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
@@ -330,6 +339,7 @@ class App(object):
                         user, url)
             res += "</tbody></table>"
             """
+
             """res += "<h3>Skipped URLs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
             for user, url in db.skipped():
@@ -338,15 +348,12 @@ class App(object):
                         user, url)
             res += "</tbody></table>"
             """
+
             res += "<h3>Search Content</h3>"
             res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th></tr></thead><tbody>"
             for url, fingerprint, min_distance in db.search_content():
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance)
             res += "</tbody></table>"
-
-            res += "<h3>URLs Finished</h3>"
-            for url, _ in db.find_urls_that_is_done():
-                res += url + "<br>"
 
             res += "<h3>Registered Users</h3>"
             res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th></tr></thead><tbody>"
