@@ -168,11 +168,6 @@ class DBConnection(object):
 
     # --- URL management ---
 
-    def mark_has_no_pairs(self, url, user_id):
-        c = self.cursor
-        c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
-        self.conn.commit()
-
     def add_urls(self, search_phrase, urls, caching=False):
         c = self.cursor
         for url in urls:
@@ -183,18 +178,6 @@ class DBConnection(object):
         self.conn.commit()
         if not caching:
             print "%d URLs remembered" % len(urls)
-
-    def nopairs(self):
-        c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM NoPairs"):
-            yield (user, url)
-        c.close()
-
-    def skipped(self):
-        c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM Skipped"):
-            yield (user, url)
-        c.close()
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
@@ -216,6 +199,18 @@ class DBConnection(object):
                                     "AS InUse ON Urls.url = InUse.url " +
                                     "GROUP BY Urls.url HAVING n < ?", (n,)):
             yield (url, count)
+        c.close()
+
+    def nopairs(self):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM NoPairs"):
+            yield (user, url)
+        c.close()
+
+    def skipped(self):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM Skipped"):
+            yield (user, url)
         c.close()
 
     def already_annotated(self, user_id, url):
@@ -241,6 +236,11 @@ class DBConnection(object):
                            (url, SIMHASH_DIFFBIT)):
             return True
         return False
+
+    def mark_has_no_pairs(self, url, user_id):
+        c = self.cursor
+        c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
+        self.conn.commit()
 
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
@@ -334,6 +334,28 @@ class DBConnection(object):
         c.close()
 
     # --- User management ---
+
+    def pairs_by_user(self, user_id):
+        c = self.conn.cursor()
+        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs WHERE user_id = ?",
+                                            (user_id,)):
+            yield (user, url, nl, cmd)
+        c.close()
+
+    def no_pairs_by_user(self, user_id):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM NoPairs WHERE user_id = ?",
+                                   (user_id,)):
+            yield (user, url)
+        c.close()
+
+    def skipped_by_user(self, user_id):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM Skipped WHERE user_id = ?",
+                                   (user_id,)):
+            yield (user, url)
+        c.close()
+
     def get_leaderboard(self, user_id):
         leaderboard = collections.defaultdict(int)
         for user, _, _, _, in self.pairs():
