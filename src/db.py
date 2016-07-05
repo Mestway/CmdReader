@@ -444,6 +444,11 @@ class DBConnection(object):
     # remove records of a user from the database
     def remove_user(self, user_id, options=""):
         c = self.cursor
+
+        if not self.user_exist(user_id):
+            print "User %d does not exist!" % user_id
+            return
+
         if options == "skipped_only":
             c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))
             print("Removed skipping history of user %d from the database" % user_id)

@@ -291,9 +291,8 @@ class App(object):
     @cherrypy.tools.json_out()
     def user_record(self, user_id):
         with DBConnection() as db:
-            user_id = int(user_id)
             if not db.user_exist(user_id):
-                return "User %d not exist!" % user_id
+                return "User %d does not exist!" % user_id
 
             num_pairs_annotated = 0
             num_urls_no_pairs = 0
