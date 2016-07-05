@@ -56,6 +56,10 @@ config = {
     "/collect_page.html": {
         "tools.staticfile.on": True,
         "tools.staticfile.filename": os.path.join(ROOT, "html", "collect_page.html") },
+    "/user_inspection.html": {
+        "tools.staticfile.on":True,
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "user_inspection.html")
+    },
     "/cmd.ico": {
         "tools.staticfile.on": True,
         "tools.staticfile.filename": os.path.join(ROOT, "cmd.ico") },
@@ -282,6 +286,56 @@ class App(object):
     def already_searched(self, search_phrase):
         with DBConnection() as db:
             return db.already_searched(search_phrase)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def user_record(self, user_id):
+        with DBConnection() as db:
+            user_id = int(user_id)
+            if not db.user_exist(user_id):
+                return "User %d not exist!" % user_id
+
+            num_pairs_annotated = 0
+            num_urls_no_pairs = 0
+            num_urls_skipped = 0
+
+            res = "<h3>Pairs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
+            for user, url, nl, cmd in db.pairs_by_user(user_id):
+                url = url.decode().encode('utf-8')
+                nl = nl.decode().encode('utf-8')
+                cmd = cmd.decode().encode('utf-8')
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                            user, url, nl, cmd)
+                num_pairs_annotated += 1
+            res += "</tbody></table>"
+
+            res += "<h3>NoPairs URLs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
+            for user, url in db.no_pairs_by_user(user_id):
+                url = url.decode().encode('utf-8')
+                res += "<tr><td>{}</td><td>{}</td></tr>".format(
+                        user, url)
+                num_urls_no_pairs += 1
+            res += "</tbody></table>"
+
+            res += "<h3>Skipped URLs</h3>"
+            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
+            for user, url in db.skipped_by_user(user_id):
+                url = url.decode().encode('utf-8')
+                res += "<tr><td>{}</td><td>{}</td></tr>".format(
+                        user, url)
+                num_urls_skipped += 1
+            res += "</tbody></table>"
+
+            stats = db.get_user_names(user_id) + "<br>"
+            stats += "<h3>Statistics</h3>"
+            stats += "num pairs annoated:\t%d" % num_pairs_annotated + "<br>"
+            stats += "num urls annoated:\t%d" % db.get_num_urls_annotated(user_id) + "<br>"
+            stats += "num urls no pairs:\t%d" % num_urls_no_pairs + "<br>"
+            stats += "num urls skipped:\t%d" % num_urls_skipped + "<br>"
+
+            return stats + res
 
     @cherrypy.expose
     @admin_only
