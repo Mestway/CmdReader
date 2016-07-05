@@ -295,6 +295,7 @@ class App(object):
                 return "User %s does not exist!" % user_id
 
             num_pairs_annotated = 0
+            commands_annotated = set()
             num_urls_no_pairs = 0
             num_urls_skipped = 0
 
@@ -307,6 +308,7 @@ class App(object):
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                             user, url, nl, cmd)
                 num_pairs_annotated += 1
+                commands_annotated.add(cmd)
             res += "</tbody></table>"
 
             res += "<h3>NoPairs URLs</h3>"
@@ -330,6 +332,7 @@ class App(object):
             stats = db.get_user_names(user_id) + "<br>"
             stats += "<h3>Statistics</h3>"
             stats += "num pairs annoated:\t%d" % num_pairs_annotated + "<br>"
+            stats += "num unique commands annotated:\t%d" % len(commands_annotated) + "<br>"
             stats += "num urls annoated:\t%d" % db.get_num_urls_annotated(user_id) + "<br>"
             stats += "num urls no pairs:\t%d" % num_urls_no_pairs + "<br>"
             stats += "num urls skipped:\t%d" % num_urls_skipped + "<br>"
