@@ -38,6 +38,10 @@ try:
 except Exception as e:
     pass # no problem!
 
+# Create database schema (if it does not exist)
+with DBConnection() as db:
+    db.create_schema()
+
 # CherryPy config
 config = {
     "/": {
