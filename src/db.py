@@ -306,6 +306,7 @@ class DBConnection(object):
                 min_distance = fingerprint_dis
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, html) VALUES (?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, ensure_unicode(html)))
+        self.conn.commit()
 
     def url_indexed(self, url):
         c = self.cursor
