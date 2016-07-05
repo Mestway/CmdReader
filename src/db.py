@@ -109,7 +109,6 @@ class DBConnection(object):
         c = self.cursor
 
         c.execute("CREATE TABLE IF NOT EXISTS Urls    (search_phrase TEXT, url TEXT)")
-
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
@@ -435,8 +434,3 @@ class DBConnection(object):
             print("Removed trace of user %d from the database" % user_id)
         else:
             print("Unrecognized option, please try again.")
-
-
-
-
-
