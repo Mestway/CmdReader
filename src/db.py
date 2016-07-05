@@ -446,7 +446,7 @@ class DBConnection(object):
         c = self.cursor
 
         if not self.user_exist(user_id):
-            print "User %d does not exist!" % user_id
+            print "User %s does not exist!" % user_id
             return
 
         if options == "skipped_only":
