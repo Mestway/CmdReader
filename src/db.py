@@ -110,19 +110,25 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Urls    (search_phrase TEXT, url TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
+        c.execute("CREATE INDEX IF NOT EXISTS Urls_sp  ON Urls (search_phrase)")
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
 
         # c.execute("ALTER TABLE SearchContent ADD html TEXT")
         # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_html ON SearchContent (html)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
+        c.execute("CREATE INDEX IF NOT EXISTS Skipped_idx ON Skipped (user_id, url)")
 
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
+        c.execute("CREATE INDEX IF NOT EXISTS NoPairs_idx ON NoPairs (user_id, url)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
+        c.execute("CREATE INDEX IF NOT EXISTS Pairs_idx ON Pairs (user_id, url)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT)")
+        c.execute("CREATE INDEX IF NOT EXISTS Users_userid ON Users (user_id)")
 
         # c.execute("ALTER TABLE Users Add alias TEXT")
 
