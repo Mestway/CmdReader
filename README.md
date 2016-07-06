@@ -47,4 +47,4 @@ Removes the specified type of trace of a particular user.
 
     $ python src/remove_user_annotation.py user_id url
     
-Removes user_id's annotation on url.
+Removes a specific user's annotation on a specific url.
