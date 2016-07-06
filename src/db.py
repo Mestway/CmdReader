@@ -328,7 +328,7 @@ class DBConnection(object):
     def num_cmd_estimation(self):
         c = self.cursor
         # for url, _ in self.find_urls_with_less_responses_than(None):
-        for url in c.execute("SELECT url FROM SearchContent"):
+        for url, _, _, _ in self.search_content():
             print(url)
             if self.get_url_num_cmds(url) >= 0:
                 continue
