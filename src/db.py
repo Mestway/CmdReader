@@ -214,7 +214,7 @@ class DBConnection(object):
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT SearchContent.url" +
+        for url, count in c.execute("SELECT SearchContent.url, " +
                                     "count(InUse.url) as n FROM " +
                                     "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) AS InUse " +
