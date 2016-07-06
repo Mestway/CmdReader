@@ -93,6 +93,39 @@ def extract_text_from_url(url):
 
     return html, text
 
+def coarse_num_cmd_estimation(text):
+    lines = text.splitlines()
+    num_cmds = 0
+    for line in lines:
+        if not '-' in line:
+            continue
+        if not 'find ' in line:
+            continue
+        if len(line) <= 5:
+            continue
+        num_cmds += 1
+    return num_cmds
+
+# detect "find" command of at least length 3
+def cmd_detection(text):
+    lines = text.splitlines()
+    cmds = []
+    for line in lines:
+        if not '-' in line:
+            continue
+        words = line.split()
+        if len(words) < 3:
+            continue
+        # assume at most one command per line
+        cmd = []
+        expecting_arg = False
+        expecting_opt = False
+        for word in words:
+            if word == "find" and not expecting_arg and not expecting_opt:
+                cmd.append(word)
+                expecting_arg = False
+    return cmds
+ 
 class DBConnection(object):
     def __init__(self):
         self.conn = sqlite3.connect("data.db", detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False)
@@ -300,46 +333,13 @@ class DBConnection(object):
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
             
-    def coarse_num_cmd_estimation(self, text):
-        lines = text.splitlines()
-        num_cmds = 0
-        for line in lines:
-            if not '-' in line:
-                continue
-            if not 'find ' in line:
-                continue
-            if len(line) <= 5:
-                continue
-            num_cmds += 1
-        return num_cmds
-
-    # detect "find" command of at least length 3
-    def cmd_detection(self, text):
-        lines = text.splitlines()
-        cmds = []
-        for line in lines:
-            if not '-' in line:
-                continue
-            words = line.split()
-            if len(words) < 3:
-                continue
-            # assume at most one command per line
-            cmd = []
-            expecting_arg = False
-            expecting_opt = False
-            for word in words:
-                if word == "find" and not expecting_arg and not expecting_opt:
-                    cmd.append(word)
-                    expecting_arg = False
-        return cmds
-
-    def index_url_content(self, url):
+   def index_url_content(self, url):
         if self.url_indexed(url):
             print(url + " already indexed")
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds = self.coarse_num_cmd_estimation(raw_text)
+        num_cmds = coarse_num_cmd_estimation(raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
