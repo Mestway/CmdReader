@@ -324,7 +324,7 @@ class DBConnection(object):
     #         self.index_url_content(url)
 
     def num_cmd_estimation(self):
-        c = self.cursor
+        c = self.conn.cursor()
         # for url, _ in self.find_urls_with_less_responses_than(None):
         for url, _, _, _ in self.search_content():
             print(url)
@@ -579,3 +579,6 @@ class DBConnection(object):
 
         c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
 
+if __name__ == "__main__":
+    with DBConnection() as db:
+        db.num_cmd_estimation()
