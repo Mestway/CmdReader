@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# adapted from: https://github.com/Calvin-L/commandline-helper/blob/master/misc/grammar.py
 
 from __future__ import print_function
 import collections
