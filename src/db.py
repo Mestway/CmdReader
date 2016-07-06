@@ -214,23 +214,25 @@ class DBConnection(object):
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT Urls.url, " +
-                                    "count(InUse.url) as n FROM Urls " +
-                                    "LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) " +
-                                    "AS InUse ON Urls.url = InUse.url " +
-                                    "GROUP BY Urls.url HAVING n >= ?", (n,)):
+        for url, count in c.execute("SELECT SearchContent.url" +
+                                    "count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
             yield (url, count)
         c.close()
 
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT Urls.url, " +
-                                    "count(InUse.url) as n FROM Urls " +
-                                    "LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) " +
-                                    "AS InUse ON Urls.url = InUse.url " +
-                                    "GROUP BY Urls.url HAVING n < ?", (n,)):
+        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
+                                    "count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "GROUP BY SearchContent.url HAVING n < ? " +
+                                    "ORDER BY SearchContent.num_cmds", (n,)):
+            print num_cmds
             yield (url, count)
         c.close()
 
@@ -511,10 +513,12 @@ class DBConnection(object):
             user1_cmds = set(user1_pairs[url]) if url in user1_pairs else set()
             user2_cmds = set(user2_pairs[url]) if url in user2_pairs else set()
             print(url)
-            print("User 1")
-            print(user1_cmds)
-            print("User 2")
-            print(user2_cmds)
+            print("User %s" % user1)
+            for cmd in user1_cmds:
+                print cmd
+            print("User %s" % user2)
+            for cmd in user2_cmds:
+                print cmd
             total_cmds += len(user1_cmds | user2_cmds)
             agree_cmds += len(user1_cmds & user2_cmds)
 
