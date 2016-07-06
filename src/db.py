@@ -20,6 +20,7 @@ from fun import pokemon_name_list
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
 
+
 MAX_RESPONSES = 3
 SIMHASH_BITNUM = 64
 SIMHASH_DIFFBIT = 8
@@ -114,9 +115,10 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
-
         # c.execute("ALTER TABLE SearchContent ADD html TEXT")
-        # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_html ON SearchContent (html)")
+
+        c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
+        c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Skipped_idx ON Skipped (user_id, url)")
@@ -129,11 +131,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Users_userid ON Users (user_id)")
-
         # c.execute("ALTER TABLE Users Add alias TEXT")
-
-        # self.index_urls()
-        # self.assign_aliases()
 
         self.conn.commit()
 
@@ -291,12 +289,34 @@ class DBConnection(object):
     #     for url, _ in self.find_urls_with_less_responses_than(None):
     #         self.index_url_content(url)
 
+    # detect "find" command of at least length 3
+    def cmd_detection(self, text):
+        lines = text.splitlines()
+        cmds = []
+        for line in lines:
+            if not '-' in line:
+                continue
+            words = line.split()
+            if len(words) < 3:
+                continue
+            # assume at most one command per line
+            cmd = []
+            expecting_arg = False
+            expecting_opt = False
+            for word in words:
+                if word == "find" and not expecting_arg and not expecting_opt:
+                    cmd.append(word)
+                    expecting_arg = 
+        return cmds
+
     def index_url_content(self, url):
         if self.url_indexed(url):
             print(url + " already indexed")
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
+        self.cmd_detection(raw_text)
+
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
             if isinstance(fingerprint, int):
