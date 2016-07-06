@@ -230,7 +230,7 @@ class DBConnection(object):
                                     "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " + 
+                                    "GROUP BY SearchContent.url HAVING n < ? " +
                                     "ORDER BY SearchContent.num_cmds", (n,)):
             print num_cmds
             yield (url, count)
