@@ -511,6 +511,7 @@ class DBConnection(object):
         for url in common_urls:
             user1_cmds = set(user1_pairs[url]) if url in user1_pairs else set()
             user2_cmds = set(user2_pairs[url]) if url in user2_pairs else set()
+            print(url)
             print("User 1")
             print(user1_cmds)
             print("User 2")
