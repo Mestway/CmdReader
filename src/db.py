@@ -148,7 +148,7 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
-        c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
+        # c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_ncmd ON SearchContent (num_cmds)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
@@ -169,7 +169,7 @@ class DBConnection(object):
 
         self.conn.commit()
 
-        self.num_cmd_estimation()
+        # self.num_cmd_estimation()
 
     # --- Data management ---
 
@@ -330,10 +330,11 @@ class DBConnection(object):
         for url, _ in self.find_urls_with_less_responses_than(None):
             html, raw_text = extract_text_from_url(url)
             num_cmds = coarse_num_cmd_estimation(raw_text)
+            print "%s estimated number = %d" % (url, num_cmds)
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
             
-   def index_url_content(self, url):
+    def index_url_content(self, url):
         if self.url_indexed(url):
             print(url + " already indexed")
             return
