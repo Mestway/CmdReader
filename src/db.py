@@ -502,7 +502,8 @@ class DBConnection(object):
         for (user, url) in self.no_pairs_by_user(user2):
             user2_nopairs[url] = None
 
-        common_urls = set(user1_pairs + user1_nopairs) & set(user2_pairs + user2_nopairs)
+        common_urls = set(user1_pairs.keys() + user1_nopairs.keys()) & \
+                      set(user2_pairs.keys() + user2_nopairs.keys())
         print("%d common_urls" % len(common_urls))
 
         total_cmds = 0
