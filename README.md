@@ -38,3 +38,13 @@ Important pages:
 
  - `/`: main entry point for users to start collecting data pairs
  - `/status`: server and data collection status info
+
+### User Administration
+
+    $ python src/remove_user_trace.py user_id option
+    
+Removes the specified type of trace of a particular user.
+
+    $ python src/remove_user_annotation.py user_id url
+    
+Removes user_id's annotation on url.
