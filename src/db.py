@@ -448,7 +448,6 @@ class DBConnection(object):
         if not self.user_exist(user_id):
             print "User %s does not exist!" % user_id
             return
-
         if options == "skipped_only":
             c.execute("DELETE FROM Skipped WHERE user_id = ?", (user_id,))
             print("Removed skipping history of user %d from the database" % user_id)
