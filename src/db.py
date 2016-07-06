@@ -329,6 +329,7 @@ class DBConnection(object):
         c = self.cursor
         # for url, _ in self.find_urls_with_less_responses_than(None):
         for url in c.execute("SELECT url FROM SearchContent"):
+            print(url)
             if self.get_url_num_cmds(url) >= 0:
                 continue
             html, raw_text = extract_text_from_url(url)
