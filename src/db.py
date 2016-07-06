@@ -215,23 +215,23 @@ class DBConnection(object):
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT SearchContent.url" +
-                                    "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
+        for url, count in c.execute("SELECT SearchContent.url" + \
+                                    "count(InUse.url) as n FROM " + \
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " + \
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " + \
+                                    "ON SearchContent.url = InUse.url " + \
                                     "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
             yield (url, count)
         c.close()
 
     def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
-                                    "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " +
+        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " + \
+                                    "count(InUse.url) as n FROM " + \
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " + \
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " + \
+                                    "ON SearchContent.url = InUse.url " + \
+                                    "GROUP BY SearchContent.url HAVING n < ? " + \
                                     "ORDER BY SearchContent.num_cmds", (n,)):
             print num_cmds
             yield (url, count)
