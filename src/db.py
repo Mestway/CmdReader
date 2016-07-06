@@ -231,7 +231,7 @@ class DBConnection(object):
                                                 "UNION ALL SELECT url FROM Pairs) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n < ? " +
-                                    "ORDER BY SearchContent.num_cmds", (n,)):
+                                    "ORDER BY SearchContent.num_cmds DESC", (n,)):
             print num_cmds
             yield (url, count)
         c.close()
