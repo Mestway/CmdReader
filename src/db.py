@@ -380,6 +380,7 @@ class DBConnection(object):
 
     # --- User management ---
 
+    # Statistics
     def pairs_by_user(self, user_id):
         c = self.conn.cursor()
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs WHERE user_id = ?",
@@ -433,8 +434,7 @@ class DBConnection(object):
         for count in c.execute("SELECT COUNT (DISTINCT url) FROM Skipped WHERE user_id = ?", (user_id,)):
             return count
 
-    # --- User administration ---
-
+    # Logistics
     def assign_aliases(self):
         c = self.cursor
         for user, _, _ in self.users():
@@ -482,6 +482,40 @@ class DBConnection(object):
         c = self.conn.cursor()
         for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
             yield (user, fname, lname)
+        c.close()
+
+    # inter-comparison
+    def agreement_percent(self, user1, user2):
+        c = self.conn.cursor()
+
+        user1_pairs = collections.defaultdict(list)
+        user1_nopairs = collections.defaultdict()
+        user2_pairs = collections.defaultdict(list)
+        user2_nopairs = collections.defaultdict()
+
+        for (user, url, nl, cmd) in self.pairs_by_user(user1):
+            user1_pairs[url].append(cmd)
+        for (user, url) in self.no_pairs_by_user(user1):
+            user1_nopairs[url] = None
+        for (user, url, nl, cmd) in self.pairs_by_user(user2):
+            user2_pairs[url].append(cmd)
+        for (user, url) in self.no_pairs_by_user(user2):
+            user2_nopairs[url] = None
+
+        common_urls = set(user1_pairs + user1_nopairs) & set(user2_pairs + user2_nopairs)
+        print("%d common_urls" % len(common_urls))
+
+        total_cmds = 0
+        agree_cmds = 0
+        for url in common_urls:
+            user1_cmds = set(user1_pairs[url]) if url in user1_pairs else set()
+            user2_cmds = set(user2_pairs[url]) if url in user2_pairs else set()
+            total_cmds += len(user1_cmds | user2_cmds)
+            agree_cmds += len(user1_cmds & user2_cmds)
+
+        print("%d commands annotated in total" % total_cmds)
+        print("%d commands annotated by both" % agree_cmds)
+        print("percentage agreement = %f" % ((agree_cmds + 0.0) / total_cmds))
         c.close()
 
     ###### Danger Zone ######
