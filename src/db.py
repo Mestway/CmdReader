@@ -149,7 +149,6 @@ class DBConnection(object):
         c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
         # c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
-        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_ncmd ON SearchContent (num_cmds)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -231,7 +230,7 @@ class DBConnection(object):
                                     "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " + 
+                                    "GROUP BY SearchContent.url HAVING n < ? " +
                                     "ORDER BY SearchContent.num_cmds", (n,)):
             print num_cmds
             yield (url, count)
