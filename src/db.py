@@ -168,8 +168,6 @@ class DBConnection(object):
 
         self.conn.commit()
 
-        self.num_cmd_estimation()
-
     # --- Data management ---
 
     def add_pairs(self, user_id, pairs):
