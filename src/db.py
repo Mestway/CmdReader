@@ -214,7 +214,7 @@ class DBConnection(object):
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT SearchContent.url" +
+        for url, count in c.execute("SELECT SearchContent.url, " +
                                     "count(InUse.url) as n FROM " +
                                     "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
                                                 "UNION ALL SELECT url FROM Pairs) AS InUse " +
@@ -489,6 +489,13 @@ class DBConnection(object):
     def agreement_percent(self, user1, user2):
         c = self.conn.cursor()
 
+        if not self.user_exist(user1):
+            print "User %s does not exist!" % user1
+            return
+        if not self.user_exist(user2):
+            print "User %s does not exist!" % user2
+            return
+
         user1_pairs = collections.defaultdict(list)
         user1_nopairs = collections.defaultdict()
         user2_pairs = collections.defaultdict(list)
@@ -555,3 +562,14 @@ class DBConnection(object):
             print("Removed trace of user %d from the database" % user_id)
         else:
             print("Unrecognized option, please try again.")
+
+    # remove a specific user's annotation of a specific url
+    def remove_user_annotation(self, user_id, url):
+        c = self.cursor
+
+        if not self.user_exist(user_id):
+            print "User %s does not exist!" % user_id
+            return
+
+        c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
+
