@@ -306,7 +306,7 @@ class DBConnection(object):
             for word in words:
                 if word == "find" and not expecting_arg and not expecting_opt:
                     cmd.append(word)
-                    expecting_arg = 
+                    expecting_arg = False
         return cmds
 
     def index_url_content(self, url):
