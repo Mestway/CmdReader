@@ -113,9 +113,10 @@ class DBConnection(object):
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
         c.execute("CREATE INDEX IF NOT EXISTS Urls_sp  ON Urls (search_phrase)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, html TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
-        # c.execute("ALTER TABLE SearchContent ADD html TEXT")
+        c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_ncmd ON SearchContent (num_cmds)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -134,6 +135,8 @@ class DBConnection(object):
         # c.execute("ALTER TABLE Users Add alias TEXT")
 
         self.conn.commit()
+
+        self.num_cmd_estimation()
 
     # --- Data management ---
 
@@ -289,6 +292,27 @@ class DBConnection(object):
     #     for url, _ in self.find_urls_with_less_responses_than(None):
     #         self.index_url_content(url)
 
+    def num_cmd_estimation(self):
+        c = self.cursor
+        for url, _ in self.find_urls_with_less_responses_than(None):
+            html, raw_text = extract_text_from_url(url)
+            num_cmds = coarse_num_cmd_estimation(raw_text)
+            c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
+        self.conn.commit() 
+            
+    def coarse_num_cmd_estimation(self, text):
+        lines = text.splitlines()
+        num_cmds = 0
+        for line in lines:
+            if not '-' in line:
+                continue
+            if not 'find ' in line:
+                continue
+            if len(line) <= 5:
+                continue
+            num_cmds += 1
+        return num_cmds
+
     # detect "find" command of at least length 3
     def cmd_detection(self, text):
         lines = text.splitlines()
@@ -315,7 +339,7 @@ class DBConnection(object):
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        self.cmd_detection(raw_text)
+        num_cmds = self.coarse_num_cmd_estimation(raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
@@ -330,8 +354,8 @@ class DBConnection(object):
             fingerprint_dis = distance(fingerprint, long(_fingerprint))
             if fingerprint_dis < min_distance:
                 min_distance = fingerprint_dis
-        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, html) VALUES (?, ?, ?, ?)",
-                  (url, str(fingerprint), min_distance, ensure_unicode(html)))
+        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, html) VALUES (?, ?, ?, ?, ?)",
+                  (url, str(fingerprint), min_distance, num_cmds, ensure_unicode(html)))
         self.conn.commit()
 
     def url_indexed(self, url):
@@ -349,8 +373,8 @@ class DBConnection(object):
 
     def search_content(self):
         c = self.conn.cursor()
-        for url, fingerprint, min_distance in c.execute("SELECT url, fingerprint, min_distance FROM SearchContent"):
-            yield (url, fingerprint, min_distance)
+        for url, fingerprint, min_distance, num_cmds in c.execute("SELECT url, fingerprint, min_distance, num_cmds FROM SearchContent"):
+            yield (url, fingerprint, min_distance, num_cmds)
         c.close()
 
     # --- User management ---
