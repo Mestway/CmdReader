@@ -406,7 +406,7 @@ class App(object):
             """
 
             res += "<h3>Search Content</h3>"
-            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th></tr></thead><tbody>"
+            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th></tr></thead><tbody>"
             for url, fingerprint, min_distance, num_cmds in db.search_content():
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds)
             res += "</tbody></table>"

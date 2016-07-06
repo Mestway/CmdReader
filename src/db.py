@@ -168,7 +168,7 @@ class DBConnection(object):
 
         self.conn.commit()
 
-        # self.num_cmd_estimation()
+        self.num_cmd_estimation()
 
     # --- Data management ---
 
@@ -232,7 +232,6 @@ class DBConnection(object):
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n < ? " +
                                     "ORDER BY SearchContent.num_cmds DESC", (n,)):
-            print num_cmds
             yield (url, count)
         c.close()
 
@@ -328,7 +327,10 @@ class DBConnection(object):
 
     def num_cmd_estimation(self):
         c = self.cursor
-        for url, _ in self.find_urls_with_less_responses_than(None):
+        # for url, _ in self.find_urls_with_less_responses_than(None):
+        for url in c.execute("SELECT url FROM SearchContent"):
+            if self.get_url_num_cmds(url) >= 0:
+                continue
             html, raw_text = extract_text_from_url(url)
             num_cmds = coarse_num_cmd_estimation(raw_text)
             print "%s estimated number = %d" % (url, num_cmds)
@@ -365,6 +367,11 @@ class DBConnection(object):
         for _ in c.execute("SELECT 1 FROM SearchContent WHERE url = ? LIMIT 1", (url,)):
             return True
         return False
+
+    def get_url_num_cmds(self, url):
+        c = self.cursor
+        for _, num_cmds in c.execute("SELECT url, num_cmds FROM SearchContent WHERE url = ?", (url,)):
+            return num_cmds
 
     def get_url_html(self, url):
         c = self.cursor
