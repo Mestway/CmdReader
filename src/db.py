@@ -93,19 +93,6 @@ def extract_text_from_url(url):
 
     return html, text
 
-def coarse_num_cmd_estimation(text):
-    lines = text.splitlines()
-    num_cmds = 0
-    for line in lines:
-        if not '-' in line:
-            continue
-        if not 'find ' in line:
-            continue
-        if len(line) <= 5:
-            continue
-        num_cmds += 1
-    return num_cmds
-
 # detect "find" command of at least length 3
 def cmd_detection(text):
     lines = text.splitlines()
@@ -186,7 +173,8 @@ class DBConnection(object):
     def commands(self):
         c = self.conn.cursor()
         for cmd in c.execute("SELECT DISTINCT cmd FROM Pairs"):
-            yield cmd
+            if "find" in cmd:
+                yield cmd
         c.close()
 
     # --- Query management ---
@@ -331,18 +319,18 @@ class DBConnection(object):
             if self.get_url_num_cmds(url) >= 0:
                 continue
             html, raw_text = extract_text_from_url(url)
-            num_cmds = coarse_num_cmd_estimation(raw_text)
+            num_cmds = self.coarse_cmd_estimation(raw_text)
             print "%s estimated number = %d" % (url, num_cmds)
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
-            
+
     def index_url_content(self, url):
         if self.url_indexed(url):
             print(url + " already indexed")
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds = coarse_num_cmd_estimation(raw_text)
+        num_cmds = self.coarse_cmd_estimation(raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
@@ -360,6 +348,23 @@ class DBConnection(object):
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, html) VALUES (?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, num_cmds, ensure_unicode(html)))
         self.conn.commit()
+
+    def coarse_cmd_estimation(self, url, text):
+        lines = text.splitlines()
+        num_cmds = 0
+        c = self.cursor
+        for line in lines:
+            if not 'find ' in line:
+                continue
+            if len(line) <= 5:
+                continue
+            if len(line) > 10 and not '-' in line:
+                continue
+            num_cmds += 1
+            c.execute("INSERT INTO Commands (url, cmd) VALUES (?, ?)", (url, line))
+        if num_cmds > 0:
+            self.conn.commit()
+        return num_cmds
 
     def url_indexed(self, url):
         c = self.cursor
