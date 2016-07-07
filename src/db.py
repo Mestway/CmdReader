@@ -304,8 +304,8 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT SearchContent.url, " +
                                     "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "SearchContent LEFT JOIN (SELECT DISTINCT url FROM NoPairs " +
+                                                "UNION ALL SELECT DISTINCT url FROM Pairs) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
             yield (url, count)
@@ -315,8 +315,8 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
                                     "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "SearchContent LEFT JOIN (SELECT DISTINCT url FROM NoPairs " +
+                                                "UNION ALL SELECT DISTINCT url FROM Pairs) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n < ? " +
                                     "ORDER BY SearchContent.num_cmds DESC", (n,)):
