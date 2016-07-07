@@ -28,7 +28,7 @@ SIMHASH_DIFFBIT = 8
 # Depending on how often we expect to be doing server updates, we might want to
 # make this information persistent.
 url_leases = []
-url_lease_lock = threading.Lock()
+url_lease_lock = threading.RLock()
 
 def distance(f1, f2):
     x = (f1 ^ f2) & ((1 << SIMHASH_BITNUM) - 1)
@@ -293,8 +293,9 @@ class DBConnection(object):
 
     def unlease_url(self, user_id, leased_url):
         global url_leases
-        url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
-                       if url != leased_url or user != user_id ]
+        with url_lease_lock:
+            url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
+                           if url != leased_url or user != user_id ]
         # print("Unleased: " + url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
