@@ -376,7 +376,7 @@ class App(object):
                 else:
                     res += "<table><tbody>"
                     for cmd, nl in operation_history[user]:
-                        res += "<tr><td>{}</td><td><{}</td></tr>".format(cmd. nl)
+                        res += "<tr><td>{}</td><td><{}</td></tr>".format(cmd, nl)
                     res += "</table></tbody>"
         return res
 
