@@ -319,7 +319,7 @@ class DBConnection(object):
             if self.get_url_num_cmds(url) >= 0:
                 continue
             html, raw_text = extract_text_from_url(url)
-            num_cmds = self.coarse_cmd_estimation(raw_text)
+            num_cmds = self.coarse_cmd_estimation(url, raw_text)
             print "%s estimated number = %d" % (url, num_cmds)
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
@@ -330,7 +330,7 @@ class DBConnection(object):
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds = self.coarse_cmd_estimation(raw_text)
+        num_cmds = self.coarse_cmd_estimation(url, raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
