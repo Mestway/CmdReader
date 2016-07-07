@@ -210,18 +210,21 @@ class App(object):
     @user_id_required
     @cherrypy.tools.json_out()
     @analytics.instrumented
-    def more_time_on_page(self, user_id, current_url):
+    def heartbeat(self, user_id):
+        """
+        The client can periodically call this (every 30 seconds or so) to let
+        the server know that they are still connected.
+        """
         with DBConnection() as db:
-            db.renew_lease(user_id, current_url)
+            db.renew_lease(user_id)
 
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
-    def logout_user(self, user_id, current_url=None):
+    def logout_user(self, user_id):
         cherrypy.session["user_id"] = None
-        if current_url:
-            with DBConnection() as db:
-                db.unlease_url(user_id, current_url)
+        with DBConnection() as db:
+            db.unlease_url(user_id)
         return True
 
     # --- Search ---

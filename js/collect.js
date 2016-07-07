@@ -366,17 +366,14 @@ $(document).ready(function(){
         // safely_redirect = true;
       });
 
-      /* --- Renew URL lease --- */
+      /* --- Renew URL lease every 5 minutes --- */
       setInterval(function() {
-        $.ajax({url: "more_time_on_page",
-             data: {"current_url": page_url}
-        });
+        $.ajax({url: "heartbeat"});
       }, 3e5);
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",
-             data: {"current_url": page_url},
              success:  function(data, status) {
                   console.log("User " + username_prefix + user_id.toString()
                                 + " successfully log out.");
