@@ -361,7 +361,8 @@ class App(object):
             for _, _, nl, cmd in db.pairs():
                 pairs.append((nl, cmd))
             for cmd in db.commands():
-                cmds.append(cmd)
+                if not "find" in cmd:
+                    cmds.append(cmd)
             res += "{} pairs <br>".format(len(pairs))
             res += "{} unique commands <br>".format(len(cmds))
             for cmd, in sorted(cmds):
