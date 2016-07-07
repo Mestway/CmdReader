@@ -22,7 +22,7 @@ html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
 
 
-MAX_RESPONSES = 3
+MAX_RESPONSES = 2
 SIMHASH_BITNUM = 64
 SIMHASH_DIFFBIT = 8
 
