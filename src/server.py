@@ -58,7 +58,10 @@ config = {
         "tools.staticfile.filename": os.path.join(ROOT, "html", "collect_page.html") },
     "/user_inspection.html": {
         "tools.staticfile.on":True,
-        "tools.staticfile.filename": os.path.join(ROOT, "html", "user_inspection.html")
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "user_inspection.html") },
+    "/url_inspection.html": {
+        "tools.staticfile.on":True,
+        "tools.staticfile.filename": os.path.join(ROOT, "html", "url_inspection.html")
     },
     "/cmd.ico": {
         "tools.staticfile.on": True,
