@@ -2,6 +2,7 @@
 
 # builtin
 import argparse
+import collections
 import functools
 import json
 import os
@@ -350,8 +351,34 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def url_opt_history(self, url):
-        return
+    def url_opr_history(self, url=None):
+        operation_history = collections.defaultdict(list)
+        res = ""
+
+        with DBConnection() as db:
+            if not url:
+                url = db.random_select_url()
+                url = url[0]
+            print url
+            url_not_found = True
+            for user, url, nl, cmd in db.pairs_by_url(url):
+                operation_history[user].append((cmd, nl))
+                url_not_found = False
+            for user, url in db.no_pairs_by_url(url):
+                operation_history[user] = None
+                url_not_found = False
+            if url_not_found:
+                return "This is no history associated with this URL yet!"
+            for user in operation_history.keys():
+                res = "<h3> User %s </h3><br>".format(user)
+                if not operation_history[user]:
+                    res += "No Pair<br>"
+                else:
+                    res += "<table><tbody>"
+                    for cmd, nl in operation_history[user]:
+                        res += "<tr><td>{}</td><td><{}</td></tr>".format(cmd. nl)
+                    res += "</table></tbody>"
+        return res
 
     @cherrypy.expose
     @admin_only
