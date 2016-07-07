@@ -173,7 +173,8 @@ class DBConnection(object):
     def commands(self):
         c = self.conn.cursor()
         for cmd in c.execute("SELECT DISTINCT cmd FROM Pairs"):
-            yield cmd
+            if "find" in cmd:
+                yield cmd
         c.close()
 
     # --- Query management ---
