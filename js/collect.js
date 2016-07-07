@@ -182,6 +182,12 @@ $(document).ready(function(){
                   $.ajax({
                         url: "add-pairs",
                         data: {"pairs": JSON.stringify(collected_pairs)},
+                        error: function(request, status, error) {
+                            if (status === null)
+                                alert("Sorry, we caught an HttpError: " + error + ". Please wait for a few seconds and try again.");
+                            else
+                                alert("Sorry, we caught an error: " + status + ". Please wait for a few seconds and try again.");
+                        },
                         success:  function(data, status) {
                           console.log("yoo!" + data);
                           redirect_to_next()
@@ -222,6 +228,12 @@ $(document).ready(function(){
                 $.ajax({
                       url: "no_pairs",
                       data: {"url": page_url},
+                      error: function(request, status, error) {
+                          if (status === null)
+                              alert("Sorry, we caught an HttpError: " + error + ". Please wait for a few seconds and try again.");
+                          else
+                              alert("Sorry, we caught an error: " + status + ". Please wait for a few seconds and try again.");
+                      },
                       success:  function(data, status) {
                         console.log("Yea!" + data);
                         redirect_to_next();
@@ -254,6 +266,12 @@ $(document).ready(function(){
                 // setTimeout(function() {
                 $.ajax({url: "skip_url",
                      data: {"url": page_url},
+                     error: function(request, status, error) {
+                          if (status === null)
+                              alert("Sorry, we caught an HttpError: " + error + ". Please wait for a few seconds and try again.");
+                          else
+                              alert("Sorry, we caught an error: " + status + ". Please wait for a few seconds and try again.");
+                     },
                      success:  function(data, status) {
                           console.log("User " + username_prefix + user_id.toString()
                                         + " chose to skip url " + page_url + ".");
@@ -348,17 +366,14 @@ $(document).ready(function(){
         // safely_redirect = true;
       });
 
-      /* --- Renew URL lease --- */
+      /* --- Renew URL lease every 5 minutes --- */
       setInterval(function() {
-        $.ajax({url: "more_time_on_page",
-             data: {"current_url": page_url}
-        });
+        $.ajax({url: "heartbeat"});
       }, 3e5);
 
       /* --- User log out --- */
       $('#user-log-out').click(function() {
         $.ajax({url: "logout_user",
-             data: {"current_url": page_url},
              success:  function(data, status) {
                   console.log("User " + username_prefix + user_id.toString()
                                 + " successfully log out.");

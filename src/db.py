@@ -94,7 +94,7 @@ def extract_text_from_url(url):
 
     return html, text
 
-# detect "find" command of at least length 3
+# TODO: complete this function that detects "find" command of at least length 3 from arbitrary string
 def cmd_detection(text):
     lines = text.splitlines()
     cmds = []
@@ -284,25 +284,31 @@ class DBConnection(object):
         return None
 
     @analytics.instrumented
-    def renew_lease(self, user_id, leased_url, lease_duration=datetime.timedelta(minutes=15)):
+    def renew_lease(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
         now = datetime.datetime.now()
+        new_expiration = now + lease_duration
         with url_lease_lock:
-            for (url, user, deadline) in url_leases:
-                if url == leased_url and user == user_id and deadline > (now + datetime.timedelta(minutes=5)):
-                    # the lease hasn't expired yet
-                    return
-            # add fifteen more minutes to the lease
-            self.unlease_url(user_id, leased_url)
-            url_leases.append((leased_url, user_id, now + lease_duration))
+            url = self.unlease_url(user_id)
+            url_leases.append((url, user_id, new_expiration))
             # print("Renewed lease of " + url + " to " + str(user_id))
 
-    def unlease_url(self, user_id, leased_url):
+    def unlease_url(self, user_id):
+        """
+        Unleases the URL associated with the given user_id and returns it
+        (or None if the user had no leased URL).
+        """
         global url_leases
+        leased_url = None
         with url_lease_lock:
+            for (url, user, deadline) in url_leases:
+                if user == user_id:
+                    leased_url = url
+                    break
             url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
-                           if url != leased_url or user != user_id ]
-        # print("Unleased: " + url + " from " + str(user_id))
+                           if user != user_id ]
+        return leased_url
+        # print("Unleased " + leased_url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
         c = self.cursor
@@ -557,7 +563,7 @@ class DBConnection(object):
     # remove records of a user from the database
     def remove_user(self, user_id, options=""):
         c = self.cursor
-
+        user_id = int(user_id)
         if not self.user_exist(user_id):
             print "User %s does not exist!" % user_id
             return
@@ -590,6 +596,7 @@ class DBConnection(object):
             return
 
         c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
+        print("Removed annotations of %s from user %s" % (url, user_id))
 
 if __name__ == "__main__":
     with DBConnection() as db:
