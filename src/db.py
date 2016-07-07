@@ -28,7 +28,7 @@ SIMHASH_DIFFBIT = 8
 # Depending on how often we expect to be doing server updates, we might want to
 # make this information persistent.
 url_leases = []
-url_lease_lock = threading.Lock()
+url_lease_lock = threading.RLock()
 
 def distance(f1, f2):
     x = (f1 ^ f2) & ((1 << SIMHASH_BITNUM) - 1)
@@ -284,17 +284,18 @@ class DBConnection(object):
         with url_lease_lock:
             for (url, user, deadline) in url_leases:
                 if url == leased_url and user == user_id and deadline > (now + datetime.timedelta(minutes=5)):
-                        # the lease hasn't expired yet
-                        return
+                    # the lease hasn't expired yet
+                    return
             # add fifteen more minutes to the lease
             self.unlease_url(user_id, leased_url)
-            url_leases.append((url, user_id, now + lease_duration))
+            url_leases.append((leased_url, user_id, now + lease_duration))
             # print("Renewed lease of " + url + " to " + str(user_id))
 
     def unlease_url(self, user_id, leased_url):
         global url_leases
-        url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
-                       if url != leased_url or user != user_id ]
+        with url_lease_lock:
+            url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
+                           if url != leased_url or user != user_id ]
         # print("Unleased: " + url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
@@ -318,7 +319,7 @@ class DBConnection(object):
             if self.get_url_num_cmds(url) >= 0:
                 continue
             html, raw_text = extract_text_from_url(url)
-            num_cmds = self.coarse_cmd_estimation(raw_text)
+            num_cmds = self.coarse_cmd_estimation(url, raw_text)
             print "%s estimated number = %d" % (url, num_cmds)
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
@@ -329,7 +330,7 @@ class DBConnection(object):
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds = self.coarse_cmd_estimation(raw_text)
+        num_cmds = self.coarse_cmd_estimation(url, raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
