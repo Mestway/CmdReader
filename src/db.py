@@ -294,9 +294,9 @@ class DBConnection(object):
         self.conn.commit()
 
     def random_select_url(self):
-        for url in self.find_urls_that_is_done():
+        for url, count in self.find_urls_that_is_done():
             return url
-        for url in self.find_urls_with_less_responses_than():
+        for url, count in self.find_urls_with_less_responses_than():
             return url
 
     # Statistics
