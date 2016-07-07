@@ -18,6 +18,7 @@ import apiclient.errors as errors
 # local
 from db import DBConnection
 import util
+import analytics
 
 # Root location where we can find resource files.
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -205,6 +206,7 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    @analytics.instrumented
     def more_time_on_page(self, user_id, current_url):
         with DBConnection() as db:
             db.renew_lease(user_id, current_url)
@@ -239,6 +241,7 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    @analytics.instrumented
     def pick_url(self, user_id, search_phrase=None):
         with DBConnection() as db:
             # save search results
@@ -342,8 +345,27 @@ class App(object):
     @cherrypy.expose
     @admin_only
     def status(self):
+        def headers(cols):
+            return "<thead><tr>" + "".join("<th>{}</th>".format(col) for col in cols) + "</tr></thead>"
+        def row(cols):
+            return "<tr>" + "".join("<td>{}</td>".format(col) for col in cols) + "</tr>"
+
         import db
         res = "<html>"
+
+        a = analytics.get()
+        res += "<h3>Analytics</h3>"
+        res += "<table>" + headers(["function", "# calls", "# exceptions", "min time (s)", "avg. time (s)", "max time (s)"])
+        res += "<tbody>"
+        for key, entry in sorted(a.items()):
+            res += row([
+                key,
+                entry["num_calls"],
+                entry["num_exceptions"],
+                "{:.3f}".format(entry["min_time"]),
+                "{:.3f}".format(float(entry["total_time"]) / float(entry["num_calls"])),
+                "{:.3f}".format(entry["max_time"])])
+        res += "</tbody></table>"
 
         res += "<h3>Active URL leases</h3>"
         if db.url_leases:
