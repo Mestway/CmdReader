@@ -16,6 +16,7 @@ import threading
 
 import re
 from fun import pokemon_name_list
+import analytics
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
@@ -126,6 +127,7 @@ class DBConnection(object):
         self.conn.commit()
         self.conn.close()
 
+    @analytics.instrumented
     def create_schema(self):
         c = self.cursor
 
@@ -157,6 +159,7 @@ class DBConnection(object):
 
     # --- Data management ---
 
+    @analytics.instrumented
     def add_pairs(self, user_id, pairs):
         c = self.cursor
         for p in pairs:
@@ -186,6 +189,7 @@ class DBConnection(object):
 
     # --- URL management ---
 
+    @analytics.instrumented
     def add_urls(self, search_phrase, urls, caching=False):
         c = self.cursor
         for url in urls:
@@ -261,6 +265,7 @@ class DBConnection(object):
         c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
         self.conn.commit()
 
+    @analytics.instrumented
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
         now = datetime.datetime.now()
@@ -278,6 +283,7 @@ class DBConnection(object):
                         return url
         return None
 
+    @analytics.instrumented
     def renew_lease(self, user_id, leased_url, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
         now = datetime.datetime.now()
@@ -324,6 +330,7 @@ class DBConnection(object):
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
         self.conn.commit() 
 
+    @analytics.instrumented
     def index_url_content(self, url):
         if self.url_indexed(url):
             print(url + " already indexed")
