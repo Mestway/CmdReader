@@ -346,6 +346,11 @@ class App(object):
             return stats + res
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def url_opt_history(self, url):
+        return
+
+    @cherrypy.expose
     @admin_only
     def status(self):
         def headers(cols):

@@ -94,7 +94,7 @@ def extract_text_from_url(url):
 
     return html, text
 
-# detect "find" command of at least length 3
+# TODO: complete this function that detects "find" command of at least length 3 from arbitrary string
 def cmd_detection(text):
     lines = text.splitlines()
     cmds = []
@@ -557,7 +557,7 @@ class DBConnection(object):
     # remove records of a user from the database
     def remove_user(self, user_id, options=""):
         c = self.cursor
-
+        user_id = int(user_id)
         if not self.user_exist(user_id):
             print "User %s does not exist!" % user_id
             return
@@ -590,6 +590,7 @@ class DBConnection(object):
             return
 
         c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
+        print("Removed annotations of %s from user %s" % (url, user_id))
 
 if __name__ == "__main__":
     with DBConnection() as db:
