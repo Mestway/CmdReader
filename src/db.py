@@ -201,29 +201,6 @@ class DBConnection(object):
         if not caching:
             print "%d URLs remembered" % len(urls)
 
-    def find_urls_that_is_done(self, n=MAX_RESPONSES):
-        c = self.conn.cursor()
-        for url, count in c.execute("SELECT SearchContent.url, " +
-                                    "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
-            yield (url, count)
-        c.close()
-
-    def find_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
-        c = self.conn.cursor()
-        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
-                                    "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
-                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " +
-                                    "ORDER BY SearchContent.num_cmds DESC", (n,)):
-            yield (url, count)
-        c.close()
-
     def nopairs(self):
         c = self.conn.cursor()
         for user, url in c.execute("SELECT user_id, url FROM NoPairs"):
@@ -272,7 +249,7 @@ class DBConnection(object):
         with url_lease_lock:
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
-            for url, count in self.find_urls_with_less_responses_than(user_id):
+            for url, count in self.find_urls_with_less_responses_than(MAX_RESPONSES):
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
@@ -315,6 +292,57 @@ class DBConnection(object):
         c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',
                   (url, user_id))
         self.conn.commit()
+
+    def random_select_url(self):
+        for url in self.find_urls_that_is_done():
+            return url
+        for url in self.find_urls_with_less_responses_than():
+            return url
+
+    # Statistics
+    def find_urls_that_is_done(self, n=MAX_RESPONSES):
+        c = self.conn.cursor()
+        for url, count in c.execute("SELECT SearchContent.url, " +
+                                    "count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
+            yield (url, count)
+        c.close()
+
+    def find_urls_with_less_responses_than(self, n=MAX_RESPONSES):
+        c = self.conn.cursor()
+        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
+                                    "count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url FROM NoPairs " +
+                                                "UNION ALL SELECT url FROM Pairs) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "GROUP BY SearchContent.url HAVING n < ? " +
+                                    "ORDER BY SearchContent.num_cmds DESC", (n,)):
+            yield (url, count)
+        c.close()
+
+    def pairs_by_url(self, url):
+        c = self.conn.cursor()
+        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs WHERE url = ?",
+                                            (url,)):
+            yield (user, url, nl, cmd)
+        c.close()
+
+    def no_pairs_by_url(self, url):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM NoPairs WHERE url = ?",
+                                   (url,)):
+            yield (user, url)
+        c.close()
+
+    def skipped_by_url(self, url):
+        c = self.conn.cursor()
+        for user, url in c.execute("SELECT user_id, url FROM Skipped WHERE url = ?",
+                                   (url,)):
+            yield (user, url)
+        c.close()
 
     # --- Search content management ---
 
