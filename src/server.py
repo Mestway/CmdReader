@@ -370,7 +370,7 @@ class App(object):
             if url_not_found:
                 return "This is no history associated with this URL yet!"
             for user in operation_history.keys():
-                res = "<h3> User %s </h3><br>".format(user)
+                res = "<h3> User {} </h3><br>".format(user)
                 if not operation_history[user]:
                     res += "No Pair<br>"
                 else:
@@ -378,7 +378,7 @@ class App(object):
                     for cmd, nl in operation_history[user]:
                         res += "<tr><td>{}</td><td><{}</td></tr>".format(cmd, nl)
                     res += "</table></tbody>"
-        return res
+        return url, res
 
     @cherrypy.expose
     @admin_only

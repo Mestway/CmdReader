@@ -10,7 +10,8 @@ $(document).ready(function () {
         console.log(url)
         $.ajax({url: "url_opr_history",
                 data: {"url": url},
-                success:  function(html) {
+                success:  function(url, html) {
+                    $('#url').val(url);
                     $('#url-record-panel').html(html);
                 }
         });
