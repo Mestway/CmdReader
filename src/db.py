@@ -284,25 +284,31 @@ class DBConnection(object):
         return None
 
     @analytics.instrumented
-    def renew_lease(self, user_id, leased_url, lease_duration=datetime.timedelta(minutes=15)):
+    def renew_lease(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
         now = datetime.datetime.now()
+        new_expiration = now + lease_duration
         with url_lease_lock:
-            for (url, user, deadline) in url_leases:
-                if url == leased_url and user == user_id and deadline > (now + datetime.timedelta(minutes=5)):
-                    # the lease hasn't expired yet
-                    return
-            # add fifteen more minutes to the lease
-            self.unlease_url(user_id, leased_url)
-            url_leases.append((leased_url, user_id, now + lease_duration))
+            url = self.unlease_url(user_id)
+            url_leases.append((url, user_id, new_expiration))
             # print("Renewed lease of " + url + " to " + str(user_id))
 
-    def unlease_url(self, user_id, leased_url):
+    def unlease_url(self, user_id):
+        """
+        Unleases the URL associated with the given user_id and returns it
+        (or None if the user had no leased URL).
+        """
         global url_leases
+        leased_url = None
         with url_lease_lock:
+            for (url, user, deadline) in url_leases:
+                if user == user_id:
+                    leased_url = url
+                    break
             url_leases = [ (url, user, deadline) for (url, user, deadline) in url_leases \
-                           if url != leased_url or user != user_id ]
-        # print("Unleased: " + url + " from " + str(user_id))
+                           if user != user_id ]
+        return leased_url
+        # print("Unleased " + leased_url + " from " + str(user_id))
 
     def skip_url(self, user_id, url):
         c = self.cursor
