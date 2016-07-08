@@ -466,9 +466,9 @@ class App(object):
             """
 
             res += "<h3>Search Content</h3>"
-            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th></tr></thead><tbody>"
-            for url, fingerprint, min_distance, num_cmds in db.search_content():
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds)
+            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th><th>number of visits</th></tr></thead><tbody>"
+            for url, fingerprint, min_distance, num_cmds, num_visits in db.search_content():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds, num_visits)
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
