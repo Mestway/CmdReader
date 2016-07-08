@@ -292,7 +292,10 @@ class DBConnection(object):
         with url_lease_lock:
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
-            for url, count in self.find_urls_with_less_responses_than(MAX_RESPONSES):
+            # self.find_urls_with_less_responses_than(MAX_RESPONSES)
+            find_urls = self.find_urls_with_reference(1) if self.get_user_time_stamp(user_id) < 1 else \
+                        self.find_unannotated_urls()
+            for url, count in find_urls:
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
@@ -371,6 +374,18 @@ class DBConnection(object):
         for url, count in c.execute("SELECT url, num_visits FROM SearchContent WHERE num_visits < ?", (n,)):
             yield (url, count)
         c.close()
+
+    def find_urls_with_reference(self, n=1):
+        c = self.conn.cursor()
+        for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
+                                              "ORDER BY num_cmds DESC", (n,)):
+            yield (url, count)
+
+    def find_unannotated_urls(self):
+        c = self.conn.cursor()
+        for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
+                                              "ORDER BY num_cmds DESC"):
+            yield (url, count)
 
     def pairs_by_url(self, url):
         c = self.conn.cursor()
