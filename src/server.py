@@ -310,32 +310,32 @@ class App(object):
             num_urls_skipped = 0
 
             res = "<h3>Pairs</h3>"
-            res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
-            for user, url, nl, cmd in db.pairs_by_user(user_id):
+            res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th><th>ts</th></tr></thead><tbody>"
+            for user, url, nl, cmd, time_stamp in db.pairs_by_user(user_id):
                 url = url.decode().encode('utf-8')
                 nl = nl.decode().encode('utf-8')
                 cmd = cmd.decode().encode('utf-8')
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
-                            user, url, nl, cmd)
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                            user, url, nl, cmd, time_stamp)
                 num_pairs_annotated += 1
                 commands_annotated.add(cmd)
             res += "</tbody></table>"
 
             res += "<h3>NoPairs URLs</h3>"
-            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
-            for user, url in db.no_pairs_by_user(user_id):
+            res += "<table><thead><tr><th>user</th><th>url</th><th>ts</th></tr></thead><tbody>"
+            for user, url, time_stamp in db.no_pairs_by_user(user_id):
                 url = url.decode().encode('utf-8')
-                res += "<tr><td>{}</td><td>{}</td></tr>".format(
-                        user, url)
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                        user, url, time_stamp)
                 num_urls_no_pairs += 1
             res += "</tbody></table>"
 
             res += "<h3>Skipped URLs</h3>"
-            res += "<table><thead><tr><th>user</th><th>url</th></tr></thead><tbody>"
-            for user, url in db.skipped_by_user(user_id):
+            res += "<table><thead><tr><th>user</th><th>url</th><th>ts</th></tr></thead><tbody>"
+            for user, url, time_stamp in db.skipped_by_user(user_id):
                 url = url.decode().encode('utf-8')
-                res += "<tr><td>{}</td><td>{}</td></tr>".format(
-                        user, url)
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(
+                        user, url, time_stamp)
                 num_urls_skipped += 1
             res += "</tbody></table>"
 
@@ -418,7 +418,7 @@ class App(object):
             res += "<h3>Commands collected</h3>"
             pairs = []
             cmds = []
-            for _, _, nl, cmd in db.pairs():
+            for _, _, nl, cmd, _ in db.pairs():
                 pairs.append((nl, cmd))
             for cmd in db.commands():
                 if "find" in cmd[0]:
