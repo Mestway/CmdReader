@@ -548,7 +548,7 @@ class DBConnection(object):
     def register_user(self, user_id, first_name, last_name):
         c = self.cursor
         alias = pokemon_name_list[int(user_id) - 1]
-        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias, time_stemp) VALUES (?, ?, ?, ?, ?)',
+        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias, time_stamp) VALUES (?, ?, ?, ?, ?)',
                   (user_id, first_name.strip(), last_name.strip(), alias, 0))
         self.conn.commit()
 
@@ -689,7 +689,7 @@ class DBConnection(object):
 
 if __name__ == "__main__":
     with DBConnection() as db:
-        db.create_schema()
+        # db.create_schema()
         # db.num_cmd_estimation()
         # db.count_num_visits()
         db.assign_time_stamps()
