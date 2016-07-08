@@ -358,7 +358,7 @@ class App(object):
         with DBConnection() as db:
             if not url:
                 url, count = db.random_select_url()
-            print url, count
+                print url, count
             url_not_found = True
             for user, url, nl, cmd in db.pairs_by_url(url):
                 operation_history[user].append((cmd, nl))
