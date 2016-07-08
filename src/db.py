@@ -465,7 +465,7 @@ class DBConnection(object):
     def search_content(self):
         c = self.conn.cursor()
         for url, fingerprint, min_distance, num_cmds, num_visits in \
-                c.execute("SELECT url, fingerprint, min_distance, num_cmds, num_visits FROM SearchContent" +
+                c.execute("SELECT url, fingerprint, min_distance, num_cmds, num_visits FROM SearchContent " +
                           "ORDER BY num_cmds DESC"):
             yield (url, fingerprint, min_distance, num_cmds, num_visits)
         c.close()
