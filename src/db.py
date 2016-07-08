@@ -566,7 +566,7 @@ class DBConnection(object):
         user_id = self.max_user_id() + 1
         alias = pokemon_name_list[user_id - 1]
         c.execute('INSERT INTO Users (user_id, first_name, last_name, alias, time_stamp) VALUES (?, ?, ?, ?, ?)',
-                  (user_id, first_name.strip(), last_name.strip(), alias.decode().encode('utf-8'), 0))
+                  (user_id, first_name.strip(), last_name.strip(), alias.decode('utf-8'), 0))
         self.conn.commit()
         return user_id
 
