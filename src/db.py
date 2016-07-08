@@ -139,7 +139,7 @@ class DBConnection(object):
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
         # c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
         # c.execute("ALTER TABLE SearchContent ADD num_visits INT")
-        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_visits ON SearchContent (num_visits)")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_cmds ON SearchContent (num_cmds)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -561,12 +561,14 @@ class DBConnection(object):
             c.execute('UPDATE Users SET alias = ? WHERE user_id = ?', (pokemon_name_list[user-1], user))
         self.conn.commit()
 
-    def register_user(self, user_id, first_name, last_name):
+    def register_user(self, first_name, last_name):
         c = self.cursor
-        alias = pokemon_name_list[int(user_id) - 1]
+        user_id = self.max_user_id() + 1
+        alias = pokemon_name_list[user_id - 1]
         c.execute('INSERT INTO Users (user_id, first_name, last_name, alias, time_stamp) VALUES (?, ?, ?, ?, ?)',
                   (user_id, first_name.strip(), last_name.strip(), alias, 0))
         self.conn.commit()
+        return user_id
 
     def user_exist(self, user_id):
         c = self.cursor
@@ -602,6 +604,11 @@ class DBConnection(object):
                                     (first_name, last_name)):
             return user
         return -1
+
+    def max_user_id(self):
+        c = self.cursor
+        for u, in c.execute("SELECT max(user_id) FROM Users"):
+            return u
 
     def num_users(self):
         c = self.cursor

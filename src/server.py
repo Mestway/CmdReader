@@ -150,10 +150,9 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    def register_user(self, user_id, first_name, last_name):
+    def register_user(self, first_name, last_name):
         with DBConnection() as db:
-            db.register_user(user_id, first_name, last_name)
-            return True
+            return db.register_user(first_name, last_name)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
