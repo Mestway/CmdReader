@@ -135,9 +135,11 @@ class DBConnection(object):
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
         c.execute("CREATE INDEX IF NOT EXISTS Urls_sp  ON Urls (search_phrase)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, html TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, num_visits INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
         # c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
+        c.execute("ALTER TABLE SearchContent ADD num_visits INT")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_visits ON SearchContent (num_visits)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -159,12 +161,19 @@ class DBConnection(object):
 
     # --- Data management ---
 
+    def record_visit(self, url):
+        c = self.cursor
+        c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,))
+
     @analytics.instrumented
     def add_pairs(self, user_id, pairs):
         c = self.cursor
+        url = None
         for p in pairs:
+            url = p["url"]
             c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)",
-                      (user_id, p["url"], p["nl"].strip(), p["cmd"].strip()))
+                      (user_id, url, p["nl"].strip(), p["cmd"].strip()))
+        self.record_visit(url)
         self.conn.commit()
 
     def pairs(self):
@@ -237,11 +246,6 @@ class DBConnection(object):
             return True
         return False
 
-    def mark_has_no_pairs(self, url, user_id):
-        c = self.cursor
-        c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)", (url, user_id))
-        self.conn.commit()
-
     @analytics.instrumented
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
@@ -287,6 +291,13 @@ class DBConnection(object):
         return leased_url
         # print("Unleased " + leased_url + " from " + str(user_id))
 
+    def mark_has_no_pairs(self, url, user_id):
+        c = self.cursor
+        c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)",
+                  (url, user_id))
+        self.record_visit(url)
+        self.conn.commit()
+
     def skip_url(self, user_id, url):
         c = self.cursor
         c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',
@@ -300,6 +311,22 @@ class DBConnection(object):
             return url, count
 
     # Statistics
+    def count_num_visits(self, n=10):
+        c = self.conn.cursor()
+        num_visits = {}
+        for url, count in c.execute("SELECT SearchContent.url, count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
+                                            "UNION ALL SELECT url, user_id FROM Pairs) " +
+                                            "GROUP BY url, user_id) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "GROUP BY SearchContent.url"):
+            num_visits[url] = count
+        for url, count in num_visits.items():
+            print url, count
+            c.execute("UPDATE SearchContent SET num_visits = ? WHERE url = ?", (count, url))
+        self.conn.commit()
+        c.close()
+
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT SearchContent.url, " +
@@ -313,14 +340,7 @@ class DBConnection(object):
 
     def find_urls_with_less_responses_than(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
-                                    "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
-                                            "UNION ALL SELECT url, user_id FROM Pairs) " +
-                                            "GROUP BY url, user_id) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " +
-                                    "ORDER BY SearchContent.num_cmds DESC", (n,)):
+        for url, count in c.execute("SELECT url, num_visits FROM SearchContent WHERE num_visits < ?", (n,)):
             yield (url, count)
         c.close()
 
@@ -403,8 +423,8 @@ class DBConnection(object):
             fingerprint_dis = distance(fingerprint, long(_fingerprint))
             if fingerprint_dis < min_distance:
                 min_distance = fingerprint_dis
-        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, html) VALUES (?, ?, ?, ?, ?)",
-                  (url, str(fingerprint), min_distance, num_cmds, ensure_unicode(html)))
+        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, num_visits, html) VALUES (?, ?, ?, ?, ?, ?)",
+                  (url, str(fingerprint), min_distance, num_cmds, 0, ensure_unicode(html)))
         self.conn.commit()
 
     def coarse_cmd_estimation(self, url, text):
@@ -444,8 +464,8 @@ class DBConnection(object):
 
     def search_content(self):
         c = self.conn.cursor()
-        for url, fingerprint, min_distance, num_cmds in c.execute("SELECT url, fingerprint, min_distance, num_cmds FROM SearchContent"):
-            yield (url, fingerprint, min_distance, num_cmds)
+        for url, fingerprint, min_distance, num_cmds, num_visits in c.execute("SELECT url, fingerprint, min_distance, num_cmds, num_visits FROM SearchContent"):
+            yield (url, fingerprint, min_distance, num_cmds, num_visits)
         c.close()
 
     # --- User management ---
@@ -645,4 +665,5 @@ class DBConnection(object):
 
 if __name__ == "__main__":
     with DBConnection() as db:
-        db.num_cmd_estimation()
+        # db.num_cmd_estimation()
+        db.count_num_visits()
