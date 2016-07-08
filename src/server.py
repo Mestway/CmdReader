@@ -369,7 +369,7 @@ class App(object):
             if url_not_found:
                 return "This is no history associated with this URL yet!"
             for user in operation_history.keys():
-                res = "<h3> User {} </h3><br>".format(user)
+                res += "<h3> User {} </h3><br>".format(user)
                 if not operation_history[user]:
                     res += "No Pair<br>"
                 else:
