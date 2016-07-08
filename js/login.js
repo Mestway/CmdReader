@@ -29,28 +29,30 @@ $(document).ready(function () {
                     } else if (lastname.length === 0) {
                         $('#notification').text("Please don't leave last name empty.");
                     } else {
-                        $.getJSON("count_current_users", function(num_users) {
-                            // register user in the backend
-                            user_id = num_users;
-                            $.ajax({url: "register_user",
-                                    data: {"user_id": user_id, "first_name": firstname, "last_name": lastname},
-                                    success:  function(data, status) {
-                                                console.log("User " + username_prefix + user_id.toString()
-                                                + " created.");
-                                    }
-                            });
-                            // confirm
-                            BootstrapDialog.show({
-                                title: "Login Information",
-                                message: "Your access code: <b>" + username_prefix + user_id.toString() + "</b>",
-                                buttons: [{
-                                    label: "Got it",
-                                    cssClass: "btn-primary",
-                                    action: function(dialogItself) {
-                                        dialogItself.close();
-                                    }
-                                }]
-                            });
+                        // register user in the backend
+                        $.ajax({url: "register_user",
+                                data: {"first_name": firstname, "last_name": lastname},
+                                error: function(request, status, error) {
+                                  if (status === null)
+                                      alert("Sorry, we caught an HttpError: " + error + ". Please wait for a few seconds and try again.");
+                                  else
+                                      alert("Sorry, we caught an error: " + status + ". Please wait for a few seconds and try again.");
+                                },
+                                success:  function(user_id, status) {
+                                    BootstrapDialog.show({
+                                        title: "Login Information",
+                                        message: "Your access code: <b>" + username_prefix + user_id.toString() + "</b>",
+                                        buttons: [{
+                                            label: "Got it",
+                                            cssClass: "btn-primary",
+                                            action: function(dialogItself) {
+                                                dialogItself.close();
+                                            }
+                                        }]
+                                    });
+                                    console.log("User " + username_prefix + user_id.toString()
+                                    + " created.");
+                                }
                         });
                         dialogItself.close()
                     }
