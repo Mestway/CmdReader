@@ -144,22 +144,44 @@ class DBConnection(object):
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Skipped_idx ON Skipped (user_id, url)")
+        c.execute("ALTER TABLE Skipped ADD time_stamp INT")
 
-        c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS NoPairs_idx ON NoPairs (user_id, url)")
+        c.execute("ALTER TABLE NoPairs ADD time_stamp INT")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Pairs_idx ON Pairs (user_id, url)")
+        c.execute("ALTER TABLE Pairs ADD time_stamp INT")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Users_userid ON Users (user_id)")
         # c.execute("ALTER TABLE Users Add alias TEXT")
+        c.execute("ALTER TABLE Users Add time_stamp INT")
 
         self.conn.commit()
 
     # --- Data management ---
+    def assign_time_stamps(self):
+        c = self.cursor
+        c.execute("UPDATE Users SET time_stamp = 1 WHERE user_id != 23 AND user_id != 24")
+        c.execute("UPDATE Users SET time_stamp = 4 WHERE user_id = 23")
+        c.execute("UPDATE Users SET time_stamp = 2 WHERE user_id = 24")
+
+        c.execute("UPDATE Pairs SET time_stamp = 1 WHERE user_id != 23 AND user_id != 24")
+        c.execute("UPDATE Pairs SET time_stamp = 4 WHERE user_id = 23")
+        c.execute("UPDATE Pairs SET time_stamp = 2 WHERE user_id = 24")
+
+        c.execute("UPDATE NoPairs SET time_stamp = 1 WHERE user_id != 23 AND user_id != 24")
+        c.execute("UPDATE NoPairs SET time_stamp = 4 WHERE user_id = 23")
+        c.execute("UPDATE NoPairs SET time_stamp = 2 WHERE user_id = 24")
+
+        c.execute("UPDATE Skipped SET time_stamp = 1 WHERE user_id != 23 AND user_id != 24")
+        c.execute("UPDATE Skipped SET time_stamp = 4 WHERE user_id = 23")
+        c.execute("UPDATE Skipped SET time_stamp = 2 WHERE user_id = 24")
+        self.conn.commit()
 
     def record_visit(self, url):
         c = self.cursor
@@ -168,18 +190,35 @@ class DBConnection(object):
     @analytics.instrumented
     def add_pairs(self, user_id, pairs):
         c = self.cursor
+        time_stamp = self.get_user_time_stamp(user_id) + 1
+        assert(time_stamp > 0)
         url = None
         for p in pairs:
             url = p["url"]
-            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd) VALUES (?, ?, ?, ?)",
-                      (user_id, url, p["nl"].strip(), p["cmd"].strip()))
+            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd, time_stamp) VALUES (?, ?, ?, ?, ?)",
+                      (user_id, url, p["nl"].strip(), p["cmd"].strip(), time_stamp))
         self.record_visit(url)
+        self.conn.commit()
+
+    def mark_has_no_pairs(self, url, user_id):
+        c = self.cursor
+        time_stamp = self.get_user_time_stamp(user_id) + 1
+        c.execute("INSERT INTO NoPairs (url, user_id, time_stamp) VALUES (?, ?, ?)",
+                  (url, user_id, time_stamp))
+        self.record_visit(url)
+        self.conn.commit()
+
+    def skip_url(self, user_id, url):
+        c = self.cursor
+        time_stamp = self.get_user_time_stamp(user_id) + 1
+        c.execute('INSERT INTO Skipped (url, user_id, time_stamp) VALUES (?, ?, ?)',
+                  (url, user_id, time_stamp))
         self.conn.commit()
 
     def pairs(self):
         c = self.conn.cursor()
-        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs"):
-            yield (user, url, nl, cmd)
+        for user, url, nl, cmd, time_stamp in c.execute("SELECT user_id, url, nl, cmd, time_stamp FROM Pairs"):
+            yield (user, url, nl, cmd, time_stamp)
         c.close()
 
     def commands(self):
@@ -212,14 +251,14 @@ class DBConnection(object):
 
     def nopairs(self):
         c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM NoPairs"):
-            yield (user, url)
+        for user, url, time_stamp in c.execute("SELECT user_id, url, time_stamp FROM NoPairs"):
+            yield (user, url, time_stamp)
         c.close()
 
     def skipped(self):
         c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM Skipped"):
-            yield (user, url)
+        for user, url, time_stamp in c.execute("SELECT user_id, url, time_stamp FROM Skipped"):
+            yield (user, url, time_stamp)
         c.close()
 
     def already_annotated(self, user_id, url):
@@ -291,19 +330,6 @@ class DBConnection(object):
         return leased_url
         # print("Unleased " + leased_url + " from " + str(user_id))
 
-    def mark_has_no_pairs(self, url, user_id):
-        c = self.cursor
-        c.execute("INSERT INTO NoPairs (url, user_id) VALUES (?, ?)",
-                  (url, user_id))
-        self.record_visit(url)
-        self.conn.commit()
-
-    def skip_url(self, user_id, url):
-        c = self.cursor
-        c.execute('INSERT INTO Skipped (url, user_id) VALUES (?, ?)',
-                  (url, user_id))
-        self.conn.commit()
-
     def random_select_url(self):
         for url, count in self.find_urls_that_is_done():
             return url, count
@@ -329,34 +355,20 @@ class DBConnection(object):
 
     def find_urls_that_is_done(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
-        for url, count in c.execute("SELECT SearchContent.url, " +
+        """for url, count in c.execute("SELECT SearchContent.url, " +
                                     "count(InUse.url) as n FROM " +
                                     "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
                                             "UNION ALL SELECT url, user_id FROM Pairs) GROUP BY url, user_id) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
+        """
+        for url, count in c.execute("SELECT url, num_visits FROM SearchContent WHERE num_visits >= ?", (n,)):
             yield (url, count)
         c.close()
 
     def find_urls_with_less_responses_than(self, n=MAX_RESPONSES):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT url, num_visits FROM SearchContent WHERE num_visits < ?", (n,)):
-            yield (url, count)
-        c.close()
-
-    # UNUSED: find urls with less responses than MAX_RESPONSES and hasn't been annotated by user_id
-    # This function is not correctly implemented.
-    def find_unseen_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
-        c = self.conn.cursor()
-        for url, num_cmds, user_id, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
-                                    "InUse.user_id, count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
-                                            "UNION ALL SELECT url, user_id FROM Pairs) " +
-                                            "GROUP BY url, user_id) AS InUse " +
-                                    "ON SearchContent.url = InUse.url " +
-                                    "WHERE InUse.user_id != ? " +
-                                    "GROUP BY SearchContent.url HAVING n < ? " +
-                                    "ORDER BY SearchContent.num_cmds DESC", (user_id, n)):
             yield (url, count)
         c.close()
 
@@ -475,23 +487,23 @@ class DBConnection(object):
     # Statistics
     def pairs_by_user(self, user_id):
         c = self.conn.cursor()
-        for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs WHERE user_id = ?",
-                                            (user_id,)):
-            yield (user, url, nl, cmd)
+        for user, url, nl, cmd, time_stamp in c.execute("SELECT user_id, url, nl, cmd, time_stamp FROM Pairs " +
+                                                        "WHERE user_id = ?", (user_id,)):
+            yield (user, url, nl, cmd, time_stamp)
         c.close()
 
     def no_pairs_by_user(self, user_id):
         c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM NoPairs WHERE user_id = ?",
-                                   (user_id,)):
-            yield (user, url)
+        for user, url, time_stamp in c.execute("SELECT user_id, url, time_stamp FROM NoPairs " +
+                                               "WHERE user_id = ?", (user_id,)):
+            yield (user, url, time_stamp)
         c.close()
 
     def skipped_by_user(self, user_id):
         c = self.conn.cursor()
-        for user, url in c.execute("SELECT user_id, url FROM Skipped WHERE user_id = ?",
-                                   (user_id,)):
-            yield (user, url)
+        for user, url, time_stamp in c.execute("SELECT user_id, url, time_stamp FROM Skipped " +
+                                               "WHERE user_id = ?", (user_id,)):
+            yield (user, url, time_stamp)
         c.close()
 
     def get_leaderboard(self, user_id):
@@ -536,8 +548,8 @@ class DBConnection(object):
     def register_user(self, user_id, first_name, last_name):
         c = self.cursor
         alias = pokemon_name_list[int(user_id) - 1]
-        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias) VALUES (?, ?, ?, ?)',
-                  (user_id, first_name.strip(), last_name.strip(), alias))
+        c.execute('INSERT INTO Users (user_id, first_name, last_name, alias, time_stemp) VALUES (?, ?, ?, ?, ?)',
+                  (user_id, first_name.strip(), last_name.strip(), alias, 0))
         self.conn.commit()
 
     def user_exist(self, user_id):
@@ -557,6 +569,16 @@ class DBConnection(object):
         c = self.cursor
         for _, alias in c.execute("SELECT user_id, alias FROM Users WHERE user_id = ?", (user_id,)):
             return alias
+
+    # The time-stamp attribute indicates how many milestones the user has completed
+    def get_user_time_stamp(self, user_id):
+        c = self.cursor
+        for _, time_stamp in c.execute("SELECT user_id, time_stamp FROM Users WHERE user_id = ?", (user_id,)):
+            return time_stamp
+
+    def record_milestone(self, user_id):
+        c = self.cursor
+        c.execute("UPDATE Users SET time_stamp = time_stamp + 1 WHERE user_id = ?", (user_id,))
 
     def get_access_code(self, first_name, last_name):
         c = self.cursor
@@ -667,5 +689,7 @@ class DBConnection(object):
 
 if __name__ == "__main__":
     with DBConnection() as db:
+        db.create_schema()
         # db.num_cmd_estimation()
-        db.count_num_visits()
+        # db.count_num_visits()
+        db.assign_time_stamps()
