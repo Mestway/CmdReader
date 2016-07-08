@@ -146,20 +146,20 @@ class DBConnection(object):
 
         c.execute("CREATE TABLE IF NOT EXISTS Skipped (url TEXT, user_id INT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Skipped_idx ON Skipped (user_id, url)")
-        c.execute("ALTER TABLE Skipped ADD time_stamp INT")
+        # c.execute("ALTER TABLE Skipped ADD time_stamp INT")
 
         c.execute("CREATE TABLE IF NOT EXISTS NoPairs (url TEXT, user_id INT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS NoPairs_idx ON NoPairs (user_id, url)")
-        c.execute("ALTER TABLE NoPairs ADD time_stamp INT")
+        # c.execute("ALTER TABLE NoPairs ADD time_stamp INT")
 
         c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Pairs_idx ON Pairs (user_id, url)")
-        c.execute("ALTER TABLE Pairs ADD time_stamp INT")
+        # c.execute("ALTER TABLE Pairs ADD time_stamp INT")
 
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Users_userid ON Users (user_id)")
         # c.execute("ALTER TABLE Users Add alias TEXT")
-        c.execute("ALTER TABLE Users Add time_stamp INT")
+        # c.execute("ALTER TABLE Users Add time_stamp INT")
 
         self.conn.commit()
 
