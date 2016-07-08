@@ -675,6 +675,11 @@ class DBConnection(object):
     # remove records of a user from the database
     def remove_user(self, user_id, options=""):
         c = self.cursor
+        if options == "name":
+            first_name, last_name = user_id
+            c.execute("DELETE From Users WHERE first_name = ? AND last_name = ?", (first_name, last_name))
+            return
+
         user_id = int(user_id)
         if not self.user_exist(user_id):
             print "User %s does not exist!" % user_id
