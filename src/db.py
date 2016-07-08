@@ -304,8 +304,8 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, count in c.execute("SELECT SearchContent.url, " +
                                     "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT DISTINCT url FROM NoPairs " +
-                                                "UNION ALL SELECT DISTINCT url FROM Pairs) AS InUse " +
+                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
+                                            "UNION ALL SELECT url, user_id FROM Pairs) GROUP BY url, user_id) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n >= ?", (n,)):
             yield (url, count)
@@ -315,11 +315,28 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
                                     "count(InUse.url) as n FROM " +
-                                    "SearchContent LEFT JOIN (SELECT DISTINCT url FROM NoPairs " +
-                                                "UNION ALL SELECT DISTINCT url FROM Pairs) AS InUse " +
+                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
+                                            "UNION ALL SELECT url, user_id FROM Pairs) " +
+                                            "GROUP BY url, user_id) AS InUse " +
                                     "ON SearchContent.url = InUse.url " +
                                     "GROUP BY SearchContent.url HAVING n < ? " +
                                     "ORDER BY SearchContent.num_cmds DESC", (n,)):
+            yield (url, count)
+        c.close()
+
+    # UNUSED: find urls with less responses than MAX_RESPONSES and hasn't been annotated by user_id
+    # This function is not correctly implemented.
+    def find_unseen_urls_with_less_responses_than(self, user_id, n=MAX_RESPONSES):
+        c = self.conn.cursor()
+        for url, num_cmds, user_id, count in c.execute("SELECT SearchContent.url, SearchContent.num_cmds, " +
+                                    "InUse.user_id, count(InUse.url) as n FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM (SELECT url, user_id FROM NoPairs " +
+                                            "UNION ALL SELECT url, user_id FROM Pairs) " +
+                                            "GROUP BY url, user_id) AS InUse " +
+                                    "ON SearchContent.url = InUse.url " +
+                                    "WHERE InUse.user_id != ? " +
+                                    "GROUP BY SearchContent.url HAVING n < ? " +
+                                    "ORDER BY SearchContent.num_cmds DESC", (user_id, n)):
             yield (url, count)
         c.close()
 

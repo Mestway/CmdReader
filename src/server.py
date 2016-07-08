@@ -422,8 +422,8 @@ class App(object):
             for cmd in db.commands():
                 if "find" in cmd[0]:
                     cmds.append(cmd)
-            res += "{} pairs <br>".format(len(pairs))
-            res += "{} unique commands <br>".format(len(cmds))
+            res += "<b>{}</b> pairs <br>".format(len(pairs))
+            res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
             for cmd, in sorted(cmds):
                 res += cmd + "<br>"
 
