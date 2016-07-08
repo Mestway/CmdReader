@@ -478,7 +478,8 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, fingerprint, min_distance, num_cmds, num_visits in \
                 c.execute("SELECT url, fingerprint, min_distance, num_cmds, num_visits FROM SearchContent " +
-                          "ORDER BY num_cmds DESC"):
+                          "WHERE min_distance > ? " +
+                          "ORDER BY num_cmds DESC", (SIMHASH_DIFFBIT,)):
             yield (url, fingerprint, min_distance, num_cmds, num_visits)
         c.close()
 
