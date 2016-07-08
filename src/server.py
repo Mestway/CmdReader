@@ -361,7 +361,7 @@ class App(object):
             url = url.strip()
             url_not_found = True
             for user, url, nl, cmd in db.pairs_by_url(url):
-                operation_history[user].append((cmd, nl))
+                operation_history[user].append([cmd, nl])
                 url_not_found = False
             for user, url in db.no_pairs_by_url(url):
                 operation_history[user] = None
@@ -369,14 +369,16 @@ class App(object):
             if url_not_found:
                 return "This is no history associated with this URL yet!"
             for user in operation_history.keys():
-                res += "<h3> User {} </h3><br>".format(user)
+                res += "<h3> User {} </h3>".format(user)
                 if not operation_history[user]:
                     res += "No Pair<br>"
                 else:
-                    res += "<table><tbody>"
+                    res += "<table><thead><tr><th>cmd</th><th>text</th></tr></thead><tbody>"
                     for cmd, nl in operation_history[user]:
-                        res += "<tr><td>{}</td><td><{}</td></tr>".format(cmd, nl)
-                    res += "</table></tbody>"
+                        nl = nl.decode().encode('utf-8')
+                        cmd = cmd.decode().encode('utf-8')
+                        res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
+                    res += "</tbody></table>"
         return url, res
 
     @cherrypy.expose
