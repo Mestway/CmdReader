@@ -11,7 +11,7 @@ $(document).ready(function () {
         $.ajax({url: "url_opr_history",
                 data: {"url": url},
                 success:  function(url, html) {
-                    $('#url').placeholder(url);
+                    $('#url').val(url);
                     $('#url-record-panel').html(html);
                 }
         });
