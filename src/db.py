@@ -380,7 +380,7 @@ class DBConnection(object):
     def find_urls_with_reference(self, n=1):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
-                                              "AND num_cmds >= 5"):
+                                              "AND num_cmds >= 5", (n,)):
                                               # "ORDER BY num_cmds DESC", (n,)):
             yield (url, count)
 
