@@ -15,6 +15,7 @@ import sqlite3
 import threading
 
 import re
+import sys
 from fun import pokemon_name_list
 import analytics
 
@@ -296,6 +297,7 @@ class DBConnection(object):
             find_urls = self.find_urls_with_reference(1) if self.get_user_time_stamp(user_id) < 1 else \
                         self.find_unannotated_urls()
             for url, count in find_urls:
+                print url
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
@@ -715,9 +717,17 @@ class DBConnection(object):
         c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
         print("Removed annotations of %s from user %s" % (url, user_id))
 
+    def debugging(self, url):
+        c = self.cursor
+        # for x in c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,)):
+        #     print x
+        c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
+
 if __name__ == "__main__":
     with DBConnection() as db:
-        # db.create_schema()
+        url = sys.argv[1]
+        db.create_schema()
         # db.num_cmd_estimation()
         # db.count_num_visits()
-        db.assign_time_stamps()
+        # db.assign_time_stamps()
+        db.debugging()

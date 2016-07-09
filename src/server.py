@@ -256,7 +256,7 @@ class App(object):
                 if not db.already_searched(search_phrase):
                     url_list = search(search_phrase)
                     db.add_urls(search_phrase, url_list)
-                    db.add_urls(search_phrase, [url_list[0]], True)
+                    db.add_urls(search_phrase, url_list[:1], True)
                     t = threading.Thread(target=self.add_urls, args=(search_phrase, url_list[1:]))
                     t.start()
             return db.lease_url(user_id=user_id)
@@ -360,14 +360,14 @@ class App(object):
                 print url, count
             url = url.strip()
             url_not_found = True
-            for user, url, nl, cmd in db.pairs_by_url(url):
+            for user, _, nl, cmd in db.pairs_by_url(url):
                 operation_history[user].append([cmd, nl])
                 url_not_found = False
-            for user, url in db.no_pairs_by_url(url):
+            for user, _ in db.no_pairs_by_url(url):
                 operation_history[user] = None
                 url_not_found = False
             if url_not_found:
-                return "This is no history associated with this URL yet!"
+                return url, "This is no history associated with this URL yet!"
             for user in operation_history.keys():
                 res += "<h3> User {} </h3>".format(user)
                 if not operation_history[user]:
@@ -379,6 +379,7 @@ class App(object):
                         cmd = cmd.decode().encode('utf-8')
                         res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
                     res += "</tbody></table>"
+            print url
         return url, res
 
     @cherrypy.expose
