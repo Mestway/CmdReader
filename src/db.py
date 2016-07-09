@@ -729,9 +729,5 @@ if __name__ == "__main__":
         db.create_schema()
         # db.num_cmd_estimation()
         # db.count_num_visits()
-<<<<<<< HEAD
-        db.assign_time_stamps()
-=======
         # db.assign_time_stamps()
-        db.debugging()
->>>>>>> 1287f18cd5d2f72a3c84125042d9b6d90ddddfe3
+        db.debugging(url)
