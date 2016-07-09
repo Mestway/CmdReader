@@ -380,13 +380,15 @@ class DBConnection(object):
     def find_urls_with_reference(self, n=1):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
-                                              "ORDER BY num_cmds DESC", (n,)):
+                                              "AND num_cmds >= 5"):
+                                              # "ORDER BY num_cmds DESC", (n,)):
             yield (url, count)
 
     def find_unannotated_urls(self):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
-                                              "ORDER BY num_cmds DESC"):
+                                              "AND num_cmds >= 5"):
+                                              # "ORDER BY num_cmds DESC"):
             yield (url, count)
 
     def pairs_by_url(self, url):
