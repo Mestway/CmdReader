@@ -601,6 +601,7 @@ class DBConnection(object):
     def record_milestone(self, user_id):
         c = self.cursor
         c.execute("UPDATE Users SET time_stamp = time_stamp + 1 WHERE user_id = ?", (user_id,))
+        return self.get_user_time_stamp(user_id)
 
     def get_access_code(self, first_name, last_name):
         c = self.cursor
@@ -621,8 +622,8 @@ class DBConnection(object):
 
     def users(self):
         c = self.conn.cursor()
-        for user, fname, lname in c.execute("SELECT user_id, first_name, last_name FROM Users"):
-            yield (user, fname, lname)
+        for user, fname, lname, time_stamp in c.execute("SELECT user_id, first_name, last_name, time_stamp FROM Users"):
+            yield (user, fname, lname, time_stamp)
         c.close()
 
     # inter-comparison

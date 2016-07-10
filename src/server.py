@@ -350,6 +350,12 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    def user_record_milestone(self, user_id):
+        with DBConnection() as db:
+            return db.record_milestone(user_id)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
     def url_opr_history(self, url=None):
         operation_history = collections.defaultdict(list)
         res = ""
@@ -475,9 +481,9 @@ class App(object):
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
-            res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th></tr></thead><tbody>"
-            for user, fname, lname in db.users():
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, fname, lname)
+            res += "<table><thead><tr><th>user</th><th>first name</th><th>last name</th><th>completed milestone</th></tr></thead><tbody>"
+            for user, fname, lname, time_stamp in db.users():
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(user, fname, lname, time_stamp)
             res += "</tbody></table>"
 
         res += "</html>"
