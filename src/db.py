@@ -599,6 +599,8 @@ class DBConnection(object):
             return time_stamp
 
     def record_milestone(self, user_id):
+        if not self.user_exist(user_id):
+            return -1
         c = self.cursor
         c.execute("UPDATE Users SET time_stamp = time_stamp + 1 WHERE user_id = ?", (user_id,))
         return self.get_user_time_stamp(user_id)
