@@ -350,6 +350,7 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
+    @admin_only
     def user_record_milestone(self, user_id):
         with DBConnection() as db:
             return db.record_milestone(user_id)
@@ -476,8 +477,14 @@ class App(object):
 
             res += "<h3>Search Content</h3>"
             res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th><th>number of visits</th></tr></thead><tbody>"
+            num_pages = 0
             for url, fingerprint, min_distance, num_cmds, num_visits in db.search_content():
+                if num_visits >= 2:
+                    continue
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds, num_visits)
+                num_pages += 1
+                if num_pages > 50:
+                    break
             res += "</tbody></table>"
 
             res += "<h3>Registered Users</h3>"
