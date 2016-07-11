@@ -380,14 +380,14 @@ class DBConnection(object):
     def find_urls_with_reference(self, n=1):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
-                                              "AND num_cmds >= 5", (n,)):
+                                              "AND num_cmds >= 4", (n,)):
                                               # "ORDER BY num_cmds DESC", (n,)):
             yield (url, count)
 
     def find_unannotated_urls(self):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
-                                              "AND num_cmds >= 5"):
+                                              "AND num_cmds >= 4"):
                                               # "ORDER BY num_cmds DESC"):
             yield (url, count)
 
@@ -726,7 +726,8 @@ class DBConnection(object):
         c = self.cursor
         # for x in c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,)):
         #     print x
-        c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
+        c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 15 AND num_cmds = 4")
+        self.conn.commit()
 
 if __name__ == "__main__":
     with DBConnection() as db:
