@@ -299,7 +299,7 @@ class DBConnection(object):
             find_urls = self.find_urls_with_reference(1) if self.get_user_time_stamp(user_id) < 1 else \
                         self.find_unannotated_urls()
             for url, count in find_urls:
-                print url
+                # print url
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
