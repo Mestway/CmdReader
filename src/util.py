@@ -36,3 +36,6 @@ def check_type(value, ty, value_name="value"):
             check_type(value[k], t, "{}[{}]".format(value_name, repr(k)))
     else:
         raise Exception("unknown type spec {}".format(repr(ty)))
+
+def encode_url(url):
+    return url.decode().encode('utf-8')

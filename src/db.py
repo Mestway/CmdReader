@@ -19,6 +19,8 @@ import sys
 from fun import pokemon_name_list
 import analytics
 
+from util import encode_url
+
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
 
@@ -197,7 +199,7 @@ class DBConnection(object):
         for p in pairs:
             url = p["url"]
             c.execute("INSERT INTO Pairs (user_id, url, nl, cmd, time_stamp) VALUES (?, ?, ?, ?, ?)",
-                      (user_id, url, p["nl"].strip(), p["cmd"].strip(), time_stamp))
+                      (user_id, encode_url(url), p["nl"].strip(), p["cmd"].strip(), time_stamp))
         self.record_visit(url)
         self.conn.commit()
 
@@ -205,7 +207,7 @@ class DBConnection(object):
         c = self.cursor
         time_stamp = self.get_user_time_stamp(user_id) + 1
         c.execute("INSERT INTO NoPairs (url, user_id, time_stamp) VALUES (?, ?, ?)",
-                  (url, user_id, time_stamp))
+                  (encode_url(url), user_id, time_stamp))
         self.record_visit(url)
         self.conn.commit()
 
@@ -213,7 +215,7 @@ class DBConnection(object):
         c = self.cursor
         time_stamp = self.get_user_time_stamp(user_id) + 1
         c.execute('INSERT INTO Skipped (url, user_id, time_stamp) VALUES (?, ?, ?)',
-                  (url, user_id, time_stamp))
+                  (encode_url(url), user_id, time_stamp))
         self.conn.commit()
 
     def pairs(self):
