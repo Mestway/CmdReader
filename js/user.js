@@ -3,9 +3,7 @@ $(document).ready(function () {
     var judgements;
     var eval_submitted;
 
-    $('#user-record-milestone').hide()
     $('#user-eval-results').hide()
-    $('#user-eval-submit').hide()
 
     $('#user-inspection').click(function() {
         user_id = $('#userid').val()
@@ -36,7 +34,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#user-record-milestone').click(function() {
+    $('#user-stats-panel').delegate('#user-record-milestone', "click", function() {
         user_id = $('#userid').val()
         console.log(user_id)
         $.ajax({url: "user_record_milestone",
