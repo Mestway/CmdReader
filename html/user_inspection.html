@@ -10,8 +10,16 @@
 <body>
     User ID: <input type="text" id="userid" value=""><br>
     <input id="user-inspection" type="submit" value="Submit">
-    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <input id="user-record-milestone" type="submit" value="Endorse Milestone">
+    <br>
+    <div id="user-stats-panel"></div>
+    <br>
+    <div id="user-eval-results">
+        <span>Precision: </span><span id="precision"></span>&nbsp;
+        <span>Recall: </span><span id="recall"></span>&nbsp;
+        <span>F1: </span><span id="f1"></span>
+    </div>
+
+    <div id="user-eval-panel"></div>
 
     <div id="user-record-panel"></div>
 </body>

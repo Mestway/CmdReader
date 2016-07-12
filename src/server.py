@@ -194,6 +194,18 @@ class App(object):
                    db.get_num_urls_skipped(user_id)
 
     @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_user_precision(self, user_id):
+        with DBConnection() as db:
+            return db.get_user_precision()
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_user_recall(self, user_id):
+        with DBConnection() as db:
+            return db.get_user_recall()
+
+    @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
     def get_leaderboard(self, user_id):
@@ -296,6 +308,17 @@ class App(object):
         with DBConnection() as db:
             return db.already_searched(search_phrase)
 
+    # --- Evaluation ---
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @admin_only
+    def add_judgements(self, user_id, judgements):
+        judgements = json.loads(judgements)[1:]
+        # print(judgements)
+        with DBConnection() as db:
+            return db.add_judgements(user_id, judgements)
+
     @cherrypy.expose
     @cherrypy.tools.json_out()
     def user_record(self, user_id):
@@ -303,6 +326,7 @@ class App(object):
             if not db.user_exist(user_id):
                 return "User %s does not exist!" % user_id
 
+            num_milestones_completed = db.get_user_time_stamp(user_id)
             num_pairs_annotated = 0
             commands_annotated = set()
             num_urls_no_pairs = 0
@@ -338,15 +362,40 @@ class App(object):
                 num_urls_skipped += 1
             res += "</tbody></table>"
 
-            stats = "<h3>" + db.get_user_names(user_id) + "</h3><br>"
+            stats = "<h3>" + db.get_user_names(user_id) + "</h3>" + \
+                    '<input id="user-record-milestone" type="submit" value="Endorse Milestone">'
             stats += "<h3>Statistics</h3>"
+            stats += "num milestones completed:\t%d" % num_milestones_completed + "<br>"
             stats += "num pairs annoated:\t%d" % num_pairs_annotated + "<br>"
             stats += "num unique commands annotated:\t%d" % len(commands_annotated) + "<br>"
             stats += "num urls annoated:\t%d" % db.get_num_urls_annotated(user_id) + "<br>"
             stats += "num urls no pairs:\t%d" % num_urls_no_pairs + "<br>"
             stats += "num urls skipped:\t%d" % num_urls_skipped + "<br>"
 
-            return stats + res
+            eval = "<h3>10 Random Annotations</h3><br>"
+            eval += "<table><thead><tr><th>url</th><th>nl</th><th>cmd</th><th>C</th><th>P</th><th>W</th></tr></thead><tbody>"
+            i = 0
+            for _, url, nl, cmd, time_stamp in db.sample_user_annotations(user_id):
+                url = url.decode().encode('utf-8')
+                nl = nl.decode().encode('utf-8')
+                cmd = cmd.decode().encode('utf-8')
+                i += 1
+                eval += """<tr class="pair-eval">
+                           <td>{}</td>
+                           <td id="pair-eval-nl-{}">{}</td>
+                           <td id="pair-eval-cmd-{}">{}</td>
+                           <td><input type="radio" class="pair-eval-judgement" name="{}" value="correct"></td>
+                           <td><input type="radio" class="pair-eval-judgement" name="{}" value="partial"></td>
+                           <td><input type="radio" class="pair-eval-judgement" name="{}" value="wrong"></td>
+                           </tr>""".format(url, i, nl, i, cmd, i, i, i)
+                num_pairs_annotated += 1
+            eval += """<tr><td></td><td></td>
+                           <td><input id="user-eval-submit" type="submit" value="Submit Evaluation" style="float: right;"></td>
+                       </tr>"""
+            eval += "</tbody></table>"
+            eval += "<br>"
+
+            return stats, eval, res, db.get_user_precision(user_id), db.get_user_recall(user_id)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -424,7 +473,7 @@ class App(object):
             res += "N/A"
 
         with DBConnection() as db:
-            res += "<h3>Commands collected</h3>"
+            res += "<h3>Commands collected (top 100)</h3>"
             pairs = []
             cmds = []
             for _, _, nl, cmd, _ in db.pairs():
@@ -434,7 +483,7 @@ class App(object):
                     cmds.append(cmd)
             res += "<b>{}</b> pairs <br>".format(len(pairs))
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
-            for cmd, in sorted(cmds):
+            for cmd, in sorted(cmds)[:100]:
                 res += cmd + "<br>"
 
             """res += "<h3>URLs in queue</h3>"
@@ -442,9 +491,10 @@ class App(object):
                 res += url + "<br>"
             """
 
-            res += "<h3>URLs Finished</h3>"
+            """res += "<h3>URLs Finished</h3>"
             for url, _ in db.find_urls_that_is_done():
                 res += url + "<br>"
+            """
 
             """res += "<h3>Pairs</h3>"
             res += "<table><thead><tr><th>user</th><th>url</th><th>nl</th><th>cmd</th></tr></thead><tbody>"
@@ -475,7 +525,10 @@ class App(object):
             res += "</tbody></table>"
             """
 
-            res += "<h3>Search Content</h3>"
+            res += "<h3>Search Content (top 100)</h3>"
+            res += "Number of finished URLs: {}<br>".format(db.num_urls_by_num_visit(2))
+            res += "Number of URLs annotated by one user: {}<br>".format(db.num_urls_by_num_visit(1))
+            res += "Number of unnotated URLs: {}<br>".format(db.num_urls_by_num_visit(0))
             res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th><th>number of visits</th></tr></thead><tbody>"
             num_pages = 0
             for url, fingerprint, min_distance, num_cmds, num_visits in db.search_content():
@@ -483,7 +536,7 @@ class App(object):
                     continue
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds, num_visits)
                 num_pages += 1
-                if num_pages > 50:
+                if num_pages > 100:
                     break
             res += "</tbody></table>"
 
