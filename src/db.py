@@ -155,14 +155,16 @@ class DBConnection(object):
         c.execute("CREATE INDEX IF NOT EXISTS NoPairs_idx ON NoPairs (user_id, url)")
         # c.execute("ALTER TABLE NoPairs ADD time_stamp INT")
 
-        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT, time_stamp INT)")
+        c.execute("CREATE TABLE IF NOT EXISTS Pairs   (url TEXT, user_id INT, nl TEXT, cmd TEXT, time_stamp INT, judgement FLOAT)")
         c.execute("CREATE INDEX IF NOT EXISTS Pairs_idx ON Pairs (user_id, url)")
         # c.execute("ALTER TABLE Pairs ADD time_stamp INT")
+        # c.execute("ALTER TABLE Pairs ADD judgement FLOAT")
 
         c.execute("CREATE TABLE IF NOT EXISTS Users   (user_id INT, first_name TEXT, last_name TEXT, alias TEXT, time_stamp INT)")
         c.execute("CREATE INDEX IF NOT EXISTS Users_userid ON Users (user_id)")
         # c.execute("ALTER TABLE Users Add alias TEXT")
         # c.execute("ALTER TABLE Users Add time_stamp INT")
+        # c.execute("ALTER TABLE Users Add recall FLOAT")
 
         self.conn.commit()
 
@@ -393,6 +395,13 @@ class DBConnection(object):
                                               # "ORDER BY num_cmds DESC"):
             yield (url, count)
 
+    def num_urls_by_num_visit(self, n):
+        c = self.cursor
+        count = 0
+        for _ in c.execute("SELECT url, num_visits FROM SearchContent WHERE num_visits = ?", (n,)):
+            count += 1
+        return count
+
     def pairs_by_url(self, url):
         c = self.conn.cursor()
         for user, url, nl, cmd in c.execute("SELECT user_id, url, nl, cmd FROM Pairs WHERE url = ?",
@@ -560,11 +569,49 @@ class DBConnection(object):
         for count in c.execute("SELECT COUNT (DISTINCT url) FROM Skipped WHERE user_id = ?", (user_id,)):
             return count
 
+    # Evaluation
+    def add_judgements(self, user_id, judgements):
+        c = self.cursor
+        for j in judgements:
+            c.execute("UPDATE Pairs SET judgement = ? WHERE cmd = ? AND nl = ?",
+                      (j["judgement"], j["cmd"].strip(), j["nl"].strip()))
+        self.conn.commit()
+        return self.get_user_precision(user_id)
+
+    def get_user_precision(self, user_id):
+        c = self.cursor
+        num_evaluated = 0
+        num_correct = 0
+        for _, _, judgement in c.execute("SELECT cmd, nl, judgement FROM Pairs " +
+                                   "WHERE user_id = ? AND judgement != -1 ", (user_id,)):
+            num_correct += judgement
+            num_evaluated += 1
+        if num_evaluated == 0:
+            # not evaluated yet
+            return -1
+        return num_correct / num_evaluated
+
+    def get_user_recall(self, user_id):
+        return -1
+
+    def sample_user_annotations(self, user_id, limit=10):
+        c = self.conn.cursor()
+        for user, url, nl, cmd, time_stamp in c.execute("SELECT user_id, url, nl, cmd, time_stamp FROM Pairs " +
+                                                        "WHERE user_id = ? AND judgement = -1 ORDER BY RANDOM() LIMIT ?",
+                                                        (user_id, limit)):
+            yield (user, url, nl, cmd, time_stamp)
+        c.close()
+
     # Logistics
     def assign_aliases(self):
         c = self.cursor
         for user, _, _ in self.users():
             c.execute('UPDATE Users SET alias = ? WHERE user_id = ?', (pokemon_name_list[user-1], user))
+        self.conn.commit()
+
+    def assign_judgements(self):
+        c = self.cursor
+        c.execute("UPDATE Pairs SET judgement = -1")
         self.conn.commit()
 
     def register_user(self, first_name, last_name):
@@ -726,15 +773,16 @@ class DBConnection(object):
 
     def debugging(self, url):
         c = self.cursor
-        # for x in c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,)):
-        #     print x
-        c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
+        for x in c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,)):
+            print x
+        # c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
 
 if __name__ == "__main__":
     with DBConnection() as db:
-        url = sys.argv[1]
         db.create_schema()
         # db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
-        db.debugging()
+        # url = sys.argv[1]
+        # db.debugging(url)
+        db.assign_judgements()

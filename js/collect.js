@@ -12,15 +12,16 @@ var in_submission = false;
 /* --- The page content is only displayable to logged-in users --- */
 var username_prefix = "nl2cmd";
 var user_id;
-$.getJSON("get_current_user", function(uid) {
-    user_id = uid;
-    console.log(username_prefix + user_id.toString());
-    if (user_id === null) {
-        safely_redirect = true;
-        window.location.replace("/");
-    } else {
-        $('#user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
-    }
+$.ajax({url: "get_current_user",
+        error: function(request, status, error) {
+            safely_redirect = true;
+            window.location.replace("/");
+        },
+        success: function(uid) {
+            user_id = uid;
+            console.log(username_prefix + user_id.toString());
+            $('#user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
+        }
 });
 
 $(document).ready(function(){
@@ -124,7 +125,7 @@ $(document).ready(function(){
     // this method checks every 500ms to to increase the table size
 	setInterval(function() {
 	if (!in_submission) {
-        var all_rows = $(".nl2cmd-pair-row");
+        // var all_rows = $(".nl2cmd-pair-row");
         var blank_cell_count = 0;
 
         for (var i = 1; i <= row_count; i ++) {
@@ -421,8 +422,8 @@ function redirect_to_next() {
     $.getJSON("pick_url", {search_phrase: query}, function(url) {
       console.log(url);
       if (url === null) {
-        var query_completion_warning = 'Congrats! You have annotated all the web pages we have searched so far. '
-            + 'You will be automatically redirect to the search page.';
+        var query_completion_warning = 'Congrats! You have annotated all the web pages we have gathered so far. '
+            + 'You will be automatically redirect to the search page now.';
         BootstrapDialog.show({
           message: query_completion_warning,
           buttons: [
@@ -456,7 +457,7 @@ function insert_pair_collecting_row() {
   			+ '<br/>'
   			+ '<div class="input-group">'
   			+    '<span class="input-group-addon nl2cmd-span basic-addon1">txt</span>'
-  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" spellcheck="false" placeholder="Description" />'
+  			+ 	 '<textarea type="text" class="nl2cmd-box nl2cmd-text form-control vresize" spellcheck="true" placeholder="Description" />'
   			+ '</div>'
   			+ '</td></tr>');    // default html textarea spellcheck disabled
 

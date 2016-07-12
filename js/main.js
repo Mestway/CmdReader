@@ -3,14 +3,15 @@
 var username_prefix = "nl2cmd";
 var user_id;
 
-$.getJSON("get_current_user", function(uid) {
-    user_id = uid;
-    console.log(user_id);
-    if (user_id === null) {
-        window.location.replace("/");
-    } else {
-        $('#nl2cmd-user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
-    }
+$.ajax({url: "get_current_user",
+        error: function(request, status, error) {
+            window.location.replace("/");
+        },
+        success: function(uid) {
+            user_id = uid;
+            console.log(user_id);
+            $('#nl2cmd-user-log-out').children('a').text("Log Out (" + username_prefix + user_id.toString() + ')');
+        }
 });
 
 $(document).ready(function () {
