@@ -49,7 +49,7 @@ $(document).ready(function () {
     });
 
     var num_total = 10;
-    $("#user-eval-panel").delegate(".pair-eval-judgement", "click", function() {
+    $("#user-eval-panel").delegate(".pair-eval-judgement", "change", function() {
         var i = $(this).attr('name');
         var cmd = $("#pair-eval-cmd-" + i).text();
         var text = $("#pair-eval-nl-" + i).text();
