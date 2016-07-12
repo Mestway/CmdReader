@@ -18,7 +18,7 @@ $(document).ready(function () {
                     var recall = data[4];
                     $('#user-record-milestone').show();
                     $('#user-stats-panel').html(stats_html);
-                    // $('#user-eval-results').show();
+                    $('#user-eval-results').show();
                     console.log(precision);
                     $('#precision').text(precision);
                     console.log(recall);

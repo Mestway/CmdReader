@@ -592,7 +592,41 @@ class DBConnection(object):
         return num_correct / num_evaluated
 
     def get_user_recall(self, user_id):
-        return -1
+        c = self.cursor
+        recall = 0
+        num_urls = 0
+        # select all urls annotated by user that have two sets of annotations
+        for url, in c.execute("SELECT SearchContent.url FROM " +
+                                    "SearchContent LEFT JOIN (SELECT url, user_id FROM NoPairs " +
+                                        "UNION ALL SELECT url, user_id FROM Pairs) AS InUse " +
+                                        "ON SearchContent.url = InUse.url " +
+                              "WHERE SearchContent.num_visits = 2 AND InUse.user_id = ? " +
+                              "GROUP BY SearchContent.url", (user_id,)):
+            print(url)
+            url_recall = self.get_user_url_recall(user_id, url)
+            if url_recall == -1:
+                # no pairs in url
+                continue
+            recall += url_recall
+            num_urls += 1
+        if num_urls == 0:
+            # user annotation doesn't have any reference
+            return -1
+        return recall / num_urls
+
+    def get_user_url_recall(self, user_id, url):
+        c = self.conn.cursor()
+        num_annotated_by_user = 0
+        num_annotated_total = 0
+        for count, in c.execute("SELECT COUNT (DISTINCT cmd) FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url)):
+            num_annotated_by_user = count
+        for count, in c.execute("SELECT COUNT (DISTINCT cmd) FROM Pairs WHERE url = ?", (url,)):
+            num_annotated_total = count
+        c.close()
+        if num_annotated_total == 0:
+            # no pairs in url
+            return -1
+        return (num_annotated_by_user + 0.0) / num_annotated_total
 
     def sample_user_annotations(self, user_id, limit=10):
         c = self.conn.cursor()
@@ -693,13 +727,13 @@ class DBConnection(object):
         user2_pairs = collections.defaultdict(list)
         user2_nopairs = collections.defaultdict()
 
-        for (user, url, nl, cmd) in self.pairs_by_user(user1):
+        for (user, url, nl, cmd, _) in self.pairs_by_user(user1):
             user1_pairs[url].append(cmd)
-        for (user, url) in self.no_pairs_by_user(user1):
+        for (user, url, _) in self.no_pairs_by_user(user1):
             user1_nopairs[url] = None
-        for (user, url, nl, cmd) in self.pairs_by_user(user2):
+        for (user, url, nl, cmd, _) in self.pairs_by_user(user2):
             user2_pairs[url].append(cmd)
-        for (user, url) in self.no_pairs_by_user(user2):
+        for (user, url, _) in self.no_pairs_by_user(user2):
             user2_nopairs[url] = None
 
         common_urls = set(user1_pairs.keys() + user1_nopairs.keys()) & \
@@ -711,7 +745,7 @@ class DBConnection(object):
         for url in common_urls:
             user1_cmds = set(user1_pairs[url]) if url in user1_pairs else set()
             user2_cmds = set(user2_pairs[url]) if url in user2_pairs else set()
-            print(url)
+            # print(url)
             print("User %s" % user1)
             for cmd in user1_cmds:
                 print cmd
