@@ -660,7 +660,7 @@ class DBConnection(object):
 
     def assign_judgements(self):
         c = self.cursor
-        c.execute("UPDATE Pairs SET judgement = -1")
+        c.execute("UPDATE Pairs SET judgement = -1 WHERE user_id = 31")
         self.conn.commit()
 
     def register_user(self, first_name, last_name):
