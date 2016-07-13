@@ -23,7 +23,7 @@ from util import encode_url
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
-
+head_commands = ["find", "grep", "sed", "awk", "ls", "xargs", "rm", "cd", "mv"]
 
 MAX_RESPONSES = 2
 SIMHASH_BITNUM = 64
@@ -231,6 +231,19 @@ class DBConnection(object):
         for cmd in c.execute("SELECT DISTINCT cmd FROM Pairs"):
             yield cmd
         c.close()
+
+    def option_histogram(self):
+        options = collections.defaultdict(int)
+        # total_num = 0
+        for cmd, in self.commands():
+            tokens = cmd.split()
+            for token in tokens:
+                if token.startswith("-") or token in head_commands:
+                    options[token] += 1
+                    # total_num += 1
+        # for token in options:
+        #     options[token] = (options[token] + 0.0) / total_num
+        return sorted(options.items(), key=lambda x:x[1], reverse=True)
 
     # --- Query management ---
 

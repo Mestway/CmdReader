@@ -440,6 +440,19 @@ class App(object):
 
     @cherrypy.expose
     @admin_only
+    def get_option_histogram(self):
+        with DBConnection() as db:
+            data = []
+            count = 0
+            for token, freq in db.option_histogram():
+                if freq < 40:
+                    continue
+                data.append({"y": freq, "label": token})
+                count += 1
+            return json.dumps(data)
+
+    @cherrypy.expose
+    @admin_only
     def status(self):
         def headers(cols):
             return "<thead><tr>" + "".join("<th>{}</th>".format(col) for col in cols) + "</tr></thead>"
@@ -448,6 +461,11 @@ class App(object):
 
         import db
         res = "<html>"
+        res += "<head>"
+        res += "<script src=\"js/jquery-1.11.3.js\"></script>"
+        res += "<script src=\"js/canvasjs.min.js\"></script>"
+        res += "<script src=\"js/option_chart.js\"></script>"
+        res += "</head>"
 
         a = analytics.get()
         res += "<h3>Analytics</h3>"
@@ -481,8 +499,12 @@ class App(object):
             for cmd in db.commands():
                 if "find" in cmd[0]:
                     cmds.append(cmd)
-            res += "<b>{}</b> pairs <br>".format(len(pairs))
+            res += "<b>{}</b> annotations <br>".format(len(pairs))
+            # res += "<b>{}</b> unique pairs <br>".format(len(pairs))
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
+
+            res += "<div id=\"chartContainer\" style=\"height: 360px; width: 500px;\"></div>"
+
             for cmd, in sorted(cmds)[:100]:
                 res += cmd + "<br>"
 
