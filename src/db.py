@@ -25,7 +25,7 @@ html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
 head_commands = ["find", "grep", "egrep", "sed", "awk", "ls", "xargs", "rm", "cd", "mv",
                  "cp", "cat", "wc", "chmod", "zip", "unzip", "tar", "sort", "head", "tail",
-                 "du"]
+                 "du", "echo"]
 
 MAX_RESPONSES = 2
 SIMHASH_BITNUM = 64
