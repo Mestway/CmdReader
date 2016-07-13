@@ -491,7 +491,7 @@ class App(object):
             res += "N/A"
 
         with DBConnection() as db:
-            res += "<h3>Commands collected (top 100)</h3>"
+            res += "<h3>Commands collected</h3>"
             pairs = []
             cmds = []
             for _, _, nl, cmd, _ in db.pairs():
@@ -507,6 +507,7 @@ class App(object):
 
             for cmd, in sorted(cmds)[:100]:
                 res += cmd + "<br>"
+            res += "<i>(... end of top 100 commands collected)</i><br>"
 
             """res += "<h3>URLs in queue</h3>"
             for url, _ in db.find_urls_with_less_responses_than(None):
