@@ -388,10 +388,10 @@ class App(object):
                            <td><input type="radio" class="pair-eval-judgement" name="{}" value="partial"></td>
                            <td><input type="radio" class="pair-eval-judgement" name="{}" value="wrong"></td>
                            </tr>""".format(url, i, nl, i, cmd, i, i, i)
-                num_pairs_annotated += 1
-            eval += """<tr><td></td><td></td>
+            if i > 0:
+                eval += """<tr><td></td><td></td>
                            <td><input id="user-eval-submit" type="submit" value="Submit Evaluation" style="float: right;"></td>
-                       </tr>"""
+                           </tr>"""
             eval += "</tbody></table>"
             eval += "<br>"
 
