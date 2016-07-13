@@ -645,9 +645,12 @@ class DBConnection(object):
 
     def sample_user_annotations(self, user_id, limit=10):
         c = self.conn.cursor()
+        # sample from the latest set of annotations of the user
+        time_stamp = self.get_user_time_stamp(user_id) + 1
         for user, url, nl, cmd, time_stamp in c.execute("SELECT user_id, url, nl, cmd, time_stamp FROM Pairs " +
-                                                        "WHERE user_id = ? AND judgement = -1 ORDER BY RANDOM() LIMIT ?",
-                                                        (user_id, limit)):
+                                                        "WHERE user_id = ? AND judgement = -1 AND time_stamp = ?" +
+                                                        "ORDER BY RANDOM() LIMIT ?",
+                                                        (user_id, time_stamp, limit)):
             yield (user, url, nl, cmd, time_stamp)
         c.close()
 
@@ -660,7 +663,7 @@ class DBConnection(object):
 
     def assign_judgements(self):
         c = self.cursor
-        c.execute("UPDATE Pairs SET judgement = -1 WHERE user_id = 31")
+        c.execute("UPDATE Pairs SET judgement = -1 WHERE judgement IS NULL")
         self.conn.commit()
 
     def register_user(self, first_name, last_name):
