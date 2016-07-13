@@ -202,8 +202,8 @@ class DBConnection(object):
         url = None
         for p in pairs:
             url = p["url"]
-            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd, time_stamp) VALUES (?, ?, ?, ?, ?)",
-                      (user_id, encode_url(url), p["nl"].strip(), p["cmd"].strip(), time_stamp))
+            c.execute("INSERT INTO Pairs (user_id, url, nl, cmd, time_stamp, judgement) VALUES (?, ?, ?, ?, ?, ?)",
+                      (user_id, encode_url(url), p["nl"].strip(), p["cmd"].strip(), time_stamp, -1))
         self.record_visit(url)
         self.conn.commit()
 
@@ -259,7 +259,7 @@ class DBConnection(object):
 
     @analytics.instrumented
     def add_urls(self, search_phrase, urls, caching=False):
-        c = self.cursor
+        c = self.conn.cursor()
         for url in urls:
             if caching:
                 self.index_url_content(url)
