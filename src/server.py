@@ -445,7 +445,7 @@ class App(object):
             data = []
             count = 0
             for token, freq in db.option_histogram():
-                if freq < 40:
+                if freq < 30:
                     continue
                 data.append({"y": freq, "label": token})
                 count += 1
@@ -503,7 +503,7 @@ class App(object):
             # res += "<b>{}</b> unique pairs <br>".format(len(pairs))
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
 
-            res += "<div id=\"chartContainer\" style=\"height: 360px; width: 500px;\"></div>"
+            res += "<div id=\"chartContainer\" style=\"height: 400px; width: 500px;\"></div>"
 
             for cmd, in sorted(cmds)[:100]:
                 res += cmd + "<br>"

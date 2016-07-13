@@ -6,8 +6,8 @@ $(document).ready(function () {
                     var chart = new CanvasJS.Chart("chartContainer", {
 
                         title:{
-                            // text:"Fortune Global 500 Companies by Country"
-
+                            // text:"Histogram of Most Frequent Head Commands and Options",
+                            // fontSize: 18
                         },
                         animationEnabled: true,
                         axisX:{
