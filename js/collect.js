@@ -46,6 +46,7 @@ $(document).ready(function(){
 	// example.com?param1=name&param2=&id=6
 	page_url = $.urlParam('url'); // name
 	console.log(page_url);
+    $('#nl2cmd-new-tab-link').attr("href", page_url);
 
     $.ajax({url: "get_url_auto_detection",
         data: {"url": page_url},
@@ -61,7 +62,7 @@ $(document).ready(function(){
     var vertical_split_layout_setting = {
 		west: {
 		    // minSize: 100,
-		    size:	"40%",
+		    size:	"35%",
 		    resizable: false,
 		    /* onopen_start: function() {
 		        $("#nl2cmd-web-working-panel").width($("body").width() * 0.4);
@@ -99,8 +100,8 @@ $(document).ready(function(){
 	// this tries to load the page
 	var hypothes_header = "https://via.hypothes.is/"
     $("#nl2cmd-web-content-panel")
-        .html('<object id="web-content-data" width="100%" height="85%" data="' + hypothes_header + page_url + '"/>'
-    		+ '<div id="web-content-data-error">'
+        .html('<object id="web-content-data" data="' + hypothes_header + page_url + '"/>'
+    		/* + '<div id="web-content-data-error">'
             + '<p class="lead" id="error_info">If the page is not loaded successfully, '
             +                                 'click on the URL to open it in a new window: '
             + '<a id="nl2cmd-new-tab-link" href="'+ page_url + '">'
@@ -112,7 +113,7 @@ $(document).ready(function(){
             + 'hide this message'
             + '</a>'
             + '.<p/>'
-      	    + '</div>' );
+      	    + '</div>' */);
 
     /* $.getJSON('get_url_html', {url: page_url}, function(html) {
         $("#nl2cmd-web-content-panel").html(html);
@@ -120,9 +121,9 @@ $(document).ready(function(){
 	}); */
 
     $("#web-content-data").width($("#nl2cmd-web-content-panel").width());
+    $('#web-content-data').height($('body').height());
     $("#hide-error-message").click(function() {
-        $('#web-content-data').height($('body').height());
-        $('#web-content-data-error').hide();
+        // $('#web-content-data-error').hide();
     });
     $("#nl2cmd-new-tab-link").click(function() {
         window.open(this.href, 'newwindow', "width=480, height=640, top=0, left=960");
