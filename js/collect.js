@@ -150,7 +150,7 @@ $(document).ready(function(){
                     if (cmd !== "" && !check_verbatim(cmd, auto_cmd_detections)) {
                         if (!error_detected) {
                             $.notify("Please make sure the command is the exact copy from the web page.",
-                                        { globalPosition: 'top middle', });
+                                        { globalPosition: 'top middle' });
                         }
                         cmd_spell_error = true;
                         break;
