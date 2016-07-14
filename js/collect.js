@@ -149,7 +149,7 @@ $(document).ready(function(){
                 if (pair !== "")
                     if (cmd !== "" && !check_verbatim(cmd, auto_cmd_detections)) {
                         if (!error_detected) {
-                            $.notify("Please make sure the command is the exact copy from the web page.",
+                            $.notify("Please make sure the command is copied verbatim from the web page.",
                                         { globalPosition: 'top middle' });
                         }
                         cmd_spell_error = true;
