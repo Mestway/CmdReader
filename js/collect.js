@@ -53,7 +53,8 @@ $(document).ready(function(){
             alert("Failed to load command detections!");
         },
         success: function(data) {
-            auto_cmd_detections = data;
+            auto_cmd_detections = jQuery.parseJSON(data);
+            console.log(auto_cmd_detections)
         }
     });
 
@@ -137,24 +138,33 @@ $(document).ready(function(){
     // when the columns are almost full, add content into the table.
     // this method checks every 500ms to to increase the table size
 	setInterval(function() {
-	if (!in_submission) {
-        // var all_rows = $(".nl2cmd-pair-row");
-        var blank_cell_count = 0;
+        if (!in_submission) {
+            // var all_rows = $(".nl2cmd-pair-row");
+            var blank_cell_count = 0;
+            var cmd_spell_error = false;
+            for (var i = 1; i <= row_count; i ++) {
+                var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val().trim();
+                var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val().trim();
 
-        for (var i = 1; i <= row_count; i ++) {
-            var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
-            var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
+                if (pair !== "")
+                    if (cmd !== "" && !check_verbatim(cmd, auto_cmd_detections)) {
+                        if (!error_detected) {
+                            $.notify("Please make sure the command is the exact copy from the web page.",
+                                        { globalPosition: 'top middle', });
+                        }
+                        cmd_spell_error = true;
+                        break;
+                    }
+                if (cmd == "" || pair == "")
+                    blank_cell_count ++;
+            }
+            if (cmd_spell_error)
+                error_detected = true;
+            else
+                error_detected = false;
 
-            if (pair !== "")
-                if (cmd !== "" && !check_verbatim(cmd, auto_cmd_detections))
-                    alert("Command must be verbatim copy from web page.")
-
-            if (cmd == "" || pair == "")
-                blank_cell_count ++;
-        }
-
-        if (blank_cell_count == 0)
-            insert_pair_collecting_row();
+            if (blank_cell_count == 0 && !error_detected)
+                insert_pair_collecting_row();
         }
 	}, 500);
 
@@ -169,6 +179,17 @@ $(document).ready(function(){
         if (exist_orphan_pair) {
           BootstrapDialog.show({
             message: "There exist incomplete text/cmd pairs, please review you submission.",
+            buttons: [
+            {
+              label: 'Close',
+              action: function(dialogItself){
+                  dialogItself.close();
+              }
+            }],
+          });
+        } else if (error_detected) {
+          BootstrapDialog.show({
+            message: "You have input a command that doesn't match the web page content, please review you submission.",
             buttons: [
             {
               label: 'Close',
@@ -484,14 +505,15 @@ function insert_pair_collecting_row() {
 function check_verbatim(cmd, auto_cmd_dections) {
     for (var i = 0; i < auto_cmd_dections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
+        // console.log(auto_detection);
         if (auto_detection.indexOf(cmd) > -1)
             // check if command is substring of auto-detection
             return true;
         else if (cmd.indexOf(auto_detection) > -1)
             // check if auto-detection is substring of command
             return true;
-        return false;
     }
+    return false;
 }
 
 function getSelectedText(e) {
