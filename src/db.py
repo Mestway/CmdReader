@@ -448,15 +448,44 @@ class DBConnection(object):
     def num_cmd_estimation(self):
         c = self.conn.cursor()
         # for url, _ in self.find_urls_with_less_responses_than(None):
-        for url, _, _, _ in self.search_content():
+        for url, _, _, _, _ in self.search_content():
             print(url)
-            if self.get_url_num_cmds(url) >= 0:
+            if self.coarse_estimation_done(url):
                 continue
             html, raw_text = extract_text_from_url(url)
             num_cmds = self.coarse_cmd_estimation(url, raw_text)
             print "%s estimated number = %d" % (url, num_cmds)
             c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
-        self.conn.commit() 
+        self.conn.commit()
+
+    def auto_detected_commands(self, url):
+        c = self.conn.cursor()
+        for cmd, in c.execute("SELECT cmd FROM Commands WHERE url = ?", (url,)):
+            yield cmd
+        c.close()
+
+    def coarse_cmd_estimation(self, url, text):
+        lines = text.splitlines()
+        num_cmds = 0
+        c = self.cursor
+        for line in lines:
+            if not 'find ' in line:
+                continue
+            if len(line) <= 5:
+                continue
+            if len(line) > 10 and not '-' in line:
+                continue
+            num_cmds += 1
+            c.execute("INSERT INTO Commands (url, cmd) VALUES (?, ?)", (url, line))
+        if num_cmds > 0:
+            self.conn.commit()
+        return num_cmds
+
+    def coarse_estimation_done(self, url):
+        c = self.cursor
+        for _ in c.execute("SELECT 1 FROM Commands WHERE url = ? LIMIT 1", (url,)):
+            return True
+        return False
 
     @analytics.instrumented
     def index_url_content(self, url):
@@ -483,23 +512,6 @@ class DBConnection(object):
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, num_visits, html) VALUES (?, ?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, num_cmds, 0, ensure_unicode(html)))
         self.conn.commit()
-
-    def coarse_cmd_estimation(self, url, text):
-        lines = text.splitlines()
-        num_cmds = 0
-        c = self.cursor
-        for line in lines:
-            if not 'find ' in line:
-                continue
-            if len(line) <= 5:
-                continue
-            if len(line) > 10 and not '-' in line:
-                continue
-            num_cmds += 1
-            c.execute("INSERT INTO Commands (url, cmd) VALUES (?, ?)", (url, line))
-        if num_cmds > 0:
-            self.conn.commit()
-        return num_cmds
 
     def url_indexed(self, url):
         c = self.cursor
@@ -832,9 +844,9 @@ class DBConnection(object):
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
-        # db.num_cmd_estimation()
+        db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
         # url = sys.argv[1]
         # db.debugging(url)
-        db.assign_judgements()
+        # db.assign_judgements()

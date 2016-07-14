@@ -287,6 +287,16 @@ class App(object):
     @cherrypy.expose
     @user_id_required
     @cherrypy.tools.json_out()
+    def get_url_auto_detection(self, user_id, url):
+        with DBConnection() as db:
+            auto_cmds = []
+            for cmd in db.auto_detected_commands(url):
+                auto_cmds.append(cmd)
+            return json.dumps(auto_cmds)
+
+    @cherrypy.expose
+    @user_id_required
+    @cherrypy.tools.json_out()
     def add_pairs(self, user_id, pairs):
         pairs = json.loads(pairs)
         util.check_type(pairs, [{"url":unicode, "nl":unicode, "cmd":unicode}], value_name="pairs")
@@ -318,6 +328,13 @@ class App(object):
         # print(judgements)
         with DBConnection() as db:
             return db.add_judgements(user_id, judgements)
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    @admin_only
+    def user_record_milestone(self, user_id):
+        with DBConnection() as db:
+            return db.record_milestone(user_id)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -399,21 +416,13 @@ class App(object):
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
-    @admin_only
-    def user_record_milestone(self, user_id):
-        with DBConnection() as db:
-            return db.record_milestone(user_id)
-
-    @cherrypy.expose
-    @cherrypy.tools.json_out()
     def url_opr_history(self, url=None):
         operation_history = collections.defaultdict(list)
         res = ""
-
         with DBConnection() as db:
             if not url:
                 url, count = db.random_select_url()
-                print url, count
+                # print url, count
             url = url.strip()
             url_not_found = True
             for user, _, nl, cmd in db.pairs_by_url(url):
@@ -434,8 +443,11 @@ class App(object):
                         nl = nl.decode().encode('utf-8')
                         cmd = cmd.decode().encode('utf-8')
                         res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
-                    res += "</tbody></table>"
-            print url
+                    res += "</tbody></table><br>"
+            res += "<h3>Auto-detected Command Lines</h3>"
+            for cmd in db.auto_detected_commands(url):
+                # print(cmd)
+                res += cmd + "<br>"
         return url, res
 
     @cherrypy.expose

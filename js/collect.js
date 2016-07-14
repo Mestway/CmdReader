@@ -8,10 +8,13 @@ var row_count = 0;
 var collected_pairs = [];
 var safely_redirect = false;
 var in_submission = false;
+var error_detected = false;
 
 /* --- The page content is only displayable to logged-in users --- */
 var username_prefix = "nl2cmd";
 var user_id;
+var auto_cmd_detections;
+
 $.ajax({url: "get_current_user",
         error: function(request, status, error) {
             safely_redirect = true;
@@ -43,6 +46,16 @@ $(document).ready(function(){
 	// example.com?param1=name&param2=&id=6
 	page_url = $.urlParam('url'); // name
 	console.log(page_url);
+
+    $.ajax({url: "get_url_auto_detection",
+        data: {"url": page_url},
+        error: function(request, status, error) {
+            alert("Failed to load command detections!");
+        },
+        success: function(data) {
+            auto_cmd_detections = data;
+        }
+    });
 
     var vertical_split_layout_setting = {
 		west: {
@@ -131,6 +144,10 @@ $(document).ready(function(){
         for (var i = 1; i <= row_count; i ++) {
             var cmd = $("#nl2cmd-row-no-" + i + " .nl2cmd-cmd").val();
             var pair = $("#nl2cmd-row-no-" + i + " .nl2cmd-text").val();
+
+            if (pair !== "")
+                if (cmd !== "" && !check_verbatim(cmd, auto_cmd_detections))
+                    alert("Command must be verbatim copy from web page.")
 
             if (cmd == "" || pair == "")
                 blank_cell_count ++;
@@ -462,6 +479,19 @@ function insert_pair_collecting_row() {
   			+ '</td></tr>');    // default html textarea spellcheck disabled
 
   	$("").append()
+}
+
+function check_verbatim(cmd, auto_cmd_dections) {
+    for (var i = 0; i < auto_cmd_dections.length; i ++) {
+        var auto_detection = auto_cmd_detections[i];
+        if (auto_detection.indexOf(cmd) > -1)
+            // check if command is substring of auto-detection
+            return true;
+        else if (cmd.indexOf(auto_detection) > -1)
+            // check if auto-detection is substring of command
+            return true;
+        return false;
+    }
 }
 
 function getSelectedText(e) {
