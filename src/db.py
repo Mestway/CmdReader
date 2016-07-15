@@ -355,12 +355,12 @@ class DBConnection(object):
             find_urls = self.find_urls_with_reference(1) if self.get_user_time_stamp(user_id) < 1 else \
                         self.find_unannotated_urls()
             for url, count in find_urls:
-                # print url
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
                     not self.duplicate(url):
                     lease_count = sum(1 for (url2, _, _) in url_leases if url2 == url)
                     if count + lease_count < MAX_RESPONSES:
+                        # url = "http://linuxcommando.blogspot.com/2007/10/find-xargs-pipe.html"
                         url_leases.append((url, user_id, now + lease_duration))
                         print("Leased: " + url + " to " + str(user_id))
                         return url
