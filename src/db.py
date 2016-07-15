@@ -91,14 +91,16 @@ def extract_text_from_url(url):
         html = urllib2.urlopen(hypothes_header + url, timeout=2)
     except urllib2.URLError, e:
         print("Error: extract_text_from_url() urllib2.URLError")
-        return "", randomstr(180)
+        # return "", randomstr(180)
+        return None, None
     except socket.timeout, e:
         print("Error: extract_text_from_url() socket.timeout")
-        return "", randomstr(180)
+        # return "", randomstr(180)
+        return None, None
     except ssl.SSLError, e:
         print("Error: extract_text_from_url() ssl.SSLError")
-        return "", randomstr(180)
-
+        # return "", randomstr(180)
+        return None, None
 
     html = html.read()
     html = remove_headers(html)
@@ -162,10 +164,14 @@ class DBConnection(object):
         c.execute("CREATE INDEX IF NOT EXISTS Urls_url ON Urls (url)")
         c.execute("CREATE INDEX IF NOT EXISTS Urls_sp  ON Urls (search_phrase)")
 
-        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, num_cmds INT, num_visits INT, html TEXT)")
+        c.execute("CREATE TABLE IF NOT EXISTS SearchContent (url TEXT, fingerprint TEXT, min_distance INT, " +
+                                                            "max_score FLOAT, avg_score FLOAT, num_cmds INT, " +
+                                                            "num_visits INT, html TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_url ON SearchContent (url)")
         # c.execute("ALTER TABLE SearchContent ADD num_cmds INT")
         # c.execute("ALTER TABLE SearchContent ADD num_visits INT")
+        # c.execute("ALTER TABLE SearchContent ADD avg_score FLOAT")
+        # c.execute("ALTER TABLE SearchContent ADD max_score FLOAT")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_cmds ON SearchContent (num_cmds)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
@@ -190,6 +196,9 @@ class DBConnection(object):
         # c.execute("ALTER TABLE Users Add time_stamp INT")
         # c.execute("ALTER TABLE Users Add recall FLOAT")
 
+        c.execute("CREATE TABLE IF NOT EXISTS TokenCounts (token TEXT, count INT)")
+        c.execute("CREATE INDEX IF NOT EXISTS TokenCounts_token ON TokenCounts (token)")
+
         self.conn.commit()
 
     # --- Data management ---
@@ -212,6 +221,18 @@ class DBConnection(object):
         c.execute("UPDATE Skipped SET time_stamp = 2 WHERE user_id = 24")
         self.conn.commit()
 
+    def assign_token_counts(self):
+        c = self.cursor
+        for cmd, in self.commands():
+            self.update_token_count(cmd)
+        self.conn.commit()
+
+    def token_exist(self, token):
+        c = self.cursor
+        for _ in c.execute("SELECT 1 FROM TokenCounts WHERE token = ? LIMIT 1", (token,)):
+            return True
+        return False
+
     def record_visit(self, url):
         c = self.cursor
         c.execute("UPDATE SearchContent SET num_visits = num_visits + 1 WHERE url = ?", (url,))
@@ -226,8 +247,20 @@ class DBConnection(object):
             url = p["url"]
             c.execute("INSERT INTO Pairs (user_id, url, nl, cmd, time_stamp, judgement) VALUES (?, ?, ?, ?, ?, ?)",
                       (user_id, encode_url(url), p["nl"].strip(), p["cmd"].strip(), time_stamp, -1))
+            # remember seen tokens
+            self.update_token_count(p["cmd"])
         self.record_visit(url)
         self.conn.commit()
+
+    def update_token_count(self, cmd):
+        c = self.cursor
+        tokens = cmd.split()
+        for token in tokens:
+            if token.startswith("-") or token in head_commands:
+                if self.token_exist(token):
+                    c.execute("UPDATE TokenCounts SET count = count + 1 WHERE token = ?", (token,))
+                else:
+                    c.execute("INSERT INTO TokenCounts (token, count) VALUES (?, ?)", (token, 1))
 
     def mark_has_no_pairs(self, url, user_id):
         c = self.cursor
@@ -273,18 +306,12 @@ class DBConnection(object):
             yield cmd
         c.close()
 
-    def option_histogram(self):
-        options = collections.defaultdict(int)
-        # total_num = 0
-        for cmd, in self.commands():
-            tokens = cmd.split()
-            for token in tokens:
-                if token.startswith("-") or token in head_commands:
-                    options[token] += 1
-                    # total_num += 1
-        # for token in options:
-        #     options[token] = (options[token] + 0.0) / total_num
-        return sorted(options.items(), key=lambda x:x[1], reverse=True)
+    def token_histogram(self):
+        c = self.cursor
+        token_hist = {}
+        for token, count in c.execute("SELECT token, count FROM TokenCounts"):
+            token_hist[token] = count
+        return token_hist
 
     # --- Query management ---
 
@@ -487,14 +514,16 @@ class DBConnection(object):
     def num_cmd_estimation(self):
         c = self.conn.cursor()
         # for url, _ in self.find_urls_with_less_responses_than(None):
-        for url, _, _, _, _ in self.search_content():
+        for url, _, _, _, _, _, _ in self.search_content():
             print(url)
-            if self.coarse_estimation_done(url):
+            if False:
                 continue
             html, raw_text = extract_text_from_url(url)
-            num_cmds = self.coarse_cmd_estimation(url, raw_text)
-            print "%s estimated number = %d" % (url, num_cmds)
-            c.execute('UPDATE SearchContent SET num_cmds = ? WHERE url = ?', (num_cmds, url))
+            if html and raw_text:
+                num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
+                print "%s estimated number = %d" % (url, num_cmds)
+                c.execute('UPDATE SearchContent SET num_cmds = ?, max_score = ?, avg_score = ? ' +
+                          'WHERE url = ?', (num_cmds, max_score, avg_score, url))
         self.conn.commit()
 
     def auto_detected_commands(self, url):
@@ -506,6 +535,8 @@ class DBConnection(object):
     def coarse_cmd_estimation(self, url, text):
         lines = text.splitlines()
         num_cmds = 0
+        max_score = 0
+        avg_score = 0
         c = self.cursor
         for line in lines:
             if not 'find ' in line:
@@ -514,11 +545,31 @@ class DBConnection(object):
                 continue
             if len(line) > 10 and not '-' in line:
                 continue
+            # scoring each command
+            score = self.coarse_cmd_score(line)
+            if score > max_score:
+                max_score = score
+            avg_score += score
             num_cmds += 1
             c.execute("INSERT INTO Commands (url, cmd) VALUES (?, ?)", (url, line))
         if num_cmds > 0:
-            self.conn.commit()
-        return num_cmds
+            avg_score = avg_score / num_cmds
+        return num_cmds, max_score, avg_score
+
+    def coarse_cmd_score(self, cmd):
+        tokens = cmd.strip().split()
+        token_hist = self.token_histogram()
+        # scoring based on novelty and difficulty of a command
+        score = 0.0
+        for token in tokens:
+            if token == "|":
+                score += 1
+            else:
+                if token in token_hist:
+                    score += 1.0 / (token_hist[token] + 1)
+                else:
+                    score += 1
+        return score
 
     def coarse_estimation_done(self, url):
         c = self.cursor
@@ -533,7 +584,7 @@ class DBConnection(object):
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds = self.coarse_cmd_estimation(url, raw_text)
+        num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
@@ -548,8 +599,9 @@ class DBConnection(object):
             fingerprint_dis = distance(fingerprint, long(_fingerprint))
             if fingerprint_dis < min_distance:
                 min_distance = fingerprint_dis
-        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, num_cmds, num_visits, html) VALUES (?, ?, ?, ?, ?, ?)",
-                  (url, str(fingerprint), min_distance, num_cmds, 0, ensure_unicode(html)))
+        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
+                  "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                  (url, str(fingerprint), min_distance, max_score, avg_score, num_cmds, 0, ensure_unicode(html)))
         self.conn.commit()
 
     def url_indexed(self, url):
@@ -572,11 +624,12 @@ class DBConnection(object):
 
     def search_content(self):
         c = self.conn.cursor()
-        for url, fingerprint, min_distance, num_cmds, num_visits in \
-                c.execute("SELECT url, fingerprint, min_distance, num_cmds, num_visits FROM SearchContent " +
+        for url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits in \
+                c.execute("SELECT url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits " +
+                          "FROM SearchContent " +
                           "WHERE min_distance > ? " +
                           "ORDER BY num_cmds DESC", (SIMHASH_DIFFBIT,)):
-            yield (url, fingerprint, min_distance, num_cmds, num_visits)
+            yield (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
         c.close()
 
     # --- User management ---
@@ -883,6 +936,7 @@ class DBConnection(object):
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
+        # db.assign_token_counts()
         db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()

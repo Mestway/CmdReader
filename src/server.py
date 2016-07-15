@@ -457,7 +457,10 @@ class App(object):
         with DBConnection() as db:
             data = []
             count = 0
-            for token, freq in db.option_histogram():
+            sorted_token_hist = sorted(db.token_histogram().items(),
+                                       key=lambda x:x[1], reverse=True)
+            for token, freq in sorted_token_hist:
+                print token, freq
                 if freq < 30:
                     continue
                 data.append({"y": freq, "label": token})
@@ -572,12 +575,21 @@ class App(object):
             res += "Number of finished URLs: {}<br>".format(db.num_urls_by_num_visit(2))
             res += "Number of URLs annotated by one user: {}<br>".format(db.num_urls_by_num_visit(1))
             res += "Number of unnotated URLs: {}<br>".format(db.num_urls_by_num_visit(0))
-            res += "<table><thead><tr><th>url</th><th>fingerprint</th><th>minimum distance</th><th>number of commands</th><th>number of visits</th></tr></thead><tbody>"
+            res += "<table><thead><tr><th>url</th>" + \
+                                "<th>fingerprint</th>" + \
+                                "<th>minimum distance</th>" + \
+                                "<th>max score</th>" + \
+                                "<th>avg score</th>" + \
+                                "<th>number of commands</th" + \
+                                "><th>number of visits</th>" + \
+                                "</tr></thead><tbody>"
             num_pages = 0
-            for url, fingerprint, min_distance, num_cmds, num_visits in db.search_content():
+            for url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits in db.search_content():
                 if num_visits >= 2:
+                    # do not show URLs that's done
                     continue
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(url, fingerprint, min_distance, num_cmds, num_visits)
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>"\
+                        .format(url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
                 num_pages += 1
                 if num_pages > 100:
                     break

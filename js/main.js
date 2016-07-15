@@ -74,6 +74,8 @@ $(document).ready(function () {
   });
 
   $('#nl2cmd-auto-redirect').click(function() {
+    $("#index-progress-img").show()
+    $("#index-progress").text("Please wait while we automatically redirecting you to a web page.");
     start("RANDOM_SELECTION");
     return false;
   });
