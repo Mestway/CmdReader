@@ -520,7 +520,7 @@ class App(object):
                 if "find" in cmd[0]:
                     cmds.append(cmd)
             res += "<b>{}</b> annotations <br>".format(num_pairs)
-            res += "<b>{}</b> unique pairs <br>".format(num_diverse_pairs)
+            # res += "<b>{}</b> unique pairs <br>".format(num_diverse_pairs)
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
 
             res += "<div id=\"chartContainer\" style=\"height: 400px; width: 500px;\"></div>"
