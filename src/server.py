@@ -460,7 +460,7 @@ class App(object):
             sorted_token_hist = sorted(db.token_histogram().items(),
                                        key=lambda x:x[1], reverse=True)
             for token, freq in sorted_token_hist:
-                print token, freq
+                # print token, freq
                 if freq < 30:
                     continue
                 data.append({"y": freq, "label": token})
