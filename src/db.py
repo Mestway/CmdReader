@@ -173,6 +173,7 @@ class DBConnection(object):
         # c.execute("ALTER TABLE SearchContent ADD avg_score FLOAT")
         # c.execute("ALTER TABLE SearchContent ADD max_score FLOAT")
         c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_cmds ON SearchContent (num_cmds)")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_avg_score ON SearchContent (avg_score)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -464,16 +465,16 @@ class DBConnection(object):
 
     def find_urls_with_reference(self, n=1):
         c = self.conn.cursor()
-        for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
-                                              "AND num_cmds >= 3", (n,)):
-                                              # "ORDER BY num_cmds DESC", (n,)):
+        for url, num_cmds, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
+                                              # "AND num_cmds >= 4 ", (n,)):
+                                              "AND num_cmds >= 4 ORDER BY avg_score DESC", (n,)):
             yield (url, count)
 
     def find_unannotated_urls(self):
         c = self.conn.cursor()
-        for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
-                                              "AND num_cmds >= 3"):
-                                              # "ORDER BY num_cmds DESC"):
+        for url, num_cmds, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
+                                              # "AND num_cmds >= 4 "):
+                                              "AND num_cmds >= 4 ORDER BY avg_score DESC"):
             yield (url, count)
 
     def num_urls_by_num_visit(self, n):
@@ -628,7 +629,7 @@ class DBConnection(object):
                 c.execute("SELECT url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits " +
                           "FROM SearchContent " +
                           "WHERE min_distance > ? " +
-                          "ORDER BY num_cmds DESC", (SIMHASH_DIFFBIT,)):
+                          "ORDER BY avg_score DESC", (SIMHASH_DIFFBIT,)):
             yield (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
         c.close()
 
