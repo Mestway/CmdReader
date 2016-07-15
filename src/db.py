@@ -30,6 +30,7 @@ head_commands = ["find", "grep", "egrep", "sed", "awk", "ls", "xargs", "rm", "cd
 MAX_RESPONSES = 2
 SIMHASH_BITNUM = 64
 SIMHASH_DIFFBIT = 8
+EDITDIST_THRESH = 8
 
 # Depending on how often we expect to be doing server updates, we might want to
 # make this information persistent.
@@ -43,6 +44,27 @@ def distance(f1, f2):
         ans += 1
         x &= x - 1
     return ans
+
+def minEditDist(target, source):
+    ''' Computes the min edit distance from target to source. Figure 3.25 '''
+
+    n = len(target)
+    m = len(source)
+
+    distance = [[0 for i in range(m+1)] for j in range(n+1)]
+
+    for i in range(1,n+1):
+        distance[i][0] = distance[i-1][0] + 1
+
+    for j in range(1,m+1):
+        distance[0][j] = distance[0][j-1] + 1
+
+    for i in range(1,n+1):
+        for j in range(1,m+1):
+           distance[i][j] = min(distance[i-1][j]+1,
+                                distance[i][j-1]+1,
+                                distance[i-1][j-1]+1)
+    return distance[n][m]
 
 def ensure_unicode(content):
     if isinstance(content, str):
@@ -227,6 +249,23 @@ class DBConnection(object):
         for user, url, nl, cmd, time_stamp in c.execute("SELECT user_id, url, nl, cmd, time_stamp FROM Pairs"):
             yield (user, url, nl, cmd, time_stamp)
         c.close()
+
+    def diverse_pairs(self):
+        cmds_dict = collections.defaultdict(list)
+        for user, url, nl, cmd, time_stamp in self.pairs():
+            duplicated = False
+            for nl2 in cmds_dict[cmd]:
+                if minEditDist(nl, nl2) < EDITDIST_THRESH:
+                    duplicated = True
+                    break
+                else:
+                    print minEditDist(nl, nl2)
+                    print nl
+                    print nl2
+                    print
+            if not duplicated:
+                cmds_dict[cmd].append(nl)
+                yield (user, url, nl, cmd, time_stamp)
 
     def commands(self):
         c = self.conn.cursor()

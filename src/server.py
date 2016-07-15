@@ -505,14 +505,21 @@ class App(object):
         with DBConnection() as db:
             res += "<h3>Commands collected</h3>"
             pairs = []
+            diverse_pairs = []
+            num_pairs = 0
+            num_diverse_pairs = 0
             cmds = []
             for _, _, nl, cmd, _ in db.pairs():
-                pairs.append((nl, cmd))
+                num_pairs += 1
+            #     pairs.append((nl, cmd))
+            # for _, _, nl, cmd, _ in db.diverse_pairs():
+            #     num_diverse_pairs += 1
+            #     diverse_pairs.append((nl, cmd))
             for cmd in db.commands():
                 if "find" in cmd[0]:
                     cmds.append(cmd)
-            res += "<b>{}</b> annotations <br>".format(len(pairs))
-            # res += "<b>{}</b> unique pairs <br>".format(len(pairs))
+            res += "<b>{}</b> annotations <br>".format(num_pairs)
+            res += "<b>{}</b> unique pairs <br>".format(num_diverse_pairs)
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
 
             res += "<div id=\"chartContainer\" style=\"height: 400px; width: 500px;\"></div>"
