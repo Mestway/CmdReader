@@ -14,9 +14,9 @@ $.ajax({url: "get_current_user",
         }
 });
 
-$(document).ready(function () {
+$("#index-progress-img").hide()
 
-  $("#index-progress-img").hide()
+$(document).ready(function () {
 
   function start(query) {
     if (query !== "RANDOM_SELECTION") {

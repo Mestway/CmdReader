@@ -588,7 +588,11 @@ class App(object):
                 if num_visits >= 2:
                     # do not show URLs that's done
                     continue
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>"\
+                if not max_score:
+                    max_score = 0.0
+                if not avg_score:
+                    avg_score = 0.0
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{:.2f}</td><td>{:.2f}</td><td>{}</td><td>{}</td></tr>"\
                         .format(url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
                 num_pages += 1
                 if num_pages > 100:

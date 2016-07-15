@@ -465,14 +465,14 @@ class DBConnection(object):
     def find_urls_with_reference(self, n=1):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = ? " +
-                                              "AND num_cmds >= 4", (n,)):
+                                              "AND num_cmds >= 3", (n,)):
                                               # "ORDER BY num_cmds DESC", (n,)):
             yield (url, count)
 
     def find_unannotated_urls(self):
         c = self.conn.cursor()
         for url, num_cmds, count in c.execute("SELECT url, num_cmds, num_visits FROM SearchContent WHERE num_visits = 0 " +
-                                              "AND num_cmds >= 4"):
+                                              "AND num_cmds >= 3"):
                                               # "ORDER BY num_cmds DESC"):
             yield (url, count)
 
@@ -564,7 +564,7 @@ class DBConnection(object):
         for token in tokens:
             if token == "|":
                 score += 1
-            else:
+            elif token.startswith("-") or token in head_commands:
                 if token in token_hist:
                     score += 1.0 / (token_hist[token] + 1)
                 else:
