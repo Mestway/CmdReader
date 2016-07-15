@@ -432,18 +432,19 @@ class App(object):
                 operation_history[user] = None
                 url_not_found = False
             if url_not_found:
-                return url, "This is no history associated with this URL yet!"
-            for user in operation_history.keys():
-                res += "<h3> User {} </h3>".format(user)
-                if not operation_history[user]:
-                    res += "No Pair<br>"
-                else:
-                    res += "<table><thead><tr><th>cmd</th><th>text</th></tr></thead><tbody>"
-                    for cmd, nl in operation_history[user]:
-                        nl = nl.decode().encode('utf-8')
-                        cmd = cmd.decode().encode('utf-8')
-                        res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
-                    res += "</tbody></table><br>"
+                res += "This is no history associated with this URL yet!" + "<br>"
+            else:
+                for user in operation_history.keys():
+                    res += "<h3> User {} </h3>".format(user)
+                    if not operation_history[user]:
+                        res += "No Pair<br>"
+                    else:
+                        res += "<table><thead><tr><th>cmd</th><th>text</th></tr></thead><tbody>"
+                        for cmd, nl in operation_history[user]:
+                            nl = nl.decode().encode('utf-8')
+                            cmd = cmd.decode().encode('utf-8')
+                            res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
+                        res += "</tbody></table><br>"
             res += "<h3>Auto-detected Command Lines</h3>"
             for cmd in db.auto_detected_commands(url):
                 # print(cmd)
