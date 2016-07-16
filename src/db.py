@@ -15,7 +15,6 @@ import sqlite3
 import threading
 
 import re
-import sys
 from fun import pokemon_name_list
 import analytics
 
@@ -27,7 +26,9 @@ head_commands = ["find", "grep", "egrep", "sed", "awk", "ls", "xargs", "rm", "cd
                  "cp", "cat", "wc", "chmod", "zip", "unzip", "tar", "sort", "head", "tail",
                  "du", "echo"]
 
+# maximum number of annotators a web page can be assigned to
 MAX_RESPONSES = 2
+
 SIMHASH_BITNUM = 64
 # minimum number of fingerprint bits two URLs have to differ to not be considered as duplicates
 SIMHASH_DIFFBIT = 8
@@ -475,6 +476,7 @@ class DBConnection(object):
         for url, _, _, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent " +
                                               # "ORDER BY avg_score DESC " +
                                               "WHERE num_visits = ? " +
+                                              # "AND num_cmds >= ? ", (n, NUM_CMDS_THRESH)):
                                               "AND num_cmds >= ? AND avg_score >= ?", (n, NUM_CMDS_THRESH, 0.3)):
             yield (url, count)
 
@@ -483,6 +485,7 @@ class DBConnection(object):
         for url, _, _, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent " +
                                               # "ORDER BY avg_score DESC "
                                               "WHERE num_visits = 0 " +
+                                              # "AND num_cmds >= ? ", (NUM_CMDS_THRESH,)):
                                               "AND num_cmds >= ? AND avg_score >= ?", (NUM_CMDS_THRESH, 0.3)):
             yield (url, count)
 
@@ -729,7 +732,7 @@ class DBConnection(object):
                                     "SearchContent LEFT JOIN (SELECT url, user_id FROM NoPairs " +
                                         "UNION ALL SELECT url, user_id FROM Pairs) AS InUse " +
                                         "ON SearchContent.url = InUse.url " +
-                              "WHERE SearchContent.num_visits = 2 AND InUse.user_id = ? " +
+                              "WHERE SearchContent.num_visits >= 2 AND InUse.user_id = ? " +
                               "GROUP BY SearchContent.url", (user_id,)):
             print(url)
             url_recall = self.get_user_url_recall(user_id, url)
