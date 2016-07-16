@@ -224,6 +224,7 @@ $(document).ready(function(){
                 label: 'Yes',
                 cssClass: 'btn-primary',
                 action: function(dialogItself){
+                  $.notify("Please wait while we retrieve the next URL.", { globalPosition: 'top cehter', className: "info"});
                   $.ajax({
                         url: "add-pairs",
                         data: {"pairs": JSON.stringify(collected_pairs)},
@@ -270,6 +271,7 @@ $(document).ready(function(){
               label: 'Yes',
               cssClass: 'btn-primary',
               action: function(dialogItself){
+                $.notify("Please wait while we retrieve the next URL.", { globalPosition: 'top cehter', className: "info"});
                 $.ajax({
                       url: "no_pairs",
                       data: {"url": page_url},
@@ -309,6 +311,7 @@ $(document).ready(function(){
               action: function(dialogItself){
                 // record skip action
                 // setTimeout(function() {
+                $.notify("Please wait while we retrieve the next URL.", { globalPosition: 'top cehter', className: "info"});
                 $.ajax({url: "skip_url",
                      data: {"url": page_url},
                      error: function(request, status, error) {
@@ -508,7 +511,7 @@ function insert_pair_collecting_row() {
 }
 
 function check_verbatim(cmd, auto_cmd_detections) {
-    for (var i = 0; i < auto_cmd_detections.length; i ++) {
+    /* for (var i = 0; i < auto_cmd_detections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
         // console.log(auto_detection);
         if (auto_detection.indexOf(cmd) > -1)
@@ -520,7 +523,8 @@ function check_verbatim(cmd, auto_cmd_detections) {
         else if (levDist(cmd, auto_detection) <= 3)
             return true;
     }
-    return false;
+    return false; */
+    return true;
 }
 
 function levDist(s, t) {
