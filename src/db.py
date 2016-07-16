@@ -178,8 +178,9 @@ class DBConnection(object):
         # c.execute("ALTER TABLE SearchContent ADD num_visits INT")
         # c.execute("ALTER TABLE SearchContent ADD avg_score FLOAT")
         # c.execute("ALTER TABLE SearchContent ADD max_score FLOAT")
-        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_cmds ON SearchContent (num_cmds)")
-        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_avg_score ON SearchContent (avg_score)")
+        # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_num_cmds ON SearchContent (num_cmds)")
+        # c.execute("CREATE INDEX IF NOT EXISTS SearchContent_avg_score ON SearchContent (avg_score)")
+        c.execute("CREATE INDEX IF NOT EXISTS SearchContent_idx ON SearchContent (avg_score, num_cmds, num_visits)")
 
         c.execute("CREATE TABLE IF NOT EXISTS Commands (url TEXT, cmd TEXT)")
         c.execute("CREATE INDEX IF NOT EXISTS Commands_url ON Commands (url)")
@@ -263,7 +264,7 @@ class DBConnection(object):
         c = self.cursor
         tokens = cmd.split()
         for token in tokens:
-            if token.startswith("-") or token in head_commands:
+            if token.startswith("-") or token in head_commands or token == "|":
                 if self.token_exist(token):
                     c.execute("UPDATE TokenCounts SET count = count + 1 WHERE token = ?", (token,))
                 else:
