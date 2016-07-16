@@ -637,7 +637,7 @@ class DBConnection(object):
                 c.execute("SELECT url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits " +
                           "FROM SearchContent " +
                           "WHERE min_distance > ? AND num_cmds >= ?" +
-                          "ORDER BY avg_score DESC", (SIMHASH_DIFFBIT, 4)):
+                          "ORDER BY avg_score DESC", (SIMHASH_DIFFBIT, NUM_CMDS_THRESH)):
             yield (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
         c.close()
 
