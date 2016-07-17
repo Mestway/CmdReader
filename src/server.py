@@ -461,7 +461,7 @@ class App(object):
                                        key=lambda x:x[1], reverse=True)
             for token, freq in sorted_token_hist:
                 # print token, freq
-                if freq < 30:
+                if freq < 20:
                     continue
                 data.append({"y": freq, "label": token})
                 count += 1
@@ -529,6 +529,8 @@ class App(object):
             res += "<div id=\"chartContainer\" style=\"height: 400px; width: 500px;\"></div>"
 
             for cmd, in sorted(cmds)[:100]:
+                if ".js" in cmd:
+                    continue
                 res += cmd + "<br>"
             res += "<i>(... end of top 100 commands collected)</i><br>"
 
