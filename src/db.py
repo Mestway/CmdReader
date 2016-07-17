@@ -601,24 +601,24 @@ class DBConnection(object):
         html, raw_text = extract_text_from_url(url)
         if html and raw_text:
             num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
+            fingerprint = Simhash(raw_text).value
+            if not isinstance(fingerprint, long):
+                if isinstance(fingerprint, int):
+                    fingerprint = long(fingerprint)
+                else:
+                    print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
+            min_distance = SIMHASH_BITNUM
+            c = self.cursor
+            for _url, _fingerprint, _min_distance in c.execute(("SELECT url, fingerprint, min_distance FROM SearchContent")):
+                fingerprint_dis = distance(fingerprint, long(_fingerprint))
+                if fingerprint_dis < min_distance:
+                    min_distance = fingerprint_dis
         else:
             num_cmds = -1
             max_score = 0.0
             avg_score = 0.0
+            min_distance = -1
 
-        fingerprint = Simhash(raw_text).value
-        if not isinstance(fingerprint, long):
-            if isinstance(fingerprint, int):
-                fingerprint = long(fingerprint)
-            else:
-                print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
-
-        min_distance = SIMHASH_BITNUM
-        c = self.cursor
-        for _url, _fingerprint, _min_distance in c.execute(("SELECT url, fingerprint, min_distance FROM SearchContent")):
-            fingerprint_dis = distance(fingerprint, long(_fingerprint))
-            if fingerprint_dis < min_distance:
-                min_distance = fingerprint_dis
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, max_score, avg_score, num_cmds, 0, ensure_unicode(html)))
