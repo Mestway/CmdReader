@@ -20,6 +20,10 @@ $(document).ready(function () {
 
                         },
                         axisY2:{
+                            labelFontSize: 10,
+                            labelFontStyle: "normal",
+                            labelFontWeight: "normal",
+                            labelFontFamily: "Lucida Sans Unicode"
                             interlacedColor: "rgba(1,77,101,.2)",
                             gridColor: "rgba(1,77,101,.1)"
 
