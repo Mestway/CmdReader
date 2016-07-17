@@ -79,6 +79,11 @@ $(document).ready(function () {
     });
 
     $("#user-eval-panel").delegate("#user-eval-submit", "click", function() {
+        if (eval_submitted) {
+            alert("You have already submitted evaluation for this page!");
+            return;
+        }
+
         var miss_judgement = false;
         for (var i = 1; i <= num_total; i ++) {
             if (!(i in judgements)) {
@@ -87,8 +92,10 @@ $(document).ready(function () {
                 // var data_entry = {"cmd": cmd, "nl": text, "judgement": 0};
                 // judgements[i] = data_entry;
                 miss_judgement = true;
+                alert("Judgement is missing!");
             }
         }
+
         if (!miss_judgement && !eval_submitted) {
             $.ajax({url: "add_judgements",
                  data: {"user_id": user_id, "judgements": JSON.stringify(judgements)},
