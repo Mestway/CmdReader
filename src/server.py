@@ -355,6 +355,8 @@ class App(object):
                 url = url.decode().encode('utf-8')
                 nl = nl.decode().encode('utf-8')
                 cmd = cmd.decode().encode('utf-8')
+                if ".js" in cmd:
+                    continue
                 res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>".format(
                             user, url, nl, cmd, time_stamp)
                 num_pairs_annotated += 1

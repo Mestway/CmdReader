@@ -10,6 +10,12 @@ $(document).ready(function () {
         console.log(user_id)
         $.ajax({url: "user_record",
                 data: {"user_id": user_id},
+                error: function(request, status, error) {
+                    if (status === null)
+                        alert("Sorry, we caught an HttpError: " + error + ". Please wait for a few seconds and try again.");
+                    else
+                        alert("Sorry, we caught an error: " + status + ". Please wait for a few seconds and try again.");
+                },
                 success:  function(data) {
                     var stats_html = data[0];
                     var eval_html = data[1];
