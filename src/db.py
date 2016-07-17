@@ -599,7 +599,12 @@ class DBConnection(object):
             return
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
-        num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
+        if html and raw_text:
+            num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
+        else:
+            num_cmds = -1
+            max_score = 0.0
+            avg_score = 0.0
 
         fingerprint = Simhash(raw_text).value
         if not isinstance(fingerprint, long):
