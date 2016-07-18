@@ -596,7 +596,7 @@ class App(object):
                     max_score = 0.0
                 if not avg_score:
                     avg_score = 0.0
-                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{:.3f}</td><td>{:.3f}</td><td>{}</td><td>{}</td></tr>"\
+                res += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{:.4f}</td><td>{:.4f}</td><td>{}</td><td>{}</td></tr>"\
                         .format(url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
                 num_pages += 1
                 if num_pages > 100:
