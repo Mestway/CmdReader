@@ -599,7 +599,7 @@ class DBConnection(object):
             return
 
         c = self.cursor
-        
+
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
         if html and raw_text:
