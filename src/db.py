@@ -562,10 +562,11 @@ class DBConnection(object):
                 continue
             # scoring each command
             score = self.coarse_cmd_score(line)
-            if score > max_score:
-                max_score = score
-            avg_score += score
-            num_cmds += 1
+            if score >= 0:
+                if score > max_score:
+                    max_score = score
+                avg_score += score
+                num_cmds += 1
             c.execute("INSERT INTO Commands (url, cmd) VALUES (?, ?)", (url, line))
         if num_cmds > 0:
             avg_score = avg_score / num_cmds
@@ -576,14 +577,19 @@ class DBConnection(object):
         token_hist = self.token_histogram()
         # scoring based on novelty and difficulty of a command
         score = 0.0
+        option_detected = False
         for token in tokens:
             if token == "|":
                 score += 1
             elif token.startswith("-") or token in head_commands:
+                if token.startswith("-"):
+                    option_detected = True
                 if token in token_hist:
                     score += 1.0 / (token_hist[token] + 1)
                 else:
                     score += 1
+        if not option_detected:
+            return -1
         return score
 
     def coarse_estimation_done(self, url):
