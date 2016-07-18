@@ -41,6 +41,8 @@ NUM_CMDS_THRESH = 5
 
 AVG_SCORE_THRESH = 0.5
 
+EXPLORE_VS_VERIFY_RATIO = 0.9
+
 # Depending on how often we expect to be doing server updates, we might want to
 # make this information persistent.
 url_leases = []
@@ -389,9 +391,14 @@ class DBConnection(object):
         with url_lease_lock:
             url_leases = [ (url, user, deadline) for (url, user, deadline)
                             in url_leases if deadline > now and user != user_id ]
-            # self.find_urls_with_less_responses_than(MAX_RESPONSES)
-            find_urls = self.find_urls_with_reference(1) if self.get_user_time_stamp(user_id) < 1 else \
-                        self.find_unannotated_urls()
+            find_urls = None
+            if self.get_user_time_stamp(user_id) < 1:
+                find_urls = self.find_urls_with_reference(1)
+            else:
+                if random.uniform() < EXPLORE_VS_VERIFY_RATIO:
+                    find_urls = self.find_unannotated_urls()
+                else:
+                    find_urls = self.find_urls_with_reference(1)
             for url, count in find_urls:
                 if not self.already_annotated(user_id, url) and \
                     not self.already_skipped(user_id, url) and \
