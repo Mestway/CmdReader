@@ -528,7 +528,7 @@ class App(object):
             # res += "<b>{}</b> unique pairs <br>".format(num_diverse_pairs)
             res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
 
-            res += "<div id=\"chartContainer\" style=\"height: 480px; width: 500px;\"></div>"
+            res += "<div id=\"chartContainer\" style=\"height: 500px; width: 500px;\"></div>"
 
             for cmd, in sorted(cmds)[:100]:
                 if ".js" in cmd:
