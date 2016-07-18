@@ -395,7 +395,7 @@ class DBConnection(object):
             if self.get_user_time_stamp(user_id) < 1:
                 find_urls = self.find_urls_with_reference(1)
             else:
-                if random.uniform() < EXPLORE_VS_VERIFY_RATIO:
+                if random.random() < EXPLORE_VS_VERIFY_RATIO:
                     find_urls = self.find_unannotated_urls()
                 else:
                     find_urls = self.find_urls_with_reference(1)
