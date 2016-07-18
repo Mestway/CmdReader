@@ -22,9 +22,9 @@ from util import encode_url
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
-head_commands = ["find", "grep", "egrep", "sed", "awk", "ls", "xargs", "rm", "cd", "mv",
-                 "cp", "cat", "wc", "chmod", "zip", "unzip", "tar", "sort", "head", "tail",
-                 "du", "echo"]
+head_commands = ["find", "xargs", "grep", "egrep", "sed", "awk", "ls", "rm", "cp", "mv",
+                 "cd", "cat", "wc", "chmod", "zip", "unzip", "tar", "sort", "head", "tail",
+                 "du", "echo", "sh"]
 
 # maximum number of annotators a web page can be assigned to
 MAX_RESPONSES = 2
@@ -597,6 +597,9 @@ class DBConnection(object):
         if self.url_indexed(url):
             print(url + " already indexed")
             return
+
+        c = self.cursor
+        
         print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
         if html and raw_text:
@@ -608,7 +611,6 @@ class DBConnection(object):
                 else:
                     print("Warning: fingerprint type of " + url + " is " + str(type(fingerprint)))
             min_distance = SIMHASH_BITNUM
-            c = self.cursor
             for _url, _fingerprint, _min_distance in c.execute(("SELECT url, fingerprint, min_distance FROM SearchContent")):
                 fingerprint_dis = distance(fingerprint, long(_fingerprint))
                 if fingerprint_dis < min_distance:
