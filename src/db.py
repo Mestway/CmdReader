@@ -992,28 +992,36 @@ class DBConnection(object):
 
         cmds_dict = self.unique_pairs()
 
+        train = []
+        dev = []
         for cmd in cmds_dict:
+            if not "find " in cmd:
+                continue
             num_cmd += 1
             if random.random() < ratio:
-                nl_file = train_nl_file
-                cmd_file = train_cmd_file
+                data = train
             else:
-                nl_file = dev_nl_file
-                cmd_file = dev_cmd_file
+                data = dev
             for nl in cmds_dict[cmd]:
                 num_pairs += 1
-                cmd = cmd.strip()
-                nl = nl.strip()
+                cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
+                nl = nl.strip().replace('\n', ' ').replace('\r', ' ')
                 if nl.endswith("."):
                     nl = nl[:-1]
                 if not type(nl) is unicode:
                     nl = nl.decode()
                 if not type(cmd) is unicode:
                     cmd = cmd.decode()
-                nl_file.write(nl + '\n')
-                cmd_file.write(cmd + '\n')
+                data.append((nl, cmd))
 
-        print(".2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
+        for nl, cmd in sorted(train, key=lambda x:x[1]):
+            train_nl_file.write(nl + '\n')
+            train_cmd_file.write(cmd + '\n')
+        for nl, cmd in sorted(dev, key=lambda x:x[1]):
+            dev_nl_file.write(nl + '\n')
+            dev_cmd_file.write(cmd + '\n')
+
+        print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
 
         train_nl_file.close()
         train_cmd_file.close()
