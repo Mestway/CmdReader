@@ -1013,7 +1013,7 @@ class DBConnection(object):
                 nl_file.write(nl + '\n')
                 cmd_file.write(cmd + '\n')
 
-        print(".2f descriptions per command" % (num_pairs + 0.0) / num_cmd)
+        print(".2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
 
         train_nl_file.close()
         train_cmd_file.close()
