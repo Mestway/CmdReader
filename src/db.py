@@ -18,6 +18,7 @@ import re
 from fun import pokemon_name_list
 import analytics
 
+import io
 from util import encode_url
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
@@ -984,10 +985,10 @@ class DBConnection(object):
         num_cmd = 0
         num_pairs = 0
 
-        train_nl_file = open(data_dir + "train.nl", 'w')
-        train_cmd_file = open(data_dir + "train.cmd", 'w')
-        dev_nl_file = open(data_dir + "dev.nl", 'w')
-        dev_cmd_file = open(data_dir + "dev.cmd", 'w')
+        train_nl_file = io.open(data_dir + "train.nl", 'w', encoding='utf-8')
+        train_cmd_file = io.open(data_dir + "train.cmd", 'w', encoding='utf-8')
+        dev_nl_file = io.open(data_dir + "dev.nl", 'w', encoding='utf-8')
+        dev_cmd_file = io.open(data_dir + "dev.cmd", 'w', encoding='utf-8')
 
         cmds_dict = self.unique_pairs()
 
