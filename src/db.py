@@ -296,7 +296,7 @@ class DBConnection(object):
             yield (user, url, nl, cmd, time_stamp)
         c.close()
 
-    def diverse_pairs(self):
+    def unique_pairs(self):
         cmds_dict = collections.defaultdict(list)
         for user, url, nl, cmd, time_stamp in self.pairs():
             duplicated = False
@@ -632,6 +632,7 @@ class DBConnection(object):
             num_cmds = -1
             max_score = 0.0
             avg_score = 0.0
+            fingerprint = -1
             min_distance = -1
 
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
