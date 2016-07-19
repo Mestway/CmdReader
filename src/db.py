@@ -311,7 +311,7 @@ class DBConnection(object):
                     print
             if not duplicated:
                 cmds_dict[cmd].append(nl)
-                yield (user, url, nl, cmd, time_stamp)
+        return cmds_dict
 
     def commands(self):
         c = self.conn.cursor()
@@ -969,13 +969,48 @@ class DBConnection(object):
             print x
         # c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
 
+    # --- Data Exportaion ---
+    def dump_data(self, data_dir, ratio=0.9):
+        num_cmd = 0
+        num_pairs = 0
+
+        train_nl_file = open(data_dir + "train.nl", 'w')
+        train_cmd_file = open(data_dir + "train.cmd", 'w')
+        dev_nl_file = open(data_dir + "dev.nl", 'w')
+        dev_cmd_file = open(data_dir + "dev.cmd", 'w')
+
+        cmds_dict = self.unique_pairs()
+
+        for cmd in cmds_dict:
+            num_cmd += 1
+            if random.random() < ratio:
+                nl_file = train_nl_file
+                cmd_file = train_cmd_file
+            else:
+                nl_file = dev_nl_file
+                cmd_file = dev_cmd_file
+            for nl in cmds_dict[cmd]:
+                num_pairs += 1
+                cmd = cmd.strip()
+                nl = nl.strip()
+                if nl.endswith("."):
+                    nl = nl[:-1]
+                nl_file.write(nl + '\n')
+                cmd_file.write(cmd + '\n')
+
+        train_nl_file.close()
+        train_cmd_file.close()
+        dev_nl_file.close()
+        dev_cmd_file.close()
+
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
         # db.assign_token_counts()
-        db.num_cmd_estimation()
+        # db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
+        db.dump_data("data")
