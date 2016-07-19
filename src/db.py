@@ -986,9 +986,9 @@ class DBConnection(object):
         num_pairs = 0
 
         train_nl_file = io.open(data_dir + "train.nl", 'w', encoding='utf-8')
-        train_cmd_file = io.open(data_dir + "train.cmd", 'w', encoding='utf-8')
+        train_cmd_file = io.open(data_dir + "train.cm", 'w', encoding='utf-8')
         dev_nl_file = io.open(data_dir + "dev.nl", 'w', encoding='utf-8')
-        dev_cmd_file = io.open(data_dir + "dev.cmd", 'w', encoding='utf-8')
+        dev_cmd_file = io.open(data_dir + "dev.cm", 'w', encoding='utf-8')
 
         cmds_dict = self.unique_pairs()
 
@@ -1013,6 +1013,8 @@ class DBConnection(object):
                 nl_file.write(nl + '\n')
                 cmd_file.write(cmd + '\n')
 
+        print(".2f descriptions per command" % (num_pairs + 0.0) / num_cmd)
+
         train_nl_file.close()
         train_cmd_file.close()
         dev_nl_file.close()
@@ -1028,4 +1030,4 @@ if __name__ == "__main__":
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
-        db.dump_data("data")
+        db.dump_data("data/")
