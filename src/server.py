@@ -519,7 +519,7 @@ class App(object):
             for _, _, nl, cmd, _ in db.pairs():
                 num_pairs += 1
             #     pairs.append((nl, cmd))
-            # for _, _, nl, cmd, _ in db.diverse_pairs():
+            # for _, _, nl, cmd, _ in db.unique_pairs():
             #     num_diverse_pairs += 1
             #     diverse_pairs.append((nl, cmd))
             for cmd in db.commands():

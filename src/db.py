@@ -18,6 +18,7 @@ import re
 from fun import pokemon_name_list
 import analytics
 
+import io
 from util import encode_url
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
@@ -56,8 +57,8 @@ def distance(f1, f2):
         x &= x - 1
     return ans
 
-def minEditDist(target, source):
-    ''' Computes the min edit distance from target to source. Figure 3.25 '''
+def  minEditDist(target, source):
+    ''' Computes the min edit distance from target to source. '''
 
     n = len(target)
     m = len(source)
@@ -65,17 +66,27 @@ def minEditDist(target, source):
     distance = [[0 for i in range(m+1)] for j in range(n+1)]
 
     for i in range(1,n+1):
-        distance[i][0] = distance[i-1][0] + 1
+        distance[i][0] = distance[i-1][0] + insertCost(target[i-1])
 
     for j in range(1,m+1):
-        distance[0][j] = distance[0][j-1] + 1
+        distance[0][j] = distance[0][j-1] + deleteCost(source[j-1])
 
     for i in range(1,n+1):
         for j in range(1,m+1):
            distance[i][j] = min(distance[i-1][j]+1,
                                 distance[i][j-1]+1,
-                                distance[i-1][j-1]+1)
+                                distance[i-1][j-1]+substCost(source[j-1],target[i-1]))
     return distance[n][m]
+
+def insertCost(x):
+    return 1
+
+def deleteCost(x):
+    return 1
+
+def substCost(x,y):
+    if x == y: return 0
+    else: return 2
 
 def ensure_unicode(content):
     if isinstance(content, str):
@@ -296,7 +307,7 @@ class DBConnection(object):
             yield (user, url, nl, cmd, time_stamp)
         c.close()
 
-    def diverse_pairs(self):
+    def unique_pairs(self):
         cmds_dict = collections.defaultdict(list)
         for user, url, nl, cmd, time_stamp in self.pairs():
             duplicated = False
@@ -311,7 +322,7 @@ class DBConnection(object):
                     print
             if not duplicated:
                 cmds_dict[cmd].append(nl)
-                yield (user, url, nl, cmd, time_stamp)
+        return cmds_dict
 
     def commands(self):
         c = self.conn.cursor()
@@ -632,6 +643,7 @@ class DBConnection(object):
             num_cmds = -1
             max_score = 0.0
             avg_score = 0.0
+            fingerprint = -1
             min_distance = -1
 
         c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
@@ -968,13 +980,62 @@ class DBConnection(object):
             print x
         # c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
 
+    # --- Data Exportaion ---
+    def dump_data(self, data_dir, ratio=0.9):
+        num_cmd = 0
+        num_pairs = 0
+
+        train_nl_file = io.open(data_dir + "train.nl", 'w', encoding='utf-8')
+        train_cmd_file = io.open(data_dir + "train.cm", 'w', encoding='utf-8')
+        dev_nl_file = io.open(data_dir + "dev.nl", 'w', encoding='utf-8')
+        dev_cmd_file = io.open(data_dir + "dev.cm", 'w', encoding='utf-8')
+
+        cmds_dict = self.unique_pairs()
+
+        train = []
+        dev = []
+        for cmd in cmds_dict:
+            if not "find " in cmd:
+                continue
+            num_cmd += 1
+            if random.random() < ratio:
+                data = train
+            else:
+                data = dev
+            for nl in cmds_dict[cmd]:
+                num_pairs += 1
+                cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
+                nl = nl.strip().replace('\n', ' ').replace('\r', ' ')
+                if nl.endswith("."):
+                    nl = nl[:-1]
+                if not type(nl) is unicode:
+                    nl = nl.decode()
+                if not type(cmd) is unicode:
+                    cmd = cmd.decode()
+                data.append((nl, cmd))
+
+        for nl, cmd in sorted(train, key=lambda x:x[1]):
+            train_nl_file.write(nl + '\n')
+            train_cmd_file.write(cmd + '\n')
+        for nl, cmd in sorted(dev, key=lambda x:x[1]):
+            dev_nl_file.write(nl + '\n')
+            dev_cmd_file.write(cmd + '\n')
+
+        print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
+
+        train_nl_file.close()
+        train_cmd_file.close()
+        dev_nl_file.close()
+        dev_cmd_file.close()
+
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
         # db.assign_token_counts()
-        db.num_cmd_estimation()
+        # db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
+        db.dump_data("data/")
