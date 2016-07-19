@@ -381,8 +381,9 @@ class App(object):
                 num_urls_skipped += 1
             res += "</tbody></table>"
 
-            stats = "<h3>" + db.get_user_names(user_id) + "</h3>" + \
-                    '<input id="user-record-milestone" type="submit" value="Endorse Milestone">'
+            stats = "<h3>" + db.get_user_names(user_id) + "</h3><br>"
+            stats += "<div id=\"chartContainer\" style=\"height: 300px; width: 600px;\"></div>"
+            stats += "<input id=\"user-record-milestone\" type=\"submit\" value=\"Endorse Milestone\">"
             stats += "<h3>Statistics</h3>"
             stats += "num milestones completed:\t%d" % num_milestones_completed + "<br>"
             stats += "num pairs annoated:\t%d" % num_pairs_annotated + "<br>"
