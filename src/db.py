@@ -1006,8 +1006,8 @@ class DBConnection(object):
                 nl = nl.strip()
                 if nl.endswith("."):
                     nl = nl[:-1]
-                nl_file.write(nl.decode().encode('utf-8') + '\n')
-                cmd_file.write(cmd.decode().encode('utf-8') + '\n')
+                nl_file.write(nl.decode() + '\n')
+                cmd_file.write(cmd.decode() + '\n')
 
         train_nl_file.close()
         train_cmd_file.close()
