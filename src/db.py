@@ -1006,8 +1006,12 @@ class DBConnection(object):
                 nl = nl.strip()
                 if nl.endswith("."):
                     nl = nl[:-1]
-                nl_file.write(nl.decode() + '\n')
-                cmd_file.write(cmd.decode() + '\n')
+                if not type(nl) is unicode:
+                    nl = nl.decode()
+                if not type(cmd) is unicode:
+                    cmd = cmd.decode()
+                nl_file.write(nl + '\n')
+                cmd_file.write(cmd + '\n')
 
         train_nl_file.close()
         train_cmd_file.close()
