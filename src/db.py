@@ -575,6 +575,8 @@ class DBConnection(object):
         max_score = 0
         avg_score = 0
         c = self.cursor
+        # clear previous estimations
+        c.execute("DELETE From Commands WHERE url = ?", (url,))
         for line in detected_snippets:
             # if len(line) <= 5:
             #     continue
@@ -598,7 +600,14 @@ class DBConnection(object):
             if tokens[i] == head_cmd:
                 left_end = max(0, i - SPAN_LEN)
                 right_end = min(len(tokens), i + SPAN_LEN)
-                snippets.append(' '.join(tokens[left_end:right_end]))
+                option_detected = False
+                snippet = ''
+                for j in xrange(left_end, right_end):
+                    snippet += tokens[j] + ' '
+                    if tokens[j].startswith("-"):
+                        option_detected = True
+                if option_detected:
+                    snippets.append(snippet)
         return snippets
 
     def coarse_cmd_score(self, cmd):
@@ -606,19 +615,14 @@ class DBConnection(object):
         token_hist = self.token_histogram()
         # scoring based on novelty and difficulty of a command
         score = 0.0
-        option_detected = False
         for token in tokens:
             if token == "|":
                 score += 1
             elif token.startswith("-") or token in head_commands:
-                if token.startswith("-"):
-                    option_detected = True
                 if token in token_hist:
                     score += 1.0 / (token_hist[token] + 1)
                 else:
                     score += 1
-        if not option_detected:
-            return -1
         return score
 
     def coarse_estimation_done(self, url):
