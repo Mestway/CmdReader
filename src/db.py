@@ -594,7 +594,7 @@ class DBConnection(object):
 
     def detect_snippets(self, tokens, head_cmd, SPAN_LEN=30):
         snippets = []
-        for i in tokens:
+        for i in xrange(len(tokens)):
             if tokens[i] == head_cmd:
                 left_end = max(0, i - SPAN_LEN)
                 right_end = min(len(tokens), i + SPAN_LEN)
