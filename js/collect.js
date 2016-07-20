@@ -511,6 +511,7 @@ function insert_pair_collecting_row() {
 }
 
 function check_verbatim(cmd, auto_cmd_detections) {
+    cmd = cmd.split().join(' ');
     for (var i = 0; i < auto_cmd_detections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
         // console.log(auto_detection);
