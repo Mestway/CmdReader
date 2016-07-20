@@ -247,6 +247,7 @@ class DBConnection(object):
 
     def assign_token_counts(self):
         c = self.cursor
+        c.execute("DELETE FROM TokenCounts")
         for cmd, in self.commands():
             self.update_token_count(cmd)
         self.conn.commit()
@@ -547,9 +548,9 @@ class DBConnection(object):
     def num_cmd_estimation(self):
         c = self.conn.cursor()
         # for url, _ in self.find_urls_with_less_responses_than(None):
-        for url, _, _, _, _, _, _ in self.search_content():
+        for url, _, _, _, _, _, num_visits in self.search_content():
             print(url)
-            if False:
+            if num_visits >= 2:
                 continue
             html, raw_text = extract_text_from_url(url)
             if html and raw_text:
@@ -1045,11 +1046,11 @@ class DBConnection(object):
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
-        # db.assign_token_counts()
-        # db.num_cmd_estimation()
+        db.assign_token_counts()
+        db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
-        db.dump_data("data/")
+        # db.dump_data("data/")
