@@ -40,8 +40,10 @@ EDITDIST_THRESH = 8
 # minimum number of auto-detected commands a page has to contain
 NUM_CMDS_THRESH = 5
 
+# minimum score for a web page to be presented to a user
 AVG_SCORE_THRESH = 0.5
 
+# probability of showing an unannotated web page to an experienced user
 EXPLORE_VS_VERIFY_RATIO = 0.9
 
 # Depending on how often we expect to be doing server updates, we might want to
@@ -566,20 +568,19 @@ class DBConnection(object):
             yield cmd
         c.close()
 
-    def coarse_cmd_estimation(self, url, text):
-        lines = text.splitlines()
+    def coarse_cmd_estimation(self, url, text, head_cmd='find'):
+        tokens = text.split()
+        detected_snippets = self.detect_snippets(tokens, head_cmd)
         num_cmds = 0
         max_score = 0
         avg_score = 0
         c = self.cursor
-        for line in lines:
-            if not 'find ' in line:
-                continue
-            if len(line) <= 5:
-                continue
-            if len(line) > 10 and not '-' in line:
-                continue
-            # scoring each command
+        for line in detected_snippets:
+            # if len(line) <= 5:
+            #     continue
+            # if len(line) > 10 and not '-' in line:
+            #     continue
+            # scoring each detected command
             score = self.coarse_cmd_score(line)
             if score >= 0:
                 if score > max_score:
@@ -590,6 +591,15 @@ class DBConnection(object):
         if num_cmds > 0:
             avg_score = avg_score / num_cmds
         return num_cmds, max_score, avg_score
+
+    def detect_snippets(self, tokens, head_cmd, SPAN_LEN=30):
+        snippets = []
+        for i in tokens:
+            if tokens[i] == head_cmd:
+                left_end = max(0, i - SPAN_LEN)
+                right_end = min(len(tokens), i + SPAN_LEN)
+                snippets.append(' '.join(tokens[left_end:right_end]))
+        return snippets
 
     def coarse_cmd_score(self, cmd):
         tokens = cmd.strip().split()
@@ -675,8 +685,8 @@ class DBConnection(object):
         for url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits in \
                 c.execute("SELECT url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits " +
                           "FROM SearchContent " +
-                          "WHERE min_distance > ? AND num_cmds >= ?" +
-                          "ORDER BY avg_score DESC", (SIMHASH_DIFFBIT, NUM_CMDS_THRESH)):
+                          "WHERE min_distance > ? " +
+                          "ORDER BY num_cmds DESC", (SIMHASH_DIFFBIT, )):
             yield (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits)
         c.close()
 
@@ -1046,7 +1056,7 @@ class DBConnection(object):
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
-        db.assign_token_counts()
+        # db.assign_token_counts()
         db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
