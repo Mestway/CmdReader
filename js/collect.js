@@ -511,7 +511,7 @@ function insert_pair_collecting_row() {
 }
 
 function check_verbatim(cmd, auto_cmd_detections) {
-    /* for (var i = 0; i < auto_cmd_detections.length; i ++) {
+    for (var i = 0; i < auto_cmd_detections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
         // console.log(auto_detection);
         if (auto_detection.indexOf(cmd) > -1)
@@ -523,8 +523,8 @@ function check_verbatim(cmd, auto_cmd_detections) {
         else if (levDist(cmd, auto_detection) <= 3)
             return true;
     }
-    return false; */
-    return true;
+    return false;
+    // return true;
 }
 
 function levDist(s, t) {
