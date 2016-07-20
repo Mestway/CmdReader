@@ -794,6 +794,20 @@ class DBConnection(object):
             return -1
         return (num_annotated_by_user + 0.0) / num_annotated_total
 
+    def user_productivity_over_time(self, user_id):
+        annotations = collections.defaultdict(int)
+        commands = collections.defaultdict(set)
+        for _, _, nl, cmd, time_stamp in self.pairs_by_user(user_id):
+            annotations[time_stamp] += 1
+            commands[time_stamp].add(cmd)
+        data = []
+        data.append(sorted(annotations.items(), key=lambda x:x[0]))
+        command_counts = {}
+        for time_stamp in commands:
+            command_counts[time_stamp] = len(commands[time_stamp])
+        data.append(sorted(command_counts.items(), key=lambda x:x[0]))
+        return data
+
     def sample_user_annotations(self, user_id, limit=10):
         c = self.conn.cursor()
         # sample from the latest set of annotations of the user

@@ -337,6 +337,19 @@ class App(object):
             return db.record_milestone(user_id)
 
     @cherrypy.expose
+    @admin_only
+    def get_user_productivity_over_time(self, user_id):
+        with DBConnection() as db:
+            data = db.user_productivity_over_time(user_id)
+            annotations = []
+            commands = []
+            for time_stamp, count in data[0]:
+                annotations.append({"x": time_stamp, "y": count})
+            for time_stamp, count in data[1]:
+                commands.append({"x": time_stamp, "y": count})
+        return json.dumps([annotations, commands])
+
+    @cherrypy.expose
     @cherrypy.tools.json_out()
     def user_record(self, user_id):
         with DBConnection() as db:
@@ -415,7 +428,7 @@ class App(object):
             eval += "</tbody></table>"
             eval += "<br>"
 
-            return stats, eval, res, db.get_user_precision(user_id), db.get_user_recall(user_id)
+            return stats, eval, res, db.get_user_precision(user_id), db.get_user_recall(user_id), self.get_user_productivity_over_time(user_id)
 
     @cherrypy.expose
     @cherrypy.tools.json_out()
@@ -468,7 +481,7 @@ class App(object):
                     continue
                 data.append({"y": freq, "label": token})
                 count += 1
-            return json.dumps(data)
+        return json.dumps(data)
 
     @cherrypy.expose
     @admin_only

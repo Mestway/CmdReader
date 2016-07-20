@@ -24,7 +24,7 @@ $(document).ready(function () {
                     var recall = data[4];
                     $('#user-record-milestone').show();
                     $('#user-stats-panel').html(stats_html);
-                    var chart = createPerformanceChart();
+                    var chart = createPerformanceChart(data[5]);
                     chart.render();
                     $('#user-eval-results').show();
                     console.log(precision);

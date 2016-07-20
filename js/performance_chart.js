@@ -1,4 +1,5 @@
-function createPerformanceChart() {
+function createPerformanceChart(data) {
+        data = jQuery.parseJSON(data);
 		var chart = new CanvasJS.Chart("chartContainer",
 		{
 
@@ -13,7 +14,8 @@ function createPerformanceChart() {
 
 				gridColor: "Silver",
 				tickColor: "silver",
-				valueFormatString: "DD/MMM"
+				interval: 1
+				// valueFormatString: "DD/MMM"
 
 			},
             toolTip:{
@@ -33,11 +35,11 @@ function createPerformanceChart() {
 				type: "line",
 				showInLegend: true,
 				lineThickness: 2,
-				name: "Visits",
+				name: "Annotations",
 				markerType: "square",
 				color: "#F08080",
 				dataPoints: [
-				{ x: new Date(2010,0,3), y: 650 },
+				/* { x: new Date(2010,0,3), y: 650 },
 				{ x: new Date(2010,0,5), y: 700 },
 				{ x: new Date(2010,0,7), y: 710 },
 				{ x: new Date(2010,0,9), y: 658 },
@@ -47,18 +49,18 @@ function createPerformanceChart() {
 				{ x: new Date(2010,0,17), y: 853 },
 				{ x: new Date(2010,0,19), y: 869 },
 				{ x: new Date(2010,0,21), y: 943 },
-				{ x: new Date(2010,0,23), y: 970 }
+				{ x: new Date(2010,0,23), y: 970 } */
 				]
 			},
 			{
 				type: "line",
 				showInLegend: true,
-				name: "Unique Visits",
+				name: "Commands",
 				color: "#20B2AA",
 				lineThickness: 2,
 
 				dataPoints: [
-				{ x: new Date(2010,0,3), y: 510 },
+				/* { x: new Date(2010,0,3), y: 510 },
 				{ x: new Date(2010,0,5), y: 560 },
 				{ x: new Date(2010,0,7), y: 540 },
 				{ x: new Date(2010,0,9), y: 558 },
@@ -68,10 +70,9 @@ function createPerformanceChart() {
 				{ x: new Date(2010,0,17), y: 663 },
 				{ x: new Date(2010,0,19), y: 639 },
 				{ x: new Date(2010,0,21), y: 673 },
-				{ x: new Date(2010,0,23), y: 660 }
+				{ x: new Date(2010,0,23), y: 660 } */
 				]
 			}
-
 
 			],
           legend:{
@@ -86,7 +87,16 @@ function createPerformanceChart() {
               chart.render();
             }
           }
-		});
+	    });
+
+        var annotations = [];
+        var commands = [];
+		for (var i = data[0].length - 1; i  >= 0; i --) {
+            annotations.push({x:data[0][i].x, y:data[0][i].y});
+            commands.push({x:data[1][i].x, y:data[1][i].y});
+		}
+        chart.options.data[0].dataPoints = annotations;
+        chart.options.data[1].dataPoints = commands;
 
         return chart;
 }
