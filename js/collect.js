@@ -163,13 +163,13 @@ $(document).ready(function(){
                 if (cmd == "" || pair == "")
                     blank_cell_count ++;
             }
-     
-            /* if (cmd_spell_error)
+
+            if (cmd_spell_error)
                 error_detected = true;
             else
-                error_detected = false; */
+                error_detected = false;
 
-            if (blank_cell_count == 0 && !error_detected)
+            if (blank_cell_count == 0)
                 insert_pair_collecting_row();
         }
 	}, 500);
@@ -512,7 +512,7 @@ function insert_pair_collecting_row() {
 }
 
 function check_verbatim(cmd, auto_cmd_detections) {
-    cmd = cmd.replace('/\s+/g',' ');
+    cmd = cmd.replace(/\s+/g, ' ');
     console.log(cmd);
     for (var i = 0; i < auto_cmd_detections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
