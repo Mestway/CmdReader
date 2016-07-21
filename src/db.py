@@ -695,8 +695,8 @@ class DBConnection(object):
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, max_score, avg_score, num_cmds, 0, ensure_unicode(html)))
             print("Indexed " + url)
+            self.conn.commit()
 
-        self.conn.commit()
         return num_cmds
 
     def url_indexed(self, url):
