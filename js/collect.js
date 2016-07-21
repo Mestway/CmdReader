@@ -154,8 +154,8 @@ $(document).ready(function(){
                                 "Please make sure the command is copied verbatim from the web page.",
                                 { position:'bottom' }
                             ); */
-                            $.notify("Please make sure to not modify the commands besides spelling corrections.",
-                                      { globalPosition: 'top left' });
+                            $.notify("Please make sure to only modify the commands for spelling corrections.",
+                                      { globalPosition: 'top left',  className: 'warn'});
                         }
                         cmd_spell_error = true;
                         break;
@@ -163,10 +163,11 @@ $(document).ready(function(){
                 if (cmd == "" || pair == "")
                     blank_cell_count ++;
             }
-            if (cmd_spell_error)
+     
+            /* if (cmd_spell_error)
                 error_detected = true;
             else
-                error_detected = false;
+                error_detected = false; */
 
             if (blank_cell_count == 0 && !error_detected)
                 insert_pair_collecting_row();
@@ -511,17 +512,13 @@ function insert_pair_collecting_row() {
 }
 
 function check_verbatim(cmd, auto_cmd_detections) {
-    cmd = cmd.split().join(' ');
+    cmd = cmd.replace('/\s+/g',' ');
+    console.log(cmd);
     for (var i = 0; i < auto_cmd_detections.length; i ++) {
         var auto_detection = auto_cmd_detections[i];
         // console.log(auto_detection);
         if (auto_detection.indexOf(cmd) > -1)
             // check if command is substring of auto-detection
-            return true;
-        else if (cmd.indexOf(auto_detection) > -1)
-            // check if auto-detection is substring of command
-            return true;
-        else if (levDist(cmd, auto_detection) <= 3)
             return true;
     }
     return false;
