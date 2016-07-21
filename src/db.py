@@ -504,9 +504,10 @@ class DBConnection(object):
         c = self.conn.cursor()
         for url, _, _, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent " +
                                               # "ORDER BY avg_score DESC " +
-                                              "WHERE num_visits = ? " +
+                                              # "WHERE num_visits = ? " +
                                               # "AND num_cmds >= ? ", (n, NUM_CMDS_THRESH)):
-                                              "AND num_cmds >= ? AND avg_score >= ?", (n, NUM_CMDS_THRESH, AVG_SCORE_THRESH)):
+                                              # "AND num_cmds >= ? AND avg_score >= ?", (n, NUM_CMDS_THRESH, AVG_SCORE_THRESH)):
+                                              "WHERE num_visits = ? ", (n,)):
             yield (url, count)
 
     def find_unannotated_urls(self):
