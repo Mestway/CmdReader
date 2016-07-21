@@ -158,7 +158,6 @@ $(document).ready(function(){
                                       { globalPosition: 'top left',  className: 'warn'});
                         }
                         cmd_spell_error = true;
-                        break;
                     }
                 if (cmd == "" || pair == "")
                     blank_cell_count ++;
