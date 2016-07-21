@@ -565,13 +565,13 @@ class DBConnection(object):
             existing_urls[reformat_url] = None
         num_import = 0
         with open(inputFile) as f:
-            for url in inputFile:
+            for url in f.readlines():
                 url = url.strip()
                 if url in existing_urls:
                     print url + " already exists!"
                 else:
-                    self.index_url_content(url)
-                    num_import += 1
+                    if self.index_url_content(url) > 0:
+                        num_import += 1
         print "{} urls imported from {}.".format(num_import, website)
         c.close()
 
@@ -668,7 +668,6 @@ class DBConnection(object):
 
         c = self.cursor
 
-        print("Indexing " + url)
         html, raw_text = extract_text_from_url(url)
         if html and raw_text:
             num_cmds, max_score, avg_score = self.coarse_cmd_estimation(url, raw_text)
@@ -695,7 +694,10 @@ class DBConnection(object):
             c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, max_score, avg_score, num_cmds, 0, ensure_unicode(html)))
+            print("Indexed " + url)
+
         self.conn.commit()
+        return num_cmds
 
     def url_indexed(self, url):
         c = self.cursor
