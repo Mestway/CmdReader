@@ -290,7 +290,7 @@ class App(object):
     def get_url_auto_detection(self, user_id, url):
         with DBConnection() as db:
             auto_cmds = []
-            for cmd in db.auto_detected_commands(url):
+            for cmd in db.get_auto_detected_commands(url):
                 auto_cmds.append(cmd)
             return json.dumps(auto_cmds)
 
@@ -462,7 +462,7 @@ class App(object):
                             res += "<tr><td>{}</td><td>{}</td></tr>".format(cmd, nl)
                         res += "</tbody></table><br>"
             res += "<h3>Auto-detected Command Lines</h3>"
-            for cmd in db.auto_detected_commands(url):
+            for cmd in db.get_auto_detected_commands(url):
                 # print(cmd)
                 res += cmd + "<br>"
         return url, res

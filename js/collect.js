@@ -192,7 +192,7 @@ $(document).ready(function(){
               }
             }],
           });
-        } else if (error_detected) {
+        } /* else if (error_detected) {
           BootstrapDialog.show({
             message: "You have input a command that doesn't match the web page content, please review you submission.",
             buttons: [
@@ -203,7 +203,7 @@ $(document).ready(function(){
               }
             }],
           });
-        } else if (num_annotations === 0) {
+        } */ else if (num_annotations === 0) {
           BootstrapDialog.show({
             message: 'You cannot submit an empty worksheet. '
                     + '<li>Use the "No pair" option if there is no pairs on the web page.</li>'

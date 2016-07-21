@@ -398,6 +398,12 @@ class DBConnection(object):
             return True
         return False
 
+    def get_urls_by_website(self, website):
+        c = self.cursor
+        for url in c.execute("SELECT url FROM SearchContent"):
+            if website in url:
+                yield (url,)
+
     @analytics.instrumented
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
         global url_leases
@@ -547,6 +553,28 @@ class DBConnection(object):
     #     for url, _ in self.find_urls_with_less_responses_than(None):
     #         self.index_url_content(url)
 
+    def batch_url_import(self, inputFile, website="stackoverflow"):
+        c = self.conn.cursor()
+        if website == "stackoverflow":
+            prefix = "http://stackoverflow.com/questions/"
+        else:
+            prefix = None
+        existing_urls = {}
+        for url in self.get_urls_by_website(website):
+            reformat_url = prefix + url.split('/')[4]
+            existing_urls[reformat_url] = None
+        num_import = 0
+        with open(inputFile) as f:
+            for url in inputFile:
+                url = url.strip()
+                if url in existing_urls:
+                    print url + " already exists!"
+                else:
+                    self.index_url_content(url)
+                    num_import += 1
+        print "{} urls imported from {}.".format(num_import, website)
+        c.close()
+
     def num_cmd_estimation(self):
         c = self.conn.cursor()
         # for url, _ in self.find_urls_with_less_responses_than(None):
@@ -561,11 +589,6 @@ class DBConnection(object):
                 c.execute('UPDATE SearchContent SET num_cmds = ?, max_score = ?, avg_score = ? ' +
                           'WHERE url = ?', (num_cmds, max_score, avg_score, url))
         self.conn.commit()
-
-    def auto_detected_commands(self, url):
-        c = self.conn.cursor()
-        for cmd, in c.execute("SELECT cmd FROM Commands WHERE url = ?", (url,)):
-            yield cmd
         c.close()
 
     def coarse_cmd_estimation(self, url, text, head_cmd='find'):
@@ -631,6 +654,12 @@ class DBConnection(object):
             return True
         return False
 
+    def get_auto_detected_commands(self, url):
+        c = self.conn.cursor()
+        for cmd, in c.execute("SELECT cmd FROM Commands WHERE url = ?", (url,)):
+            yield cmd
+        c.close()
+
     @analytics.instrumented
     def index_url_content(self, url):
         if self.url_indexed(url):
@@ -661,7 +690,9 @@ class DBConnection(object):
             fingerprint = -1
             min_distance = -1
 
-        c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
+        # save only URLs that have positive number of interesting commands
+        if num_cmds > 0:
+            c.execute("INSERT INTO SearchContent (url, fingerprint, min_distance, max_score, avg_score, num_cmds, num_visits, html) " +
                   "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   (url, str(fingerprint), min_distance, max_score, avg_score, num_cmds, 0, ensure_unicode(html)))
         self.conn.commit()
@@ -1061,10 +1092,11 @@ if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
         # db.assign_token_counts()
-        db.num_cmd_estimation()
+        # db.num_cmd_estimation()
         # db.count_num_visits()
         # db.assign_time_stamps()
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
         # db.dump_data("data/")
+        db.batch_url_import("/home/xilin/reader/data/stackoverflow.sh.urls.txt")
