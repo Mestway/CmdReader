@@ -400,9 +400,9 @@ class DBConnection(object):
 
     def get_urls_by_website(self, website):
         c = self.cursor
-        for url in c.execute("SELECT url FROM SearchContent"):
+        for url, in c.execute("SELECT url FROM SearchContent"):
             if website in url:
-                yield (url,)
+                yield url
 
     @analytics.instrumented
     def lease_url(self, user_id, lease_duration=datetime.timedelta(minutes=15)):
@@ -554,7 +554,7 @@ class DBConnection(object):
     #     for url, _ in self.find_urls_with_less_responses_than(None):
     #         self.index_url_content(url)
 
-    def batch_url_import(self, inputFile, website="stackoverflow"):
+    def batch_url_import(self, inputFile, website="stackoverflow", syncpoint="4751008"):
         c = self.conn.cursor()
         if website == "stackoverflow":
             prefix = "http://stackoverflow.com/questions/"
@@ -565,9 +565,14 @@ class DBConnection(object):
             reformat_url = prefix + url.split('/')[4]
             existing_urls[reformat_url] = None
         num_import = 0
+        startImport = False
         with open(inputFile) as f:
             for url in f.readlines():
                 url = url.strip()
+                if url.endswith(syncpoint):
+                    startImport = True
+                if not startImport:
+                    continue
                 if url in existing_urls:
                     print url + " already exists!"
                 else:
