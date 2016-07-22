@@ -1,3 +1,4 @@
+import cPickle as pickle
 import collections
 import datetime
 
@@ -1043,27 +1044,19 @@ class DBConnection(object):
         # c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
 
     # --- Data Exportaion ---
-    def dump_data(self, data_dir, ratio=0.9):
+    def dump_data(self, data_dir, num_folds=10):
         num_cmd = 0
         num_pairs = 0
 
-        train_nl_file = io.open(data_dir + "train.nl", 'w', encoding='utf-8')
-        train_cmd_file = io.open(data_dir + "train.cm", 'w', encoding='utf-8')
-        dev_nl_file = io.open(data_dir + "dev.nl", 'w', encoding='utf-8')
-        dev_cmd_file = io.open(data_dir + "dev.cm", 'w', encoding='utf-8')
-
         cmds_dict = self.unique_pairs()
 
-        train = []
-        dev = []
+        data = collections.defaultdict(list)
         for cmd in cmds_dict:
             if not "find " in cmd:
                 continue
             num_cmd += 1
-            if random.random() < ratio:
-                data = train
-            else:
-                data = dev
+            ind = random.randrange(num_folds)
+            bin = data[ind]
             for nl in cmds_dict[cmd]:
                 num_pairs += 1
                 cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
@@ -1074,21 +1067,11 @@ class DBConnection(object):
                     nl = nl.decode()
                 if not type(cmd) is unicode:
                     cmd = cmd.decode()
-                data.append((nl, cmd))
-
-        for nl, cmd in sorted(train, key=lambda x:x[1]):
-            train_nl_file.write(nl + '\n')
-            train_cmd_file.write(cmd + '\n')
-        for nl, cmd in sorted(dev, key=lambda x:x[1]):
-            dev_nl_file.write(nl + '\n')
-            dev_cmd_file.write(cmd + '\n')
+                bin.append((nl, cmd))
 
         print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
-
-        train_nl_file.close()
-        train_cmd_file.close()
-        dev_nl_file.close()
-        dev_cmd_file.close()
+        with open(data_dir + "/data.dat", 'w') as o_f:
+            pickle.dump(data, o_f)
 
 if __name__ == "__main__":
     with DBConnection() as db:
@@ -1100,5 +1083,5 @@ if __name__ == "__main__":
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
-        # db.dump_data("data/")
-        db.batch_url_import("/home/xilin/reader/data/stackoverflow.sh.urls.txt")
+        db.dump_data("data/")
+        # db.batch_url_import("/home/xilin/reader/data/stackoverflow.sh.urls.txt")
