@@ -513,11 +513,12 @@ class DBConnection(object):
 
     def find_unannotated_urls(self):
         c = self.conn.cursor()
-        for url, _, _, count in c.execute("SELECT url, avg_score, num_cmds, num_visits FROM SearchContent " +
+        for url, _, _, _, count in c.execute("SELECT url, avg_score, min_distance, num_cmds, num_visits FROM SearchContent " +
                                               # "ORDER BY avg_score DESC "
-                                              "WHERE num_visits = 0 " +
+                                              "WHERE num_visits = 0 AND min_distance > ? " +
                                               # "AND num_cmds >= ? ", (NUM_CMDS_THRESH,)):
-                                              "AND num_cmds >= ? AND avg_score >= ?", (NUM_CMDS_THRESH, AVG_SCORE_THRESH)):
+                                              "AND num_cmds >= ? AND avg_score >= ?",
+                                              (SIMHASH_DIFFBIT, NUM_CMDS_THRESH, AVG_SCORE_THRESH)):
             yield (url, count)
 
     def num_urls_by_num_visit(self, n):
