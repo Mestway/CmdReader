@@ -19,8 +19,8 @@ import re
 from fun import pokemon_name_list
 import analytics
 
-import io
 from util import encode_url
+from util import bash_tokenizer
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
@@ -326,6 +326,15 @@ class DBConnection(object):
                     print
             if not duplicated:
                 cmds_dict[cmd].append(nl)
+        return cmds_dict
+
+    def unique_pairs_by_signature(self):
+        unique_pairs = self.unique_pairs()
+        cmds_dict = collections.defaultdict(list)
+        for cmd in unique_pairs:
+            signature = self.reserved_words_signature(cmd)
+            for nl in unique_pairs[cmd]:
+                cmds_dict[signature].append((cmd, nl))
         return cmds_dict
 
     def commands(self):
@@ -1055,16 +1064,17 @@ class DBConnection(object):
         num_cmd = 0
         num_pairs = 0
 
-        cmds_dict = self.unique_pairs()
+        cmds_dict = self.unique_pairs_by_signature()
 
         data = collections.defaultdict(list)
-        for cmd in cmds_dict:
-            if not "find " in cmd:
+        for signature in cmds_dict:
+            if not "find " in signature:
                 continue
+            print(signature)
             num_cmd += 1
             ind = random.randrange(num_folds)
             bin = data[ind]
-            for nl in cmds_dict[cmd]:
+            for cmd, nl in cmds_dict[signature]:
                 if nl == "NA":
                     continue
                 num_pairs += 1
@@ -1081,6 +1091,15 @@ class DBConnection(object):
         print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
         with open(data_dir + "/data.dat", 'w') as o_f:
             pickle.dump(data, o_f)
+
+    def reserved_words_signature(self, cmd):
+        tokens = bash_tokenizer(cmd)
+        reserved_words = set()
+        for token in tokens:
+            if token.startswith('-') or token in head_commands or token == "|":
+                reserved_words.add(token)
+        signature = ' '.join(list(reserved_words))
+        return signature
 
 if __name__ == "__main__":
     with DBConnection() as db:
