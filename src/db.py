@@ -1064,6 +1064,8 @@ class DBConnection(object):
             ind = random.randrange(num_folds)
             bin = data[ind]
             for nl in cmds_dict[cmd]:
+                if nl == "NA":
+                    continue
                 num_pairs += 1
                 cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
                 nl = nl.strip().replace('\n', ' ').replace('\r', ' ')
