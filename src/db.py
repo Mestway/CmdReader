@@ -1073,7 +1073,7 @@ class DBConnection(object):
 
         data = collections.defaultdict(list)
         for signature in cmds_dict:
-            if not "find " in signature:
+            if not ("find " in signature or " find" in signature):
                 continue
             print(signature)
             num_cmd += 1
