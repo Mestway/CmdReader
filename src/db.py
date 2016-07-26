@@ -336,6 +336,7 @@ class DBConnection(object):
                 continue
             signature = self.reserved_words_signature(cmd)
             if not signature:
+                print("Unable to recognize bash command: " + cmd)
                 continue
             for nl in unique_pairs[cmd]:
                 cmds_dict[signature].append((cmd, nl))
