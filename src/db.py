@@ -1093,6 +1093,8 @@ class DBConnection(object):
                     cmd = cmd.decode()
                 bin.append((nl, cmd))
 
+        print("Total number of pairs: %d" % num_pairs)
+        print("Total number of commands: %d" % num_cmd)
         print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
         with open(data_dir + "/data.dat", 'w') as o_f:
             pickle.dump(data, o_f)
