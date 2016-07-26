@@ -319,11 +319,11 @@ class DBConnection(object):
                 if minEditDist(nl, nl2) < EDITDIST_THRESH:
                     duplicated = True
                     break
-                else:
-                    print minEditDist(nl, nl2)
-                    print nl
-                    print nl2
-                    print
+                # else:
+                #     print minEditDist(nl, nl2)
+                #     print nl
+                #     print nl2
+                #     print
             if not duplicated:
                 cmds_dict[cmd].append(nl)
         return cmds_dict
@@ -332,6 +332,8 @@ class DBConnection(object):
         unique_pairs = self.unique_pairs()
         cmds_dict = collections.defaultdict(list)
         for cmd in unique_pairs:
+            if not cmd:
+                continue
             signature = self.reserved_words_signature(cmd)
             for nl in unique_pairs[cmd]:
                 cmds_dict[signature].append((cmd, nl))
