@@ -20,7 +20,7 @@ from fun import pokemon_name_list
 import analytics
 
 from util import encode_url
-from util import bash_tokenizer
+from bash import bash_tokenizer
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
