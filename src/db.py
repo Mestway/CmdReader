@@ -335,6 +335,8 @@ class DBConnection(object):
             if not cmd:
                 continue
             signature = self.reserved_words_signature(cmd)
+            if not signature:
+                continue
             for nl in unique_pairs[cmd]:
                 cmds_dict[signature].append((cmd, nl))
         return cmds_dict
@@ -1096,6 +1098,8 @@ class DBConnection(object):
 
     def reserved_words_signature(self, cmd):
         tokens = bash_tokenizer(cmd)
+        if not tokens:
+            return None
         reserved_words = set()
         for token in tokens:
             if token.startswith('-') or token in head_commands or token == "|":

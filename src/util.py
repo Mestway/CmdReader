@@ -84,6 +84,9 @@ def bash_tokenizer(cmd, normalize_digits=True):
         return basic_tokenizer(cmd, normalize_digits)
     except NotImplementedError, e:
         return basic_tokenizer(cmd, normalize_digits)
+    except AttributeError, e:
+        # not a bash command
+        return None
 
     for part in parts:
         parse(part, tokens)
