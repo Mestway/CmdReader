@@ -41,7 +41,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
     def parse(node, tokens):
         if node.kind == "word":
             w = node.word
-            word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
+            word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits else w
             tokens.append(word)
         elif node.kind == "pipe":
             w = node.pipe

@@ -60,7 +60,7 @@ def distance(f1, f2):
         x &= x - 1
     return ans
 
-def  minEditDist(target, source):
+def minEditDist(target, source):
     ''' Computes the min edit distance from target to source. '''
 
     n = len(target)
@@ -89,7 +89,7 @@ def deleteCost(x):
 
 def substCost(x,y):
     if x == y: return 0
-    else: return 2
+    else: return 1
 
 def ensure_unicode(content):
     if isinstance(content, str):
@@ -316,7 +316,7 @@ class DBConnection(object):
         for user, url, nl, cmd, time_stamp in self.pairs():
             duplicated = False
             for nl2 in cmds_dict[cmd]:
-                if minEditDist(nl, nl2) < EDITDIST_THRESH:
+                if minEditDist(nl.lower(), nl2.lower()) < EDITDIST_THRESH:
                     duplicated = True
                     break
                 # else:
