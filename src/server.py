@@ -527,6 +527,7 @@ class App(object):
             pairs = []
             diverse_pairs = []
             num_pairs = 0
+            num_cmds = 0
             num_diverse_pairs = 0
             cmds = []
             for _, _, nl, cmd, _ in db.pairs():
@@ -535,19 +536,23 @@ class App(object):
             # for _, _, nl, cmd, _ in db.unique_pairs():
             #     num_diverse_pairs += 1
             #     diverse_pairs.append((nl, cmd))
-            for cmd in db.commands():
-                if "find" in cmd[0]:
-                    cmds.append(cmd)
+            cmds_with_users = db.commands_with_users()
+            for cmd in cmds_with_users:
+                if "find" in cmd:
+                    num_cmds += 1
             res += "<b>{}</b> annotations <br>".format(num_pairs)
             # res += "<b>{}</b> unique pairs <br>".format(num_diverse_pairs)
-            res += "<b>{}</b> unique commands <br><br>".format(len(cmds))
+            res += "<b>{}</b> unique commands <br><br>".format(num_cmds)
 
             res += "<div id=\"chartContainer\" style=\"height: 500px; width: 500px;\"></div>"
 
-            for cmd, in sorted(cmds)[:100]:
+            for cmd in sorted(cmds_with_users.keys())[:100]:
                 if ".js" in cmd:
                     continue
-                res += cmd + "<br>"
+                res += cmd + " ("
+                for user in cmds_with_users[cmd]:
+                    res += user + ', '
+                res += ")<br>"
             res += "<i>(... end of top 100 commands collected)</i><br>"
 
             """res += "<h3>URLs in queue</h3>"

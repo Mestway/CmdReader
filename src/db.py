@@ -348,6 +348,14 @@ class DBConnection(object):
             yield cmd
         c.close()
 
+    def commands_with_users(self):
+        c = self.conn.cursor()
+        cmds_with_users = collections.defaultdict(set)
+        for cmd, user in c.execute("SELECT cmd, user FROM Pairs"):
+            cmds_with_users[cmd].add(user)
+        c.close()
+        return cmds_with_users
+
     def token_histogram(self):
         c = self.cursor
         token_hist = {}
