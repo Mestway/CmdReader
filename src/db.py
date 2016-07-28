@@ -20,7 +20,7 @@ from fun import pokemon_name_list
 import analytics
 
 from util import encode_url
-from bash import bash_tokenizer
+from bash import bash_tokenizer, token_overlap
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
@@ -343,6 +343,29 @@ class DBConnection(object):
                 cmds_dict[signature].append((cmd, nl))
         print("Unable to parse %d commands" % num_errors)
         return cmds_dict
+
+    def unique_pairs_by_description(self, head_cmd):
+        unique_pairs = self.unique_pairs()
+        desp_dict = collections.defaultdict(list)
+        num_errors = 0
+        for cmd in unique_pairs:
+            if not cmd:
+                continue
+            signature = self.reserved_words_signature(cmd)
+            if not signature:
+                num_errors += 1
+                continue
+            if not self.head_present(signature, head_cmd):
+                continue
+            for nl in unique_pairs[cmd]:
+                inserted = False
+                for nl2 in desp_dict:
+                    if token_overlap(nl, nl2) > 0.6:
+                        desp_dict[nl2].append((cmd, nl))
+                        inserted = True
+                if not inserted:
+                    desp_dict[nl].append((cmd, nl))
+        return desp_dict
 
     def commands(self):
         c = self.conn.cursor()
@@ -1077,19 +1100,21 @@ class DBConnection(object):
         num_cmd = 0
         num_pairs = 0
 
-        cmds_dict = self.unique_pairs_by_signature()
+        desp_dict = self.unique_pairs_by_description("find")
 
         data = collections.defaultdict(list)
-        for signature in cmds_dict:
-            if not ("find " in signature or " find" in signature):
-                continue
-            print(signature)
+        for query in desp_dict:
+            # if not ("find " in signature or " find" in signature):
+            #     continue
+            # print(signature)
+            print("Query: %s" % query)
             num_cmd += 1
             ind = random.randrange(num_folds)
             bin = data[ind]
-            for cmd, nl in cmds_dict[signature]:
+            for cmd, nl in desp_dict[query]:
                 if nl == "NA":
                     continue
+                print("desp: %s" % nl)
                 num_pairs += 1
                 cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
                 nl = nl.strip().replace('\n', ' ').replace('\r', ' ')
@@ -1117,6 +1142,14 @@ class DBConnection(object):
                 reserved_words.add(token)
         signature = ' '.join(list(reserved_words))
         return signature
+
+    def head_present(self, cmd, head):
+        if (head + ' ') in cmd:
+            return True
+        elif (' ' + head) in cmd:
+            return True
+        else:
+            return False
 
 if __name__ == "__main__":
     with DBConnection() as db:

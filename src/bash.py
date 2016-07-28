@@ -83,6 +83,11 @@ def bash_tokenizer(cmd, normalize_digits=True):
 
     return tokens
 
+def token_overlap(s1, s2):
+    tokens1 = set(basic_tokenizer(s1))
+    tokens2 = set(basic_tokenizer(s2))
+    return (len(tokens1 & tokens2) + 0.0) / len(tokens1 | tokens2)
+
 # -- Outdated ---
 
 def split_flags(cmd, word):
