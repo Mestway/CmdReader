@@ -331,15 +331,17 @@ class DBConnection(object):
     def unique_pairs_by_signature(self):
         unique_pairs = self.unique_pairs()
         cmds_dict = collections.defaultdict(list)
+        num_errors = 0
         for cmd in unique_pairs:
             if not cmd:
                 continue
             signature = self.reserved_words_signature(cmd)
             if not signature:
-                print("Unable to recognize bash command: " + cmd)
+                num_errors += 1
                 continue
             for nl in unique_pairs[cmd]:
                 cmds_dict[signature].append((cmd, nl))
+        print("Unable to parse %d commands" % num_errors)
         return cmds_dict
 
     def commands(self):
@@ -1058,11 +1060,9 @@ class DBConnection(object):
     # remove a specific user's annotation of a specific url
     def remove_user_annotation(self, user_id, url):
         c = self.cursor
-
         if not self.user_exist(user_id):
             print "User %s does not exist!" % user_id
             return
-
         c.execute("DELETE FROM Pairs WHERE user_id = ? AND url = ?", (user_id, url))
         print("Removed annotations of %s from user %s" % (url, user_id))
 
