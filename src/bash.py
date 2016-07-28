@@ -60,12 +60,15 @@ def bash_tokenizer(cmd, normalize_digits=True):
         parts = bashlex.parse(cmd)
     except bashlex.tokenizer.MatchedPairError, e:
         print("Cannot parse: %s - MatchedPairError" % cmd)
+        return None
         # return basic_tokenizer(cmd, normalize_digits, False)
     except bashlex.errors.ParsingError, e:
         print("Cannot parse: %s - ParsingError" % cmd)
+        return None
         # return basic_tokenizer(cmd, normalize_digits, False)
     except NotImplementedError, e:
         print("Cannot parse: %s - NotImplementedError" % cmd)
+        return None
         # return basic_tokenizer(cmd, normalize_digits, False)
     except IndexError, e:
         # empty command
