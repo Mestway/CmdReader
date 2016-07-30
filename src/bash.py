@@ -56,11 +56,9 @@ def bash_tokenizer(cmd, normalize_digits=True):
                 w = node.word
                 word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
                 tokens.append(word)
-        elif hasattr(node, 'parts'):
-            for child in node.parts:
-                parse(child, tokens)
-        elif hasattr(node, 'command'):
-            parse(node.command, tokens)
+        elif node.kind == "tilde":
+            w = node.word
+            tokens.append(w)
         elif node.kind == "pipe":
             w = node.pipe
             tokens.append(w)
@@ -76,29 +74,43 @@ def bash_tokenizer(cmd, normalize_digits=True):
         elif node.kind == "operator":
             w = node.op
             tokens.append(w)
+        elif node.kind == "list":
+            if len(node.parts) > 2:
+                # multiple commands, not supported
+                return None
+            else:
+                for child in node.parts:
+                    parse(child, tokens)
+        elif hasattr(node, 'parts'):
+            for child in node.parts:
+                parse(child, tokens)
+        elif hasattr(node, 'command'):
+            tokens.append('`')
+            parse(node.command, tokens)
+            tokens.append('`')
         elif node.kind == "for":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "if":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "while":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "until":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "assignment":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "function":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "parameter":
-            # doesn't support
+            # not supported
             return None
         elif node.kind == "heredoc":
-            # doesn't support
+            # not supported
             return None
 
     try:
