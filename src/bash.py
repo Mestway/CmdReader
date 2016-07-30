@@ -49,8 +49,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(str(node))
             return
         if node.kind == "word":
-            if hasattr(node, 'parts') and node.parts \
-                and node.parts[0].kind != "tilde":
+            if hasattr(node, 'parts') and node.parts:
                 # commandsubstitution, parameter
                 for child in node.parts:
                     parse(child, tokens)
@@ -103,6 +102,9 @@ def bash_tokenizer(cmd, normalize_digits=True):
             # not supported
             tokens.append(None)
         elif node.kind == "function":
+            # not supported
+            tokens.append(None)
+        elif node.kind == "tilde":
             # not supported
             tokens.append(None)
         elif node.kind == "parameter":
