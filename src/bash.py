@@ -60,15 +60,6 @@ def bash_tokenizer(cmd, normalize_digits=True):
         elif node.kind == "pipe":
             w = node.pipe
             tokens.append(w)
-        elif node.kind == "redirect":
-            if node.type == '>':
-                parse(node.input, tokens)
-                tokens.append('>')
-                parse(node.output, tokens)
-            elif node.type == '<':
-                parse(node.output, tokens)
-                tokens.append('<')
-                parse(node.input, tokens)
         elif node.kind == "operator":
             w = node.op
             tokens.append(w)
@@ -86,6 +77,17 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append('`')
             parse(node.command, tokens)
             tokens.append('`')
+        elif node.kind == "redirect":
+            # not supported
+            tokens.append(None)
+            # if node.type == '>':
+            #     parse(node.input, tokens)
+            #     tokens.append('>')
+            #     parse(node.output, tokens)
+            # elif node.type == '<':
+            #     parse(node.output, tokens)
+            #     tokens.append('<')
+            #     parse(node.input, tokens)
         elif node.kind == "for":
             # not supported
             tokens.append(None)
