@@ -1,4 +1,3 @@
-import cPickle as pickle
 import collections
 import datetime
 
@@ -9,7 +8,6 @@ import urllib2
 from bs4 import BeautifulSoup
 import random, string
 
-# import scipy.sparse as ssp
 from simhash import Simhash
 
 import sqlite3
@@ -20,13 +18,33 @@ from fun import pokemon_name_list
 import analytics
 
 from util import encode_url
-from bash import bash_tokenizer, token_overlap
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
-head_commands = ["find", "xargs", "grep", "egrep", "sed", "awk", "ls", "rm", "cp", "mv",
-                 "cd", "cat", "wc", "chmod", "zip", "unzip", "tar", "sort", "head", "tail",
-                 "du", "echo", "sh"]
+head_commands = [
+    "find", "xargs",
+    "grep", "egrep",
+    "sed", "awk",
+    "ls", "rm",
+    "cp", "mv",
+    "cd", "cat",
+    "wc", "chmod",
+    "zip", "unzip",
+    "tar", "sort",
+    "head", "tail",
+    "du", "echo",
+    "sh"
+]
+
+special_operators = [
+    "|",
+    "`",
+    "<(",
+    "(",
+    ")>",
+    ")",
+    "$("
+]
 
 # maximum number of annotators a web page can be assigned to
 MAX_RESPONSES = 2
@@ -51,6 +69,9 @@ EXPLORE_VS_VERIFY_RATIO = 0.9
 # make this information persistent.
 url_leases = []
 url_lease_lock = threading.RLock()
+
+def is_option(word):
+    return word.startswith('-')
 
 def distance(f1, f2):
     x = (f1 ^ f2) & ((1 << SIMHASH_BITNUM) - 1)
@@ -284,7 +305,7 @@ class DBConnection(object):
         c = self.cursor
         tokens = cmd.split()
         for token in tokens:
-            if token.startswith("-") or token in head_commands or token == "|":
+            if is_option(token) or token in head_commands or token in special_operators:
                 if self.token_exist(token):
                     c.execute("UPDATE TokenCounts SET count = count + 1 WHERE token = ?", (token,))
                 else:
@@ -327,45 +348,6 @@ class DBConnection(object):
             if not duplicated:
                 cmds_dict[cmd].append(nl)
         return cmds_dict
-
-    def unique_pairs_by_signature(self):
-        unique_pairs = self.unique_pairs()
-        cmds_dict = collections.defaultdict(list)
-        num_errors = 0
-        for cmd in unique_pairs:
-            if not cmd:
-                continue
-            signature = self.reserved_words_signature(cmd)
-            if not signature:
-                num_errors += 1
-                continue
-            for nl in unique_pairs[cmd]:
-                cmds_dict[signature].append((cmd, nl))
-        print("Unable to parse %d commands" % num_errors)
-        return cmds_dict
-
-    def unique_pairs_by_description(self, head_cmd):
-        unique_pairs = self.unique_pairs()
-        desp_dict = collections.defaultdict(list)
-        num_errors = 0
-        for cmd in unique_pairs:
-            if not cmd:
-                continue
-            signature = self.reserved_words_signature(cmd)
-            if not signature:
-                num_errors += 1
-                continue
-            if not self.head_present(signature, head_cmd):
-                continue
-            for nl in unique_pairs[cmd]:
-                inserted = False
-                for nl2 in desp_dict:
-                    if token_overlap(nl, nl2) > 0.6:
-                        desp_dict[nl2].append((cmd, nl))
-                        inserted = True
-                if not inserted:
-                    desp_dict[nl].append((cmd, nl))
-        return desp_dict
 
     def commands(self):
         c = self.conn.cursor()
@@ -682,7 +664,7 @@ class DBConnection(object):
                 snippet = ''
                 for j in xrange(left_end, right_end):
                     snippet += tokens[j] + ' '
-                    if tokens[j].startswith("-"):
+                    if is_option(tokens[j]):
                         option_detected = True
                 if option_detected:
                     snippets.append(snippet)
@@ -694,9 +676,9 @@ class DBConnection(object):
         # scoring based on novelty and difficulty of a command
         score = 0.0
         for token in tokens:
-            if token == "|":
+            if token in special_operators:
                 score += 1
-            elif token.startswith("-") or token in head_commands:
+            elif is_option(token) or token in head_commands:
                 if token in token_hist:
                     score += 1.0 / (token_hist[token] + 1)
                 else:
@@ -1095,62 +1077,6 @@ class DBConnection(object):
             print x
         # c.execute("UPDATE SearchContent SET num_visits = 2 WHERE min_distance = 11 AND num_cmds = 36")
 
-    # --- Data Exportaion ---
-    def dump_data(self, data_dir, num_folds=10):
-        num_cmd = 0
-        num_pairs = 0
-
-        desp_dict = self.unique_pairs_by_description("find")
-
-        data = collections.defaultdict(list)
-        for query in desp_dict:
-            # if not ("find " in signature or " find" in signature):
-            #     continue
-            # print(signature)
-            print("Query: %s" % query)
-            num_cmd += 1
-            ind = random.randrange(num_folds)
-            bin = data[ind]
-            for cmd, nl in desp_dict[query]:
-                if nl == "NA":
-                    continue
-                print("desp: %s" % nl)
-                num_pairs += 1
-                cmd = cmd.strip().replace('\n', ' ').replace('\r', ' ')
-                nl = nl.strip().replace('\n', ' ').replace('\r', ' ')
-                if nl.endswith("."):
-                    nl = nl[:-1]
-                if not type(nl) is unicode:
-                    nl = nl.decode()
-                if not type(cmd) is unicode:
-                    cmd = cmd.decode()
-                bin.append((nl, cmd))
-
-        print("Total number of pairs: %d" % num_pairs)
-        print("Total number of commands: %d" % num_cmd)
-        print("%.2f descriptions per command" % ((num_pairs + 0.0) / num_cmd))
-        with open(data_dir + "/data.dat", 'w') as o_f:
-            pickle.dump(data, o_f)
-
-    def reserved_words_signature(self, cmd):
-        tokens = bash_tokenizer(cmd)
-        if not tokens:
-            return None
-        reserved_words = set()
-        for token in tokens:
-            if token.startswith('-') or token in head_commands or token == "|":
-                reserved_words.add(token)
-        signature = ' '.join(list(reserved_words))
-        return signature
-
-    def head_present(self, cmd, head):
-        if (head + ' ') in cmd:
-            return True
-        elif (' ' + head) in cmd:
-            return True
-        else:
-            return False
-
 if __name__ == "__main__":
     with DBConnection() as db:
         db.create_schema()
@@ -1161,5 +1087,4 @@ if __name__ == "__main__":
         # url = sys.argv[1]
         # db.debugging(url)
         # db.assign_judgements()
-        db.dump_data("data/")
         # db.batch_url_import("/home/xilin/reader/data/stackoverflow.sh.urls.txt")
