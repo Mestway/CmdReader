@@ -57,6 +57,15 @@ def bash_tokenizer(cmd, normalize_digits=True):
         elif node.kind == "pipe":
             w = node.pipe
             tokens.append(w)
+        elif node.kind == "redirect":
+            if node.type == '>':
+                tokens.append(node.input)
+                tokens.append('>')
+                tokens.append(node.output)
+            elif node.type == '<':
+                tokens.append(node.output)
+                tokens.append('<')
+                tokens.append(node.input)
         elif node.kind == "operator":
             w = node.op
             tokens.append(w)
