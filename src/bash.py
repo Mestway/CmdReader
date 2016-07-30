@@ -75,7 +75,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
         elif node.kind == "list":
             if len(node.parts) > 2:
                 # multiple commands, not supported
-                return None
+                tokens.append(None)
             else:
                 for child in node.parts:
                     parse(child, tokens)
@@ -88,31 +88,31 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append('`')
         elif node.kind == "for":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "if":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "while":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "until":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "assignment":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "function":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "parameter":
             # not supported
-            return None
+            tokens.append(None)
         elif node.kind == "heredoc":
             # not supported
-            return None
+            tokens.append(None)
 
     try:
-        parts = bashlex.parse(cmd)
+        parse = bashlex.parse(cmd)
     except bashlex.tokenizer.MatchedPairError, e:
         print("Cannot parse: %s - MatchedPairError" % cmd)
         # return basic_tokenizer(cmd, normalize_digits, False)
@@ -134,8 +134,11 @@ def bash_tokenizer(cmd, normalize_digits=True):
         # not a bash command
         return None
 
-    for part in parts:
-        parse(part, tokens)
+    for node in parse:
+        if None in tokens:
+            print("Unsupported: %s" % cmd)
+            return None
+        parse(node, tokens)
 
     return tokens
 
