@@ -45,6 +45,9 @@ def bash_tokenizer(cmd, normalize_digits=True):
         return tokens
 
     def parse(node, tokens):
+        if not type(node) is bashlex.ast.node:
+            tokens.append(str(node))
+            return
         if node.kind == "word":
             w = node.word
             word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
@@ -59,13 +62,13 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(w)
         elif node.kind == "redirect":
             if node.type == '>':
-                tokens.append(str(node.input))
+                parse(node.input, tokens)
                 tokens.append('>')
-                tokens.append(str(node.output))
+                parse(node.output, tokens)
             elif node.type == '<':
-                tokens.append(str(node.output))
+                parse(node.output, tokens)
                 tokens.append('<')
-                tokens.append(str(node.input))
+                parse(node.input, tokens)
         elif node.kind == "operator":
             w = node.op
             tokens.append(w)
