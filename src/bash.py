@@ -49,16 +49,14 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(str(node))
             return
         if node.kind == "word":
-            if hasattr(node, 'parts') and node.parts:
+            if hasattr(node, 'parts') and node.parts and node.parts[0].kind != "tilde":
+                # commandsubstitution
                 for child in node.parts:
                     parse(child, tokens)
             else:
                 w = node.word
                 word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
                 tokens.append(word)
-        elif node.kind == "tilde":
-            w = node.word
-            tokens.append(w)
         elif node.kind == "pipe":
             w = node.pipe
             tokens.append(w)
