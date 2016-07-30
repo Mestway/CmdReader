@@ -50,7 +50,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
             return
         if node.kind == "word":
             if hasattr(node, 'parts') and node.parts and node.parts[0].kind != "tilde":
-                # commandsubstitution
+                # commandsubstitution, parameter
                 for child in node.parts:
                     parse(child, tokens)
             else:
