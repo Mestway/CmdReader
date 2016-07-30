@@ -109,7 +109,11 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(None)
         elif node.kind == "parameter":
             # not supported
-            tokens.append(None)
+            if node.value.lower() in ['home', 'dir']:
+                w = node.value
+                tokens.append(w)
+            else:
+                tokens.append(None)
         elif node.kind == "heredoc":
             # not supported
             tokens.append(None)
