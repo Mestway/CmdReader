@@ -49,8 +49,12 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(str(node))
             return
         if node.kind == "word":
-            w = node.word
-            word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
+            if hasattr(node, 'parts') and node.parts:
+                for child in node.parts:
+                    parse(child, tokens)
+            else:
+                w = node.word
+                word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
             tokens.append(word)
         elif hasattr(node, 'parts'):
             for child in node.parts:
