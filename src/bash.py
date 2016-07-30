@@ -45,15 +45,15 @@ def bash_tokenizer(cmd, normalize_digits=True):
         return tokens
 
     def parse(node, tokens):
-        if hasattr(node, 'parts'):
+        if node.kind == "word":
+            w = node.word
+            word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
+            tokens.append(word)
+        elif hasattr(node, 'parts'):
             for child in node.parts:
                 parse(child, tokens)
         elif hasattr(node, 'command'):
             parse(node.command, tokens)
-        elif node.kind == "word":
-            w = node.word
-            word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
-            tokens.append(word)
         elif node.kind == "pipe":
             w = node.pipe
             tokens.append(w)
@@ -86,7 +86,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
             return None
 
     try:
-        parts = bashlex.parser.parse(cmd)
+        parts = bashlex.parse(cmd)
     except bashlex.tokenizer.MatchedPairError, e:
         print("Cannot parse: %s - MatchedPairError" % cmd)
         # return basic_tokenizer(cmd, normalize_digits, False)
