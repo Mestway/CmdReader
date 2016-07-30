@@ -86,12 +86,12 @@ def bash_tokenizer(cmd, normalize_digits=True):
             return None
 
     try:
-        parts = parser.parse(cmd)
-    except tokenizer.MatchedPairError, e:
+        parts = bashlex.parser.parse(cmd)
+    except bashlex.tokenizer.MatchedPairError, e:
         print("Cannot parse: %s - MatchedPairError" % cmd)
         # return basic_tokenizer(cmd, normalize_digits, False)
         return None
-    except errors.ParsingError, e:
+    except bashlex.errors.ParsingError, e:
         print("Cannot parse: %s - ParsingError" % cmd)
         # return basic_tokenizer(cmd, normalize_digits, False)
         return None
