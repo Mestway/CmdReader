@@ -49,7 +49,8 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(str(node))
             return
         if node.kind == "word":
-            if hasattr(node, 'parts') and node.parts and node.parts[0].kind != "tilde":
+            if hasattr(node, 'parts') and node.parts \
+                and node.parts[0].kind != "tilde":
                 # commandsubstitution, parameter
                 for child in node.parts:
                     parse(child, tokens)
@@ -114,32 +115,32 @@ def bash_tokenizer(cmd, normalize_digits=True):
     try:
         ast = bashlex.parse(cmd)
     except bashlex.tokenizer.MatchedPairError, e:
-        print("Cannot parse: %s - MatchedPairError" % cmd)
+        print("Cannot parse: %s - MatchedPairError" % cmd.encode('utf-8'))
         # return basic_tokenizer(cmd, normalize_digits, False)
         return None
     except bashlex.errors.ParsingError, e:
-        print("Cannot parse: %s - ParsingError" % cmd)
+        print("Cannot parse: %s - ParsingError" % cmd.encode('utf-8'))
         # return basic_tokenizer(cmd, normalize_digits, False)
         return None
     except NotImplementedError, e:
-        print("Cannot parse: %s - NotImplementedError" % cmd)
+        print("Cannot parse: %s - NotImplementedError" % cmd.encode('utf-8'))
         # return basic_tokenizer(cmd, normalize_digits, False)
         return None
     except IndexError, e:
-        print("Cannot parse: %s - IndexError" % cmd)
+        print("Cannot parse: %s - IndexError" % cmd.encode('utf-8'))
         # empty command
         return None
     except AttributeError, e:
-        print("Cannot parse: %s - AttributeError" % cmd)
+        print("Cannot parse: %s - AttributeError" % cmd.encode('utf-8'))
         # not a bash command
         return None
 
     for node in ast:
         parse(node, tokens)
         if None in tokens:
-            print("Unsupported: %s" % cmd)
+            print("Unsupported: %s" % cmd.encode('utf-8'))
             return None
-        
+
     return tokens
 
 def token_overlap(s1, s2):
