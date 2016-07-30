@@ -55,7 +55,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
             else:
                 w = node.word
                 word = re.sub(_DIGIT_RE, _NUM, w) if normalize_digits and not w.startswith('-') else w
-            tokens.append(word)
+                tokens.append(word)
         elif hasattr(node, 'parts'):
             for child in node.parts:
                 parse(child, tokens)
