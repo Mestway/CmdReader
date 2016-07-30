@@ -135,11 +135,11 @@ def bash_tokenizer(cmd, normalize_digits=True):
         return None
 
     for node in ast:
+        parse(node, tokens)
         if None in tokens:
             print("Unsupported: %s" % cmd)
             return None
-        parse(node, tokens)
-
+        
     return tokens
 
 def token_overlap(s1, s2):
