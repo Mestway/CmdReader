@@ -112,7 +112,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
             tokens.append(None)
 
     try:
-        parse = bashlex.parse(cmd)
+        ast = bashlex.parse(cmd)
     except bashlex.tokenizer.MatchedPairError, e:
         print("Cannot parse: %s - MatchedPairError" % cmd)
         # return basic_tokenizer(cmd, normalize_digits, False)
@@ -134,7 +134,7 @@ def bash_tokenizer(cmd, normalize_digits=True):
         # not a bash command
         return None
 
-    for node in parse:
+    for node in ast:
         if None in tokens:
             print("Unsupported: %s" % cmd)
             return None
