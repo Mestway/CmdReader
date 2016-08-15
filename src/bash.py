@@ -66,24 +66,24 @@ def basic_tokenizer(sentence, normalize_digits=True, lower_case=True):
         normalized_words.append(word)
     return normalized_words
 
-def normalize_word(node, norm_digit, recover_quote):
-    w = recover_quotation(node) if recover_quote else node.word
-    return re.sub(_DIGIT_RE, _NUM, w) if norm_digit and not is_option(w) else w
-
-def with_quotation(node):
-    return (node.pos[1] - node.pos[0] - len(node.word)) == 2
-
-def recover_quotation(node):
-    if with_quotation(node):
-        return cmd[node.pos[0] : node.pos[1]]
-    else:
-        return node.word
-
 def bash_tokenizer(cmd, normalize_digits=True, recover_quotation=True):
     cmd = cmd.replace('\n', ' ').strip()
     tokens = []
     if not cmd:
         return tokens
+
+    def normalize_word(node, norm_digit, recover_quote):
+        w = recover_quotation(node) if recover_quote else node.word
+        return re.sub(_DIGIT_RE, _NUM, w) if norm_digit and not is_option(w) else w
+
+    def with_quotation(node):
+        return (node.pos[1] - node.pos[0] - len(node.word)) == 2
+
+    def recover_quotation(node):
+        if with_quotation(node):
+            return cmd[node.pos[0] : node.pos[1]]
+        else:
+            return node.word
 
     def parse(node, tokens):
         if not type(node) is ast.node:
