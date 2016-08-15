@@ -123,8 +123,7 @@ def bash_tokenizer(cmd, normalize_digits=True, recover_quotation=True):
                 # multiple commands, not supported
                 tokens.append(None)
             else:
-                for child in node.parts:
-                    parse(child, tokens)
+                parse(node.parts[0], tokens)    # ignoring the ';' operator
         elif node.kind == "commandsubstitution":
             tokens.append('`')
             parse(node.command, tokens)
