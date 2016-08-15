@@ -106,14 +106,14 @@ def bash_tokenizer(cmd, normalize_digits=True, recover_quotation=True):
                 elif node.parts[0].kind == "parameter" or \
                     node.parts[0].kind == "tilde":
                     w = node.word
-                    word = normalize_word(w, normalize_digits, recover_quotation)
+                    word = normalize_word(node, normalize_digits, recover_quotation)
                     tokens.append(word)
                 else:
                     for child in node.parts:
                         parse(child, tokens)
             else:
                 w = node.word
-                word = normalize_word(w, normalize_digits, recover_quotation)
+                word = normalize_word(node, normalize_digits, recover_quotation)
                 tokens.append(word)
         elif node.kind == "pipe":
             w = node.pipe
