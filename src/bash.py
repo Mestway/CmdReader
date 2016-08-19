@@ -29,12 +29,29 @@ head_commands = [
     "cp", "mv",
     "cd", "cat",
     "wc", "chmod",
-    "zip", "unzip",
     "tar", "sort",
     "head", "tail",
-    "du", "echo",
+    "chown", "chgrp",
+    "mkdir", "rmdir",
+    "uniq", "parallel",
+    "perl", "replace",
+    "gzip", "exec",
+    "sh", "bash",
+    "zip", "unzip",
+    "du", "date",
     "diff", "comm",
-    "sh", "date"
+    "echo", "mplayer",
+    "tee", "more",
+    "less", "convert",
+    "basename", "pwd",
+    "process", "python",
+    "man", "csh",
+    "test", "bzip2",
+    "openssl", "kill",
+    "php", "printf",
+    "pdfgrep", "fastqc",
+    "ffmpeg", "cmd2",
+    "command1", "command2"
 ]
 
 special_operators = [

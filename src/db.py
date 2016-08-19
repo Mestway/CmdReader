@@ -33,6 +33,7 @@ head_commands = [
     "tar", "sort",
     "head", "tail",
     "du", "echo",
+    "diff", "comm",
     "sh"
 ]
 
@@ -340,11 +341,6 @@ class DBConnection(object):
                 if minEditDist(nl.lower(), nl2.lower()) < EDITDIST_THRESH:
                     duplicated = True
                     break
-                # else:
-                #     print minEditDist(nl, nl2)
-                #     print nl
-                #     print nl2
-                #     print
             if not duplicated:
                 cmds_dict[cmd].append(nl)
         return cmds_dict
