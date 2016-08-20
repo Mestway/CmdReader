@@ -17,35 +17,11 @@ import re
 from fun import pokemon_name_list
 import analytics
 
+import bash
 from util import encode_url
 
 html_rel2abs = re.compile('"/[^\s<>]*/*http')
 hypothes_header = re.compile('\<\!\-\- WB Insert \-\-\>.*\<\!\-\- End WB Insert \-\-\>', re.DOTALL)
-head_commands = [
-    "find", "xargs",
-    "grep", "egrep",
-    "sed", "awk",
-    "ls", "rm",
-    "cp", "mv",
-    "cd", "cat",
-    "wc", "chmod",
-    "zip", "unzip",
-    "tar", "sort",
-    "head", "tail",
-    "du", "echo",
-    "diff", "comm",
-    "sh"
-]
-
-special_operators = [
-    "|",
-    "`",
-    "<(",
-    "(",
-    ")>",
-    ")",
-    "$("
-]
 
 # maximum number of annotators a web page can be assigned to
 MAX_RESPONSES = 2
@@ -71,8 +47,6 @@ EXPLORE_VS_VERIFY_RATIO = 0.9
 url_leases = []
 url_lease_lock = threading.RLock()
 
-def is_option(word):
-    return word.startswith('-')
 
 def distance(f1, f2):
     x = (f1 ^ f2) & ((1 << SIMHASH_BITNUM) - 1)
@@ -306,7 +280,7 @@ class DBConnection(object):
         c = self.cursor
         tokens = cmd.split()
         for token in tokens:
-            if is_option(token) or token in head_commands or token in special_operators:
+            if bash.is_option(token) or token in bash.reserved_words or token in bash.special_operators:
                 if self.token_exist(token):
                     c.execute("UPDATE TokenCounts SET count = count + 1 WHERE token = ?", (token,))
                 else:
@@ -660,7 +634,7 @@ class DBConnection(object):
                 snippet = ''
                 for j in xrange(left_end, right_end):
                     snippet += tokens[j] + ' '
-                    if is_option(tokens[j]):
+                    if bash.is_option(tokens[j]):
                         option_detected = True
                 if option_detected:
                     snippets.append(snippet)
@@ -672,9 +646,9 @@ class DBConnection(object):
         # scoring based on novelty and difficulty of a command
         score = 0.0
         for token in tokens:
-            if token in special_operators:
+            if token in bash.special_operators:
                 score += 1
-            elif is_option(token) or token in head_commands:
+            elif bash.is_option(token) or token in bash.reserved_words:
                 if token in token_hist:
                     score += 1.0 / (token_hist[token] + 1)
                 else:

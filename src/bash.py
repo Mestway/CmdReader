@@ -21,39 +21,6 @@ _DIGIT_RE = re.compile(br"\d+")
 
 _NUM = b"_NUM"
 
-head_commands = [
-    "find", "xargs",
-    "grep", "egrep",
-    "sed", "awk",
-    "ls", "rm",
-    "cp", "mv",
-    "cd", "cat",
-    "wc", "chmod",
-    "tar", "sort",
-    "head", "tail",
-    "chown", "chgrp",
-    "mkdir", "rmdir",
-    "uniq", "parallel",
-    "perl", "replace",
-    "gzip", "exec",
-    "sh", "bash",
-    "zip", "unzip",
-    "du", "date",
-    "diff", "comm",
-    "echo", "mplayer",
-    "tee", "more",
-    "less", "convert",
-    "basename", "pwd",
-    "process", "python",
-    "man", "csh",
-    "test", "bzip2",
-    "openssl", "kill",
-    "php", "printf",
-    "pdfgrep", "fastqc",
-    "ffmpeg", "cmd2",
-    "command1", "command2"
-]
-
 special_operators = [
     "|",
     "`",
@@ -63,6 +30,14 @@ special_operators = [
     ")",
     "$("
 ]
+
+def reserved_words():
+    with open("./bash_keywords.txt") as f:
+        _words = f.readlines()
+    return [w.strip() for w in _words]
+
+reserved_words = reserved_words()
+all_utilities = reserved_words[reserved_words.index("alias"):]
 
 def is_option(word):
     return word.startswith('-')
@@ -230,7 +205,7 @@ def reserved_words_signature(cmd):
     reserved_words = set()
     for token in tokens:
         if token.startswith('-') or \
-           token in head_commands or \
+           token in reserved_words or \
            token in special_operators:
             reserved_words.add(token)
     signature = ' '.join(list(reserved_words))
