@@ -1,6 +1,7 @@
 data.db
 __pycache__
 *.pyc
+.idea
 .DS_Store
 /sessions
 /site_config.py
