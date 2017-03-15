@@ -1,5 +1,6 @@
 cherrypy == 6.0.0
-google-api-python-client == 1.5.1
+google-api-python-client == 1.5.2
 simhash == 1.7.0
 bs4
 jinja2
+bashlex == 0.8
